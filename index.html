@@ -503,6 +503,7 @@ table{border-collapse:collapse;width:100%;}
           <span class="u-name" id="u-name"></span>
           <span class="u-role" id="u-role"></span>
         </div>
+        <button class="logout-btn" onclick="openSheetsModal()">🔗 Connect Sheet</button>
         <button class="logout-btn" onclick="doLogout()">Sign Out</button>
       </div>
       <nav class="nav">
@@ -532,9 +533,14 @@ table{border-collapse:collapse;width:100%;}
       </div>
       <div class="stat-row" id="dash-stats"></div>
       <div class="grid-2">
+        <div class="panel"><div class="panel-title">📈 Revenue Trend</div><div id="dash-revenue-chart"></div></div>
+        <div class="panel"><div class="panel-title">🥧 Guest Segments</div><div id="dash-segments-chart" style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;justify-content:center;"></div></div>
+      </div>
+      <div class="grid-2">
         <div class="panel"><div class="panel-title">Loyalty Tier Breakdown</div><div id="dash-tiers"></div></div>
         <div class="panel"><div class="panel-title">CSAT by Category</div><div id="dash-csat-cats"></div></div>
       </div>
+      <div class="panel" style="margin-bottom:20px;"><div class="panel-title">🍽 Top Menu Items</div><div id="dash-top-items"></div></div>
       <div class="grid-2">
         <div class="panel"><div class="panel-title">💰 Top Spenders</div><div id="dash-top"></div></div>
         <div class="panel"><div class="panel-title">⭐ Recent Reviews</div><div id="dash-reviews"></div></div>
@@ -1159,6 +1165,97 @@ document.querySelectorAll(".nav-btn").forEach(function(btn){
 });
 
 // ─── DASHBOARD ───────────────────────────────────────────────
+// ─── DASHBOARD CHARTS (dependency-free inline SVG) ────────────
+const SEG_COLORS={VIP:"#5B3FA8",Regular:"#1B4F8A",New:"#2E7D50",Occasional:"#6B6B68"};
+
+function polarPoint(cx,cy,r,angleDeg){
+  const rad=angleDeg*Math.PI/180;
+  return{x:cx+r*Math.sin(rad),y:cy-r*Math.cos(rad)};
+}
+
+function svgLineChart(values,labels,opts={}){
+  const w=opts.width||480,h=opts.height||190,pad=36;
+  if(!values.length) return `<div class="empty" style="padding:30px 0;">No order data yet</div>`;
+  const max=Math.max(...values,1);
+  const stepX=values.length>1?(w-pad-14)/(values.length-1):0;
+  const yFor=v=>h-pad-(v/max)*(h-pad-16);
+  const pts=values.map((v,i)=>`${(pad+i*stepX).toFixed(1)},${yFor(v).toFixed(1)}`).join(" ");
+  const area=`${pad},${h-pad} ${pts} ${(pad+(values.length-1)*stepX).toFixed(1)},${h-pad}`;
+  const grid=[0,0.5,1].map(f=>{
+    const y=h-pad-f*(h-pad-16),val=Math.round(max*f);
+    return`<line x1="${pad}" y1="${y}" x2="${w-6}" y2="${y}" style="stroke:var(--border);stroke-width:1;"/><text x="2" y="${y+3}" style="font-size:9px;fill:var(--muted);">${dollar(val)}</text>`;
+  }).join("");
+  const dots=values.map((v,i)=>`<circle cx="${(pad+i*stepX).toFixed(1)}" cy="${yFor(v).toFixed(1)}" r="3.5" style="fill:var(--blue);stroke:#fff;stroke-width:1.5;"/>`).join("");
+  const lbls=labels.map((l,i)=>`<text x="${(pad+i*stepX).toFixed(1)}" y="${h-8}" text-anchor="middle" style="font-size:9px;fill:var(--muted);">${l}</text>`).join("");
+  return`<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:${h}px;display:block;">
+    ${grid}
+    <polygon points="${area}" style="fill:var(--blue-l);opacity:.7;"/>
+    <polyline points="${pts}" style="fill:none;stroke:var(--blue);stroke-width:2.5;"/>
+    ${dots}${lbls}
+  </svg>`;
+}
+
+function svgDonutChart(data,size=140){
+  const entries=Object.entries(data).filter(([,v])=>v>0);
+  const total=entries.reduce((s,[,v])=>s+v,0);
+  const r=size/2-12,cx=size/2,cy=size/2,sw=20;
+  if(!total) return `<svg viewBox="0 0 ${size} ${size}" style="width:${size}px;height:${size}px;"><circle cx="${cx}" cy="${cy}" r="${r}" style="fill:none;stroke:var(--border);stroke-width:${sw};"/></svg>`;
+  if(entries.length===1){
+    const color=SEG_COLORS[entries[0][0]]||"#999";
+    return`<svg viewBox="0 0 ${size} ${size}" style="width:${size}px;height:${size}px;"><circle cx="${cx}" cy="${cy}" r="${r}" style="fill:none;stroke:${color};stroke-width:${sw};"/><text x="${cx}" y="${cy-2}" text-anchor="middle" style="font-size:22px;font-weight:800;fill:var(--char);">${total}</text><text x="${cx}" y="${cy+15}" text-anchor="middle" style="font-size:10px;fill:var(--muted);">guests</text></svg>`;
+  }
+  let angle=0;
+  const segs=entries.map(([label,val])=>{
+    const frac=val/total,start=angle,end=angle+frac*360;angle=end;
+    const largeArc=(end-start)>180?1:0;
+    const p1=polarPoint(cx,cy,r,start),p2=polarPoint(cx,cy,r,end);
+    const color=SEG_COLORS[label]||"#999";
+    return`<path d="M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)} A ${r} ${r} 0 ${largeArc} 1 ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}" style="fill:none;stroke:${color};stroke-width:${sw};"/>`;
+  }).join("");
+  return`<svg viewBox="0 0 ${size} ${size}" style="width:${size}px;height:${size}px;display:block;">${segs}<text x="${cx}" y="${cy-2}" text-anchor="middle" style="font-size:22px;font-weight:800;fill:var(--char);">${total}</text><text x="${cx}" y="${cy+15}" text-anchor="middle" style="font-size:10px;fill:var(--muted);">guests</text></svg>`;
+}
+
+function revenueByDate(){
+  const map={};
+  orders.forEach(o=>{map[o.date]=(map[o.date]||0)+o.total;});
+  const dates=Object.keys(map).sort().slice(-8);
+  return{
+    values: dates.map(d=>map[d]),
+    labels: dates.map(d=>d.slice(5)) // MM-DD
+  };
+}
+
+function topMenuItems(limit=6){
+  const counts={};
+  orders.forEach(o=>(o.items||[]).forEach(i=>{
+    const m=String(i).match(/^(.*?)\s*x(\d+)$/i);
+    const name=m?m[1].trim():String(i).trim();
+    const qty=m?parseInt(m[2]):1;
+    counts[name]=(counts[name]||0)+qty;
+  }));
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,limit);
+}
+
+function renderDashboardCharts(){
+  const {values,labels}=revenueByDate();
+  $$("dash-revenue-chart").innerHTML = values.length
+    ? svgLineChart(values,labels)
+    : `<div class="empty" style="padding:30px 0;">No order data yet</div>`;
+
+  const segCounts={VIP:0,Regular:0,Occasional:0,New:0};
+  customers.forEach(c=>{segCounts[c.segment]=(segCounts[c.segment]||0)+1;});
+  const legend=Object.entries(segCounts).filter(([,v])=>v>0).map(([label,val])=>
+    `<div style="display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:6px;"><span style="width:10px;height:10px;border-radius:3px;background:${SEG_COLORS[label]};display:inline-block;"></span>${label} · ${val}</div>`
+  ).join("")||`<div class="empty" style="padding:10px 0;">No guests yet</div>`;
+  $$("dash-segments-chart").innerHTML = `${svgDonutChart(segCounts)}<div>${legend}</div>`;
+
+  const items=topMenuItems();
+  const maxQty=items.length?items[0][1]:1;
+  $$("dash-top-items").innerHTML = items.length ? items.map(([name,qty])=>
+    `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><span style="font-size:12px;color:var(--char);min-width:130px;">${name}</span><div style="flex:1;height:8px;border-radius:4px;background:var(--surface);"><div style="height:8px;border-radius:4px;background:var(--gold);width:${(qty/maxQty*100).toFixed(0)}%;"></div></div><span style="font-size:12px;font-weight:700;color:var(--gold);min-width:26px;text-align:right;">${qty}</span></div>`
+  ).join("") : `<div class="empty" style="padding:20px 0;">No order data yet</div>`;
+}
+
 function renderDashboard(){
   const rev=orders.reduce((s,o)=>s+o.total,0),avgOrd=orders.length?rev/orders.length:0;
   const cs=csatData.map(r=>r.overall),avgC=avg(cs),rec=csatData.length?Math.round(csatData.filter(r=>r.recommend).length/csatData.length*100):0;
@@ -1186,6 +1283,7 @@ function renderDashboard(){
     const c=customers.find(x=>x.id===r.customerId);
     return`<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);"><div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span style="font-size:13px;font-weight:600;">${c?.name||"Guest"}</span>${stars(r.overall,13)}</div>${r.comment?`<div style="font-size:12px;color:var(--muted);font-style:italic;">"${r.comment.slice(0,72)}${r.comment.length>72?"…":""}"</div>`:""}</div>`;
   }).join("");
+  renderDashboardCharts();
 }
 
 // ─── DATABASE ────────────────────────────────────────────────
