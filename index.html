@@ -551,6 +551,7 @@ table{border-collapse:collapse;width:100%;}
         <button class="db-snbtn active" id="dbn-list"  onclick="dbSwitchTab('list')">👥 Guest List</button>
         <button class="db-snbtn"        id="dbn-qr"    onclick="dbSwitchTab('qr')">📱 QR Registration</button>
       </div>
+      <div id="dbpanel-list">
       <div class="filter-bar">
         <input id="db-search" placeholder="Search name, email, city…" oninput="renderDatabase()"/>
         <select id="db-seg" onchange="renderDatabase()">
@@ -578,13 +579,44 @@ table{border-collapse:collapse;width:100%;}
           <tbody id="db-tbody"></tbody>
         </table>
       </div></div>
+      </div>
+      <div id="dbpanel-qr" class="hidden">
+        <div class="qr-panel">
+          <div class="qr-title">📱 Guest Self-Registration</div>
+          <div class="qr-sub">Print or display this QR code so guests can scan and join the Filoxenia Club themselves.</div>
+          <div class="qr-canvas-wrap"><canvas id="qr-canvas"></canvas></div>
+          <div class="qr-url-box">Registration link: <span id="qr-url-display"></span></div>
+          <div class="form-row">
+            <div class="field" style="flex:1;"><input id="qr-custom-url" placeholder="Custom URL (optional)"/></div>
+            <button class="btn btn-secondary" onclick="regenerateQR()">↻ Regenerate</button>
+          </div>
+          <div class="qr-actions">
+            <button class="btn-qr-dl" onclick="downloadQR()">⬇ Download</button>
+            <button class="btn-qr-copy" onclick="copyQRUrl()">🔗 Copy Link</button>
+            <button class="btn-qr-print" onclick="printQR()">🖨 Print</button>
+          </div>
+        </div>
+        <div class="qr-pending-panel">
+          <div class="qr-pending-title"><span>Pending Registrations <span id="pending-count">0</span></span>
+            <span id="pending-actions" class="hidden" style="display:flex;gap:6px;">
+              <button class="btn btn-secondary" style="padding:4px 10px;font-size:11px;" onclick="approveAllPending()">✓ Approve All</button>
+              <button class="btn btn-secondary" style="padding:4px 10px;font-size:11px;" onclick="clearPending()">Clear</button>
+            </span>
+          </div>
+          <div class="qr-pending-sub">Guests who scanned the QR code and submitted their details appear here for approval.</div>
+          <div id="pending-list"></div>
+        </div>
+      </div>
     </div>
 
     <!-- ORDERS -->
     <div class="tab-panel" id="tab-orders">
       <div class="sec-header">
         <div class="sec-title">Orders</div>
-        <button class="btn btn-primary" onclick="openModal('modal-add-order');populateGuestSelect();buildOrderMenu()">+ New Order</button>
+        <div class="flex gap-8">
+          <button class="btn btn-secondary" onclick="clearAllOrders()">🗑 Clear All</button>
+          <button class="btn btn-primary" onclick="openModal('modal-add-order');populateGuestSelect();buildOrderMenu()">+ New Order</button>
+        </div>
       </div>
       <div class="filter-bar">
         <input id="ord-search" placeholder="Search by guest name…" oninput="renderOrders()"/>
@@ -596,6 +628,7 @@ table{border-collapse:collapse;width:100%;}
     <div class="tab-panel" id="tab-csat">
       <div class="sec-header">
         <div><div class="sec-title">CSAT — Guest Satisfaction</div><div class="sec-sub">Customer satisfaction scores and feedback analytics</div></div>
+        <button class="btn btn-secondary" onclick="clearAllCSAT()">🗑 Clear All</button>
       </div>
       <div class="stat-row" id="csat-stats"></div>
       <div class="grid-2" style="margin-bottom:20px;">
@@ -876,7 +909,7 @@ table{border-collapse:collapse;width:100%;}
       <div class="field"><label>Menu Items</label><div id="ao-menu"></div></div>
       <div class="order-total-bar">
         <span class="text-muted fs-13"><span id="ao-count">0</span> items selected</span>
-        <span style="font-size:15px;font-weight:700;color:var(--olive);">Total: $<span id="ao-total">0.00</span></span>
+        <span style="font-size:15px;font-weight:700;color:var(--olive);">Total: ₱<span id="ao-total">0.00</span></span>
       </div>
       <div class="flex gap-8" style="justify-content:flex-end;">
         <button class="btn btn-secondary" onclick="closeModal('modal-add-order')">Cancel</button>
@@ -1042,7 +1075,8 @@ let sentLog=[];
 function getTier(v){return v>=20?"Platinum":v>=12?"Gold":v>=6?"Silver":"Bronze";}
 function avg(a){return a.length?a.reduce((s,b)=>s+b,0)/a.length:0;}
 function $$(n){return document.getElementById(n);}
-function dollar(n){return"$"+parseFloat(n||0).toFixed(2);}
+function v(id){const el=$$(id);return el?el.value:"";}
+function dollar(n){return"₱"+parseFloat(n||0).toFixed(2);}
 function sColor(s){return s>=4.5?"#2E7D50":s>=3.5?"#C4972A":"#B52C1D";}
 function stars(n,sz=14){let h="";for(let i=1;i<=5;i++)h+=`<span style="color:${i<=n?"#C4972A":"#D8D4C8"};font-size:${sz}px;">★</span>`;return h;}
 function av(name,tier,size=36){
@@ -1215,12 +1249,19 @@ function renderOrders(){
     return`<div class="card"><div class="card-row">${av(c?.name||"G",tier,38)}<div style="flex:1;"><div style="font-size:14px;font-weight:700;">${c?.name||"Guest"}</div><div style="font-size:12px;color:var(--muted);">${o.date} · Table ${o.tableNo}</div></div><div style="text-align:right;margin-right:10px;"><div style="font-size:16px;font-weight:700;color:var(--olive);">${dollar(o.total)}</div><div style="font-size:11px;background:var(--green-l);color:var(--green);padding:1px 7px;border-radius:8px;display:inline-block;">${o.status}</div></div><button class="btn btn-ghost btn-sm" onclick="openCSATModal(${o.id})">+ Review</button></div><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">${o.items.map(i=>`<span class="item-chip">${i}</span>`).join("")}</div></div>`;
   }).join("");
 }
+function clearAllOrders(){
+  if(!orders.length){showToast("No orders to clear","err");return;}
+  if(!confirm("Clear all orders? This cannot be undone.")) return;
+  orders=[];
+  renderOrders();renderDashboard();renderDatabase();
+  showToast("All orders cleared","err");
+}
 function buildOrderMenu(){
   const bycat={};MENU.forEach(m=>{if(!bycat[m.cat])bycat[m.cat]=[];bycat[m.cat].push(m);});
   let html="";
   Object.entries(bycat).forEach(([cat,items])=>{
     html+=`<div class="menu-section-label">${cat}</div><div class="menu-chips">`;
-    items.forEach(item=>{html+=`<button type="button" class="menu-chip" data-name="${item.name}" data-price="${item.price}" onclick="toggleMenuItem(this)">${item.name} <span class="mp">$${item.price.toFixed(2)}</span></button>`;});
+    items.forEach(item=>{html+=`<button type="button" class="menu-chip" data-name="${item.name}" data-price="${item.price}" onclick="toggleMenuItem(this)">${item.name} <span class="mp">${dollar(item.price)}</span></button>`;});
     html+="</div>";
   });
   $$("ao-menu").innerHTML=html;$$("ao-count").textContent="0";$$("ao-total").textContent="0.00";
@@ -1252,6 +1293,13 @@ const csatFields=["overall","food","service","ambiance","value"];
 const csatLabels={overall:"Overall ★",food:"Food Quality",service:"Service",ambiance:"Ambiance",value:"Value"};
 const csatRatings={overall:5,food:5,service:5,ambiance:5,value:5};
 
+function clearAllCSAT(){
+  if(!csatData.length){showToast("No reviews to clear","err");return;}
+  if(!confirm("Clear all CSAT reviews? This cannot be undone.")) return;
+  csatData=[];
+  renderCSAT();renderDashboard();renderDatabase();
+  showToast("All CSAT reviews cleared","err");
+}
 function renderCSAT(){
   const avgF=k=>avg(csatData.map(r=>r[k]));
   const avgAll=avgF("overall"),rec=csatData.length?Math.round(csatData.filter(r=>r.recommend).length/csatData.length*100):0;
@@ -1353,8 +1401,8 @@ const QRCode = (function(){
     const encoded = encodeURIComponent(text);
     img.crossOrigin = "anonymous";
 
-    // Primary: Google Charts
-    img.src = `https://chart.googleapis.com/chart?cht=qr&chs=${size}x${size}&chl=${encoded}&choe=UTF-8&chld=M|2`;
+    // Primary: goqr.me QR Server API
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encoded}`;
 
     img.onload = () => {
       ctx.clearRect(0,0,size,size);
@@ -1480,7 +1528,7 @@ function renderPending(){
 
   el.innerHTML = pendingGuests.map((g,i)=>`
     <div class="pending-item" id="pi-${i}">
-      <div style="flex-shrink:0;">${avatar(g.name||"G","Bronze",36)}</div>
+      <div style="flex-shrink:0;">${av(g.name||"G","Bronze",36)}</div>
       <div class="pending-item-info">
         <div class="pending-item-name">${g.name||"Unknown"}</div>
         <div class="pending-item-meta">${g.email||""} ${g.phone?"· "+g.phone:""}</div>
