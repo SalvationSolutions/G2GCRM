@@ -545,7 +545,10 @@ table{border-collapse:collapse;width:100%;}
     <div class="tab-panel" id="tab-database">
       <div class="sec-header">
         <div class="sec-title">Customer Database</div>
-        <button class="btn btn-primary" onclick="openModal('modal-add-guest')">+ Add Guest</button>
+        <div class="flex gap-8">
+          <button class="btn btn-secondary" id="sheets-connect-btn" onclick="openSheetsModal()">🔗 Connect Google Sheet</button>
+          <button class="btn btn-primary" onclick="openModal('modal-add-guest')">+ Add Guest</button>
+        </div>
       </div>
       <div class="db-subnav">
         <button class="db-snbtn active" id="dbn-list"  onclick="dbSwitchTab('list')">👥 Guest List</button>
@@ -892,6 +895,34 @@ table{border-collapse:collapse;width:100%;}
       <div class="flex gap-8" style="justify-content:flex-end;margin-top:4px;">
         <button class="btn btn-secondary" onclick="closeModal('modal-edit-guest')">Cancel</button>
         <button class="btn btn-primary" onclick="saveEditGuest()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Connect Google Sheet -->
+<div class="modal-overlay hidden" id="modal-sheets" onclick="if(event.target===this)closeModal('modal-sheets')">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">🔗 Connect Google Sheet</span><button class="modal-close" onclick="closeModal('modal-sheets')">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:14px;">
+        Paste the Web App URL from your deployed Google Apps Script below. Once connected you can push the
+        guest database to your Google Sheet, or pull guests back in from the sheet.
+      </p>
+      <div class="field">
+        <label>Apps Script Web App URL</label>
+        <input id="sheets-url" placeholder="https://script.google.com/macros/s/XXXXXXXX/exec"/>
+      </div>
+      <div style="font-size:12px;margin:10px 0 2px;">Status: <span id="sheets-status">Not connected</span></div>
+      <div class="flex gap-8" style="justify-content:flex-end;margin-top:10px;">
+        <button class="btn btn-secondary" onclick="disconnectSheet()">Disconnect</button>
+        <button class="btn btn-primary" onclick="connectSheet()">Connect</button>
+      </div>
+      <hr style="margin:18px 0;border:none;border-top:1px solid var(--border);"/>
+      <div style="font-size:12px;font-weight:700;color:var(--char);margin-bottom:8px;">Sync</div>
+      <div class="flex gap-8">
+        <button class="btn btn-secondary" style="flex:1;" onclick="pushGuestsToSheet()">⬆ Push Guests to Sheet</button>
+        <button class="btn btn-secondary" style="flex:1;" onclick="pullGuestsFromSheet()">⬇ Pull Guests from Sheet</button>
       </div>
     </div>
   </div>
@@ -1503,6 +1534,86 @@ function printQR(){
     <scr'+'ipt>window.onload=()=>{window.print();}<\/scr'+'ipt>
     </body></html>`);
   w.document.close();
+}
+
+// ── Google Sheets connection ──────────────────────────────────
+let sheetsUrl = localStorage.getItem("gtg_sheets_url") || "";
+
+function openSheetsModal(){
+  $$("sheets-url").value = sheetsUrl;
+  updateSheetsStatus();
+  openModal("modal-sheets");
+}
+
+function updateSheetsStatus(){
+  const el = $$("sheets-status");
+  if(sheetsUrl){
+    el.textContent = "✅ Connected";
+    el.style.color = "var(--green)";
+  } else {
+    el.textContent = "Not connected";
+    el.style.color = "var(--muted)";
+  }
+}
+
+function connectSheet(){
+  const url = v("sheets-url").trim();
+  if(!url){ showToast("Paste your Apps Script Web App URL first","err"); return; }
+  if(!/^https:\/\/script\.google\.com\/macros\//.test(url)){
+    showToast("That doesn't look like an Apps Script Web App URL","err"); return;
+  }
+  sheetsUrl = url;
+  localStorage.setItem("gtg_sheets_url", url);
+  updateSheetsStatus();
+  showToast("✅ Google Sheet connected!","ok");
+}
+
+function disconnectSheet(){
+  sheetsUrl = "";
+  localStorage.removeItem("gtg_sheets_url");
+  $$("sheets-url").value = "";
+  updateSheetsStatus();
+  showToast("Disconnected from Google Sheet","err");
+}
+
+async function pushGuestsToSheet(){
+  if(!sheetsUrl){ showToast("Connect a Google Sheet first","err"); return; }
+  try{
+    showToast("Syncing to Sheet…","ok");
+    const res = await fetch(sheetsUrl,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"}, // avoids CORS preflight
+      body: JSON.stringify({guests: customers})
+    });
+    const data = await res.json();
+    showToast(`✅ Synced ${data.count!=null?data.count:customers.length} guests to Sheet!`,"ok");
+  }catch(e){
+    console.error("Sheet push error:",e);
+    showToast("Sync failed — check the Web App URL and deployment access","err");
+  }
+}
+
+async function pullGuestsFromSheet(){
+  if(!sheetsUrl){ showToast("Connect a Google Sheet first","err"); return; }
+  try{
+    showToast("Loading from Sheet…","ok");
+    const res = await fetch(sheetsUrl);
+    const data = await res.json();
+    if(!data.guests){ showToast("Sheet returned no guest data","err"); return; }
+    customers = data.guests.map(g=>({
+      ...g,
+      id: parseInt(g.id)||0,
+      visits: parseInt(g.visits)||0,
+      totalSpent: parseFloat(g.totalSpent)||0,
+      tags: Array.isArray(g.tags) ? g.tags : (g.tags ? String(g.tags).split(",").map(t=>t.trim()).filter(Boolean) : [])
+    }));
+    closeModal("modal-sheets");
+    renderDatabase();renderDashboard();
+    showToast(`✅ Loaded ${customers.length} guests from Sheet!`,"ok");
+  }catch(e){
+    console.error("Sheet pull error:",e);
+    showToast("Load failed — check the Web App URL and deployment access","err");
+  }
 }
 
 // ── Pending registrations (from localStorage) ─────────────────
