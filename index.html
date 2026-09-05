@@ -617,6 +617,7 @@ table{border-collapse:collapse;width:100%;}
       <div class="sec-header">
         <div class="sec-title">Orders</div>
         <div class="flex gap-8">
+          <button class="btn btn-secondary" onclick="openSheetsModal()">🔗 Connect Google Sheet</button>
           <button class="btn btn-secondary" onclick="clearAllOrders()">🗑 Clear All</button>
           <button class="btn btn-primary" onclick="openModal('modal-add-order');populateGuestSelect();buildOrderMenu()">+ New Order</button>
         </div>
@@ -631,7 +632,10 @@ table{border-collapse:collapse;width:100%;}
     <div class="tab-panel" id="tab-csat">
       <div class="sec-header">
         <div><div class="sec-title">CSAT — Guest Satisfaction</div><div class="sec-sub">Customer satisfaction scores and feedback analytics</div></div>
-        <button class="btn btn-secondary" onclick="clearAllCSAT()">🗑 Clear All</button>
+        <div class="flex gap-8">
+          <button class="btn btn-secondary" onclick="openSheetsModal()">🔗 Connect Google Sheet</button>
+          <button class="btn btn-secondary" onclick="clearAllCSAT()">🗑 Clear All</button>
+        </div>
       </div>
       <div class="stat-row" id="csat-stats"></div>
       <div class="grid-2" style="margin-bottom:20px;">
@@ -906,8 +910,8 @@ table{border-collapse:collapse;width:100%;}
     <div class="modal-head"><span class="modal-title">🔗 Connect Google Sheet</span><button class="modal-close" onclick="closeModal('modal-sheets')">×</button></div>
     <div class="modal-body">
       <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:14px;">
-        Paste the Web App URL from your deployed Google Apps Script below. Once connected you can push the
-        guest database to your Google Sheet, or pull guests back in from the sheet.
+        Paste the Web App URL from your deployed Google Apps Script below. Once connected you can push or pull
+        each dataset to and from your Google Sheet.
       </p>
       <div class="field">
         <label>Apps Script Web App URL</label>
@@ -919,10 +923,20 @@ table{border-collapse:collapse;width:100%;}
         <button class="btn btn-primary" onclick="connectSheet()">Connect</button>
       </div>
       <hr style="margin:18px 0;border:none;border-top:1px solid var(--border);"/>
-      <div style="font-size:12px;font-weight:700;color:var(--char);margin-bottom:8px;">Sync</div>
+      <div style="font-size:12px;font-weight:700;color:var(--char);margin-bottom:8px;">👥 Guests</div>
+      <div class="flex gap-8" style="margin-bottom:16px;">
+        <button class="btn btn-secondary" style="flex:1;" onclick="pushGuestsToSheet()">⬆ Push</button>
+        <button class="btn btn-secondary" style="flex:1;" onclick="pullGuestsFromSheet()">⬇ Pull</button>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:var(--char);margin-bottom:8px;">🍽 Orders</div>
+      <div class="flex gap-8" style="margin-bottom:16px;">
+        <button class="btn btn-secondary" style="flex:1;" onclick="pushOrdersToSheet()">⬆ Push</button>
+        <button class="btn btn-secondary" style="flex:1;" onclick="pullOrdersFromSheet()">⬇ Pull</button>
+      </div>
+      <div style="font-size:12px;font-weight:700;color:var(--char);margin-bottom:8px;">⭐ CSAT</div>
       <div class="flex gap-8">
-        <button class="btn btn-secondary" style="flex:1;" onclick="pushGuestsToSheet()">⬆ Push Guests to Sheet</button>
-        <button class="btn btn-secondary" style="flex:1;" onclick="pullGuestsFromSheet()">⬇ Pull Guests from Sheet</button>
+        <button class="btn btn-secondary" style="flex:1;" onclick="pushCSATToSheet()">⬆ Push</button>
+        <button class="btn btn-secondary" style="flex:1;" onclick="pullCSATFromSheet()">⬇ Pull</button>
       </div>
     </div>
   </div>
@@ -1579,11 +1593,11 @@ function disconnectSheet(){
 async function pushGuestsToSheet(){
   if(!sheetsUrl){ showToast("Connect a Google Sheet first","err"); return; }
   try{
-    showToast("Syncing to Sheet…","ok");
+    showToast("Syncing guests to Sheet…","ok");
     const res = await fetch(sheetsUrl,{
       method:"POST",
       headers:{"Content-Type":"text/plain;charset=utf-8"}, // avoids CORS preflight
-      body: JSON.stringify({guests: customers})
+      body: JSON.stringify({type:"guests", guests: customers})
     });
     const data = await res.json();
     showToast(`✅ Synced ${data.count!=null?data.count:customers.length} guests to Sheet!`,"ok");
@@ -1596,8 +1610,8 @@ async function pushGuestsToSheet(){
 async function pullGuestsFromSheet(){
   if(!sheetsUrl){ showToast("Connect a Google Sheet first","err"); return; }
   try{
-    showToast("Loading from Sheet…","ok");
-    const res = await fetch(sheetsUrl);
+    showToast("Loading guests from Sheet…","ok");
+    const res = await fetch(sheetsUrl+(sheetsUrl.includes("?")?"&":"?")+"type=guests");
     const data = await res.json();
     if(!data.guests){ showToast("Sheet returned no guest data","err"); return; }
     customers = data.guests.map(g=>({
@@ -1610,6 +1624,92 @@ async function pullGuestsFromSheet(){
     closeModal("modal-sheets");
     renderDatabase();renderDashboard();
     showToast(`✅ Loaded ${customers.length} guests from Sheet!`,"ok");
+  }catch(e){
+    console.error("Sheet pull error:",e);
+    showToast("Load failed — check the Web App URL and deployment access","err");
+  }
+}
+
+async function pushOrdersToSheet(){
+  if(!sheetsUrl){ showToast("Connect a Google Sheet first","err"); return; }
+  try{
+    showToast("Syncing orders to Sheet…","ok");
+    const res = await fetch(sheetsUrl,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify({type:"orders", orders: orders.map(o=>({...o, items:(o.items||[]).join(", ")}))})
+    });
+    const data = await res.json();
+    showToast(`✅ Synced ${data.count!=null?data.count:orders.length} orders to Sheet!`,"ok");
+  }catch(e){
+    console.error("Sheet push error:",e);
+    showToast("Sync failed — check the Web App URL and deployment access","err");
+  }
+}
+
+async function pullOrdersFromSheet(){
+  if(!sheetsUrl){ showToast("Connect a Google Sheet first","err"); return; }
+  try{
+    showToast("Loading orders from Sheet…","ok");
+    const res = await fetch(sheetsUrl+(sheetsUrl.includes("?")?"&":"?")+"type=orders");
+    const data = await res.json();
+    if(!data.orders){ showToast("Sheet returned no order data","err"); return; }
+    orders = data.orders.map(o=>({
+      ...o,
+      id: parseInt(o.id)||0,
+      customerId: parseInt(o.customerId)||0,
+      total: parseFloat(o.total)||0,
+      tableNo: parseInt(o.tableNo)||0,
+      items: Array.isArray(o.items) ? o.items : (o.items ? String(o.items).split(",").map(t=>t.trim()).filter(Boolean) : [])
+    }));
+    closeModal("modal-sheets");
+    renderOrders();renderDashboard();
+    showToast(`✅ Loaded ${orders.length} orders from Sheet!`,"ok");
+  }catch(e){
+    console.error("Sheet pull error:",e);
+    showToast("Load failed — check the Web App URL and deployment access","err");
+  }
+}
+
+async function pushCSATToSheet(){
+  if(!sheetsUrl){ showToast("Connect a Google Sheet first","err"); return; }
+  try{
+    showToast("Syncing CSAT to Sheet…","ok");
+    const res = await fetch(sheetsUrl,{
+      method:"POST",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body: JSON.stringify({type:"csat", csat: csatData})
+    });
+    const data = await res.json();
+    showToast(`✅ Synced ${data.count!=null?data.count:csatData.length} reviews to Sheet!`,"ok");
+  }catch(e){
+    console.error("Sheet push error:",e);
+    showToast("Sync failed — check the Web App URL and deployment access","err");
+  }
+}
+
+async function pullCSATFromSheet(){
+  if(!sheetsUrl){ showToast("Connect a Google Sheet first","err"); return; }
+  try{
+    showToast("Loading CSAT from Sheet…","ok");
+    const res = await fetch(sheetsUrl+(sheetsUrl.includes("?")?"&":"?")+"type=csat");
+    const data = await res.json();
+    if(!data.csat){ showToast("Sheet returned no CSAT data","err"); return; }
+    csatData = data.csat.map(r=>({
+      ...r,
+      id: parseInt(r.id)||0,
+      customerId: parseInt(r.customerId)||0,
+      orderId: parseInt(r.orderId)||0,
+      overall: parseFloat(r.overall)||0,
+      food: parseFloat(r.food)||0,
+      service: parseFloat(r.service)||0,
+      ambiance: parseFloat(r.ambiance)||0,
+      value: parseFloat(r.value)||0,
+      recommend: r.recommend===true||r.recommend==="true"||r.recommend===1||r.recommend==="1"||r.recommend==="TRUE"
+    }));
+    closeModal("modal-sheets");
+    renderCSAT();renderDashboard();
+    showToast(`✅ Loaded ${csatData.length} reviews from Sheet!`,"ok");
   }catch(e){
     console.error("Sheet pull error:",e);
     showToast("Load failed — check the Web App URL and deployment access","err");
