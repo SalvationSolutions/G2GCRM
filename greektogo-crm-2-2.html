@@ -1,0 +1,1970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>GreekToGo Taverna CRM</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:system-ui,-apple-system,sans-serif;background:#F5F3EE;color:#2A2A28;min-height:100vh;}
+button{cursor:pointer;font-family:inherit;}
+input,select,textarea{font-family:inherit;}
+table{border-collapse:collapse;width:100%;}
+:root{
+  --blue:#1B4F8A;--blue-l:#E8F0FB;--blue-m:#2F6EB5;
+  --gold:#C4972A;--gold-l:#FBF5E4;
+  --terra:#B5541D;--terra-l:#FAEEE6;
+  --olive:#5A7A2E;--olive-l:#EDF4E2;
+  --purple:#5B3FA8;--purple-l:#EEE8FB;
+  --green:#2E7D50;--green-l:#E2F3EA;
+  --red:#B52C1D;--red-l:#FAEAE8;
+  --yellow:#9A7200;--yellow-l:#FEF8E0;
+  --char:#2A2A28;--muted:#6B6B68;
+  --border:#D8D4C8;--surface:#F5F3EE;--white:#FAFAF7;
+}
+.hidden{display:none!important;}
+
+/* ══ LOGIN ══════════════════════════════════════════════════ */
+#login-page{display:flex;min-height:100vh;}
+.login-left{
+  flex:1.1;display:flex;align-items:center;justify-content:center;padding:48px 40px;
+  background:linear-gradient(155deg,#0c2340 0%,#1B4F8A 60%,#2F6EB5 100%);
+  position:relative;overflow:hidden;
+}
+.login-left::after{
+  content:"🏺";font-size:320px;position:absolute;right:-60px;bottom:-60px;
+  opacity:.07;pointer-events:none;line-height:1;
+}
+.ll-content{text-align:center;color:#fff;max-width:380px;position:relative;z-index:1;}
+.ll-icon{font-size:64px;margin-bottom:18px;display:block;}
+.ll-brand{font-size:36px;font-weight:800;letter-spacing:-.02em;margin-bottom:4px;}
+.ll-sub{font-size:12px;opacity:.6;letter-spacing:.14em;text-transform:uppercase;margin-bottom:28px;}
+.ll-tagline{font-size:15px;opacity:.72;line-height:1.7;margin-bottom:28px;}
+.ll-perks{list-style:none;text-align:left;display:inline-block;}
+.ll-perks li{font-size:13px;opacity:.68;margin-bottom:9px;padding-left:22px;position:relative;}
+.ll-perks li::before{content:"✓";position:absolute;left:0;color:#C4972A;font-weight:800;}
+.ll-meander{margin-top:36px;opacity:.35;}
+
+.login-right{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  padding:48px 40px;background:#F5F3EE;
+}
+.login-box{width:100%;max-width:420px;}
+.auth-tabs{display:flex;border-radius:10px;overflow:hidden;border:1px solid var(--border);margin-bottom:28px;}
+.auth-tab{flex:1;padding:11px;text-align:center;font-size:13px;font-weight:600;background:#fff;color:var(--muted);border:none;transition:all .15s;}
+.auth-tab.active{background:var(--blue);color:#fff;}
+.auth-panel{display:none;}
+.auth-panel.active{display:block;}
+.auth-title{font-size:24px;font-weight:800;color:var(--blue);margin-bottom:4px;}
+.auth-sub{font-size:13px;color:var(--muted);margin-bottom:22px;}
+.lf{margin-bottom:14px;}
+.lf label{display:block;font-size:11px;font-weight:700;color:var(--char);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;}
+.lf input,.lf select{
+  width:100%;padding:12px 14px;border-radius:9px;
+  border:1px solid var(--border);font-size:14px;
+  background:var(--white);transition:all .15s;
+}
+.lf input:focus,.lf select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px #1B4F8A15;}
+.pw-wrap{position:relative;}
+.pw-wrap input{padding-right:46px;}
+.pw-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:1px solid #D8D4C8;border-radius:6px;cursor:pointer;color:#6B6B68;padding:3px 10px;font-size:11px;font-weight:700;line-height:1;}.pw-eye:hover{border-color:#1B4F8A;color:#1B4F8A;background:#E8F0FB;}
+.lf-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.login-btn{
+  width:100%;padding:14px;border-radius:9px;border:none;
+  background:var(--blue);color:#fff;font-size:15px;font-weight:700;
+  transition:background .15s;margin-top:4px;letter-spacing:.01em;
+}
+.login-btn:hover{background:var(--blue-m);}
+.auth-err{background:var(--red-l);color:var(--red);border:1px solid #B52C1D28;border-radius:8px;padding:9px 13px;font-size:13px;margin-bottom:12px;}
+.auth-ok {background:var(--green-l);color:var(--green);border:1px solid #2E7D5028;border-radius:8px;padding:9px 13px;font-size:13px;margin-bottom:12px;}
+
+
+.divider-or{text-align:center;color:var(--muted);font-size:11px;margin:14px 0;position:relative;}
+.divider-or::before,.divider-or::after{content:"";position:absolute;top:50%;width:44%;height:1px;background:var(--border);}
+.divider-or::before{left:0;}.divider-or::after{right:0;}
+
+/* ══ HEADER ════════════════════════════════════════════════ */
+.header{background:var(--blue);color:#fff;}
+.header-inner{max-width:1040px;margin:0 auto;padding:18px 24px 0;}
+.header-top{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo-icon{font-size:26px;}
+.logo-name{font-size:20px;font-weight:800;letter-spacing:-.02em;}
+.logo-sub{font-size:10px;opacity:.65;letter-spacing:.12em;text-transform:uppercase;}
+.user-chip{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.13);border-radius:20px;padding:5px 12px 5px 6px;margin-left:auto;}
+.u-av{width:28px;height:28px;border-radius:50%;background:var(--gold);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.u-name{font-size:13px;font-weight:600;}
+.u-role{font-size:10px;opacity:.65;margin-left:2px;}
+.logout-btn{background:rgba(255,255,255,.15);border:none;color:#fff;font-size:12px;padding:5px 11px;border-radius:14px;transition:background .15s;}
+.logout-btn:hover{background:rgba(255,255,255,.28);}
+.nav{display:flex;gap:1px;overflow-x:auto;}
+.nav-btn{padding:8px 14px;background:transparent;border:none;color:rgba(255,255,255,.58);font-size:13px;font-weight:400;border-radius:8px 8px 0 0;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;}
+.nav-btn.active{background:rgba(255,255,255,.14);color:#fff;font-weight:700;border-bottom-color:#fff;}
+.meander{display:block;width:100%;height:8px;}
+
+/* ══ MAIN / TABS ════════════════════════════════════════════ */
+.main{max-width:1040px;margin:0 auto;padding:24px;}
+.tab-panel{display:none;}.tab-panel.active{display:block;}
+.sec-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.sec-title{font-size:22px;font-weight:700;color:var(--blue);}
+.sec-sub{color:var(--muted);font-size:14px;margin-top:2px;}
+
+/* ══ STAT CARDS ════════════════════════════════════════════ */
+.stat-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px;}
+.stat{flex:1;min-width:110px;border-radius:12px;padding:15px 18px;border:1px solid var(--border);background:#fff;}
+.stat-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px;}
+.stat-value{font-size:22px;font-weight:700;line-height:1.1;}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+.stat.blue-s{background:var(--blue-l);border-color:#2F6EB530;}.stat.blue-s .stat-value{color:var(--blue);}
+.stat.gold-s{background:var(--gold-l);border-color:#C4972A30;}.stat.gold-s .stat-value{color:var(--gold);}
+.stat.green-s{background:var(--green-l);border-color:#2E7D5030;}.stat.green-s .stat-value{color:var(--green);}
+.stat.olive-s{background:var(--olive-l);border-color:#5A7A2E30;}.stat.olive-s .stat-value{color:var(--olive);}
+.stat.terra-s{background:var(--terra-l);border-color:#B5541D30;}.stat.terra-s .stat-value{color:var(--terra);}
+
+/* ══ PANELS ════════════════════════════════════════════════ */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.panel{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;}
+.panel-title{font-size:15px;font-weight:700;color:var(--char);margin-bottom:14px;}
+
+/* ══ BADGES ════════════════════════════════════════════════ */
+.badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;display:inline-flex;align-items:center;gap:4px;}
+.badge-dot{width:6px;height:6px;border-radius:50%;display:inline-block;}
+.badge.Platinum{background:#EEE8FB;color:#4A3B8F;}.badge.Platinum .badge-dot{background:#7B6BD4;}
+.badge.Gold{background:#FBF5E4;color:#7A5C0A;}.badge.Gold .badge-dot{background:#C4972A;}
+.badge.Silver{background:#F0F0EE;color:#4A4A48;}.badge.Silver .badge-dot{background:#8A8A86;}
+.badge.Bronze{background:#FAEEE6;color:#7A3010;}.badge.Bronze .badge-dot{background:#B5541D;}
+.avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;}
+.avatar.Platinum{background:#EEE8FB;border:2px solid #7B6BD4;color:#4A3B8F;}
+.avatar.Gold{background:#FBF5E4;border:2px solid #C4972A;color:#7A5C0A;}
+.avatar.Silver{background:#F0F0EE;border:2px solid #8A8A86;color:#4A4A48;}
+.avatar.Bronze{background:#FAEEE6;border:2px solid #B5541D;color:#7A3010;}
+.seg{font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;}
+.seg.VIP{background:var(--purple-l);color:var(--purple);}
+.seg.Regular{background:var(--blue-l);color:var(--blue);}
+.seg.New{background:var(--green-l);color:var(--green);}
+.seg.Occasional{background:var(--surface);color:var(--muted);}
+.tag{font-size:11px;background:var(--blue-l);color:var(--blue);padding:2px 8px;border-radius:10px;font-weight:500;}
+
+/* ══ BUTTONS ════════════════════════════════════════════════ */
+.btn{padding:8px 15px;border-radius:8px;border:none;font-size:13px;font-weight:600;transition:all .13s;display:inline-flex;align-items:center;gap:6px;}
+.btn-primary{background:var(--blue);color:#fff;}.btn-primary:hover{background:var(--blue-m);}
+.btn-secondary{background:#fff;color:var(--char);border:1px solid var(--border);}.btn-secondary:hover{background:var(--surface);}
+.btn-ghost{background:transparent;color:var(--blue);border:1px solid #1B4F8A30;}.btn-ghost:hover{background:var(--blue-l);}
+.btn-green{background:var(--green);color:#fff;}.btn-green:hover{background:#256040;}
+.btn-gold{background:var(--gold);color:#fff;}.btn-gold:hover{background:#a87f22;}
+.btn-whatsapp{background:#25D366;color:#fff;}.btn-whatsapp:hover{background:#1aad52;}
+.btn-sms{background:var(--green);color:#fff;}.btn-sms:hover{background:#256040;}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.btn-edit{background:none;color:var(--blue);border:1px solid var(--border);font-size:12px;padding:3px 8px;border-radius:6px;}
+.btn-danger{background:none;color:var(--terra);border:1px solid var(--border);font-size:12px;padding:3px 8px;border-radius:6px;}
+
+/* ══ FILTER BAR ════════════════════════════════════════════ */
+.filter-bar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.filter-bar input,.filter-bar select{padding:8px 12px;border-radius:8px;border:1px solid var(--border);font-size:13px;background:var(--white);}
+.filter-bar input{flex:1;min-width:160px;}
+.filter-pill{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:#fff;font-size:13px;color:var(--char);}
+.filter-pill.active{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:600;}
+
+/* ══ SCORE BAR ══════════════════════════════════════════════ */
+.score-bar-wrap{height:6px;border-radius:4px;background:var(--border);flex:1;}
+.score-bar-fill{height:6px;border-radius:4px;transition:width .3s;}
+
+/* ══ TABLE ══════════════════════════════════════════════════ */
+.db-table-wrap{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.db-table th{text-align:left;padding:8px 10px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap;text-transform:uppercase;letter-spacing:.05em;background:var(--surface);}
+.db-table th.sorted{color:var(--blue);}
+.db-table td{padding:10px 10px;vertical-align:middle;}
+.db-table tr{border-top:1px solid var(--border);transition:background .1s;}
+.db-table tbody tr:hover{background:var(--blue-l);}
+.db-table tbody tr.selected-row{background:var(--blue-l);}
+.guest-cell{display:flex;align-items:center;gap:9px;}
+.guest-name{font-size:13px;font-weight:600;}
+.guest-email{font-size:11px;color:var(--muted);}
+
+/* ══ CARDS ══════════════════════════════════════════════════ */
+.card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+.card-row{display:flex;align-items:center;gap:12px;}
+.card-detail{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.card-detail-block{background:#fff;border-radius:8px;padding:10px 12px;}
+.detail-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
+.d-row{font-size:12px;margin-bottom:3px;}.d-row span{color:var(--muted);}
+.note-chip{margin-top:6px;padding:5px 9px;background:var(--gold-l);border-radius:6px;font-size:11px;}
+.item-chip{font-size:11px;background:var(--surface);padding:2px 8px;border-radius:10px;}
+
+/* ══ REVIEW CARDS ══════════════════════════════════════════ */
+.review-card{border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+.review-card.great{border-left:3px solid var(--green);background:#E2F3EA18;}
+.review-card.ok{border-left:3px solid var(--gold);background:#FBF5E418;}
+.review-card.poor{border-left:3px solid var(--red);background:#FAEAE818;}
+.review-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;}
+.review-chip{font-size:11px;background:#fff;border:1px solid var(--border);padding:2px 8px;border-radius:10px;}
+
+/* ══ LOYALTY ════════════════════════════════════════════════ */
+.loyalty-tier{border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:14px;}
+.loyalty-head{padding:14px 20px;display:flex;justify-content:space-between;align-items:center;}
+.loyalty-body{padding:14px 20px;}
+.perk-chip{font-size:12px;background:var(--surface);padding:3px 10px;border-radius:12px;}
+.member-pill{display:flex;align-items:center;gap:6px;background:var(--surface);border-radius:20px;padding:4px 10px 4px 4px;}
+.members-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+.bday-alert{background:var(--gold-l);border:1px solid #C4972A45;border-radius:12px;padding:14px 18px;margin-bottom:20px;}
+.bday-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.bday-badge{font-size:12px;background:var(--gold);color:#fff;padding:2px 8px;border-radius:10px;font-weight:600;}
+
+/* ══ BLAST PAGE ════════════════════════════════════════════ */
+.blast-tabs{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap;}
+.bl-tab{padding:10px 18px;border-radius:10px;border:2px solid var(--border);background:#fff;font-size:13px;font-weight:600;color:var(--muted);transition:all .15s;display:flex;align-items:center;gap:7px;}
+.bl-tab.active{border-color:var(--blue);background:var(--blue-l);color:var(--blue);}
+.blast-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:20px;align-items:start;}
+.compose-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;}
+.compose-card-title{font-size:15px;font-weight:700;margin-bottom:16px;color:var(--char);display:flex;align-items:center;gap:8px;}
+.bl-field{margin-bottom:14px;}
+.bl-field label{display:block;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px;}
+.bl-field input,.bl-field textarea,.bl-field select{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);font-size:13px;background:var(--white);transition:border-color .15s;}
+.bl-field input:focus,.bl-field textarea:focus,.bl-field select:focus{outline:none;border-color:var(--blue);}
+.bl-field textarea{resize:vertical;}
+.tag-vars{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:4px;}
+.tag-var{font-size:11px;background:var(--gold-l);color:var(--gold);padding:3px 8px;border-radius:6px;cursor:pointer;font-weight:600;border:1px solid #C4972A25;transition:all .12s;}
+.tag-var:hover{background:var(--gold);color:#fff;}
+.char-count{font-size:11px;color:var(--muted);text-align:right;margin-top:3px;}
+.char-warn{color:var(--terra);}
+.email-preview-wrap{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:4px;}
+.email-preview-toolbar{background:var(--surface);padding:8px 12px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--border);}
+.ep-dot{width:10px;height:10px;border-radius:50%;}
+.email-frame-wrap{background:#e0ddd6;padding:16px;min-height:180px;}
+.email-frame{background:#fff;border-radius:8px;max-width:520px;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,.1);overflow:hidden;font-family:Georgia,serif;}
+.ef-header{background:#1B4F8A;padding:20px 24px;text-align:center;}
+.ef-header-title{color:#fff;font-size:18px;font-weight:800;letter-spacing:-.01em;}
+.ef-header-sub{color:rgba(255,255,255,.6);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-top:2px;}
+.ef-meander{height:5px;background:repeating-linear-gradient(90deg,#C4972A 0,#C4972A 4px,transparent 4px,transparent 9px);}
+.ef-body{padding:20px 24px;}
+.ef-greeting{font-size:15px;font-weight:700;color:#1B4F8A;margin-bottom:10px;}
+.ef-body-text{font-size:13px;color:#2A2A28;line-height:1.75;white-space:pre-wrap;word-break:break-word;}
+.ef-cta{margin:18px 0;text-align:center;}
+.ef-cta-btn{background:#1B4F8A;color:#fff;padding:11px 26px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;display:inline-block;font-family:system-ui,sans-serif;}
+.ef-divider{height:1px;background:#D8D4C8;margin:0 24px;}
+.ef-footer{background:#F5F3EE;padding:14px 24px;text-align:center;}
+.ef-footer-text{font-size:10px;color:#6B6B68;line-height:1.6;font-family:system-ui,sans-serif;}
+.rec-panel{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;}
+.rec-panel-title{font-size:15px;font-weight:700;color:var(--char);margin-bottom:12px;}
+.rec-filter-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.rec-f-btn{padding:4px 11px;border-radius:16px;border:1px solid var(--border);background:#fff;font-size:12px;color:var(--char);transition:all .12s;cursor:pointer;}
+.rec-f-btn.on{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:600;}
+.rec-list{max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;}
+.rec-all-row{display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--surface);}
+.rec-all-row label{font-size:12px;font-weight:700;color:var(--muted);}
+.rec-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.rec-item:last-child{border-bottom:none;}
+.rec-item:hover{background:var(--surface);}
+.rec-item.on{background:var(--blue-l);}
+.rec-check{width:15px;height:15px;accent-color:var(--blue);flex-shrink:0;}
+.rec-name{font-size:13px;font-weight:600;flex:1;}
+.rec-contact{font-size:11px;color:var(--muted);}
+.rec-count-chip{font-size:12px;background:var(--blue-l);color:var(--blue);padding:3px 11px;border-radius:12px;font-weight:600;}
+.blast-footer{margin-top:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.btn-send-email{background:var(--blue);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-send-email:hover{background:var(--blue-m);}
+.btn-copy-email{background:#fff;color:var(--blue);border:1px solid var(--blue);border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;}
+.btn-dl-email{background:var(--gold-l);color:#7A5C0A;border:1px solid #C4972A30;border-radius:8px;padding:9px 14px;font-size:13px;font-weight:600;cursor:pointer;}
+.mailto-note{background:var(--blue-l);border:1px solid #1B4F8A20;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--blue);line-height:1.5;margin-top:10px;}
+.sent-log{margin-top:24px;background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;}
+.sent-log-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.sent-log-title{font-size:15px;font-weight:700;color:var(--char);}
+.sent-log-empty{padding:30px;text-align:center;color:var(--muted);font-size:13px;}
+.sent-item{display:flex;align-items:flex-start;gap:12px;padding:11px 18px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;}
+.sent-item:last-child{border-bottom:none;}
+.sent-item:hover{background:var(--surface);}
+.sent-icon{font-size:18px;flex-shrink:0;margin-top:2px;}
+.sent-info{flex:1;min-width:0;}
+.sent-name{font-size:13px;font-weight:600;}
+.sent-meta{font-size:11px;color:var(--muted);}
+.sent-subj{font-size:12px;color:var(--blue);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ch-badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;}
+.ch-badge.email{background:var(--blue-l);color:var(--blue);}
+.status-badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;}
+.status-badge.sent{background:var(--green-l);color:var(--green);}
+.status-badge.failed{background:var(--red-l);color:var(--red);}
+/* preview modal */
+.email-full-modal{background:#fff;border-radius:16px;width:min(620px,96vw);max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25);}
+
+/* ══ MODAL ══════════════════════════════════════════════════ */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal{background:#fff;border-radius:16px;width:min(540px,96vw);max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.24);}
+.modal.wide{width:min(660px,96vw);}
+.modal-head{padding:18px 24px 14px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);position:sticky;top:0;background:#fff;z-index:1;}
+.modal-title{font-size:17px;font-weight:700;color:var(--blue);}
+.modal-close{background:none;border:none;font-size:22px;color:var(--muted);line-height:1;padding:0 4px;}
+.modal-body{padding:18px 24px 24px;}
+.field{margin-bottom:13px;}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--char);margin-bottom:4px;}
+.field .req{color:var(--terra);}
+.field input,.field select,.field textarea{width:100%;padding:8px 12px;border-radius:8px;border:1px solid var(--border);font-size:14px;background:var(--white);transition:border-color .15s;}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);}
+.field textarea{resize:vertical;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.menu-section-label{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:10px 0 5px;}
+.menu-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;}
+.menu-chip{padding:4px 10px;border-radius:20px;border:1px solid var(--border);background:#fff;font-size:12px;transition:all .12s;}
+.menu-chip.selected{background:var(--blue-l);border-color:var(--blue);color:var(--blue);font-weight:600;}
+.menu-chip .mp{opacity:.5;}
+.order-total-bar{background:var(--surface);border-radius:8px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin:10px 0;}
+.star-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.star-row .cat-lbl{font-size:13px;color:var(--muted);min-width:108px;}
+.star-picker span{font-size:26px;cursor:pointer;color:#D8D4C8;transition:color .1s;}
+.star-picker span.on{color:var(--gold);}
+.star-val{font-size:13px;font-weight:700;min-width:28px;}
+
+/* ══ TOAST ══════════════════════════════════════════════════ */
+#toast{position:fixed;bottom:28px;right:28px;z-index:999;background:var(--char);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.2);opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none;}
+#toast.show{opacity:1;transform:translateY(0);}
+#toast.t-ok{background:var(--green);}
+#toast.t-err{background:var(--red);}
+#toast.t-wa{background:#25D366;}
+
+/* ══ UTILITY ════════════════════════════════════════════════ */
+.flex{display:flex;}.items-center{align-items:center;}.gap-8{gap:8px;}.gap-6{gap:6px;}.gap-4{gap:4px;}
+.ml-auto{margin-left:auto;}.mt-8{margin-top:8px;}.mt-4{margin-top:4px;}
+.fw-700{font-weight:700;}.fs-12{font-size:12px;}.fs-13{font-size:13px;}
+.text-muted{color:var(--muted);}.text-blue{color:var(--blue);}.text-olive{color:var(--olive);}
+.wrap-chips{display:flex;flex-wrap:wrap;gap:4px;}
+.empty{text-align:center;color:var(--muted);padding:40px;}
+@media(max-width:720px){
+  .login-left{display:none;}
+  .grid-2,.blast-layout{grid-template-columns:1fr;}
+  .form-row,.lf-row{grid-template-columns:1fr;}
+  .card-detail{grid-template-columns:1fr;}
+}
+
+/* ══ BLAST — OUTBOX & READER ═══════════════════════════════ */
+.blast-subnav{display:flex;gap:6px;margin-bottom:20px;border-bottom:2px solid var(--border);padding-bottom:0;}
+.bsnav-btn{padding:9px 18px;border:none;background:transparent;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;display:flex;align-items:center;gap:6px;}
+.bsnav-btn.active{color:var(--blue);border-bottom-color:var(--blue);}
+.bsnav-btn:hover{color:var(--blue);}
+.bsn-badge{background:var(--terra);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center;}
+/* ep = email preview */
+.ep-chrome{background:#E8E5DF;padding:7px 12px;border-radius:8px 8px 0 0;display:flex;align-items:center;gap:6px;border:1px solid var(--border);border-bottom:none;}
+.ep-dots{display:flex;gap:4px;}
+.ep-dots span{width:10px;height:10px;border-radius:50%;display:inline-block;}
+.ep-addr{flex:1;text-align:center;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ep-body{border:1px solid var(--border);border-radius:0 0 8px 8px;overflow:auto;max-height:340px;}
+/* Send button */
+.btn-blast-send{width:100%;padding:12px;border-radius:9px;border:none;background:var(--blue);color:#fff;font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.01em;transition:background .15s;}
+.btn-blast-send:hover{background:var(--blue-m);}
+/* Outbox */
+.outbox-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+.outbox-item{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:12px 16px;background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;transition:all .13s;}
+.outbox-item:hover{background:var(--blue-l);border-color:var(--blue-m);}
+.outbox-item.ob-sent{opacity:.65;}
+.ob-left{display:flex;align-items:center;gap:12px;flex:1;min-width:0;}
+.ob-info{flex:1;min-width:0;}
+.ob-name{font-size:13px;font-weight:700;color:var(--char);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ob-email{font-weight:400;color:var(--muted);}
+.ob-subject{font-size:13px;color:var(--blue);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ob-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.ob-right{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.ob-mark-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--blue);background:#fff;color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;}
+.ob-mark-btn:hover{background:var(--blue-l);}
+.ob-del-btn{padding:5px 9px;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:12px;cursor:pointer;}
+.ob-del-btn:hover{border-color:var(--terra);color:var(--terra);}
+.btn-mark-all{padding:8px 16px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:600;cursor:pointer;}
+.btn-clear-outbox{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:13px;cursor:pointer;}
+.status-badge.queued{background:var(--blue-l);color:var(--blue);}
+/* Email reader */
+.reader-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);}
+.reader-back{background:none;border:1px solid var(--border);border-radius:7px;padding:7px 14px;font-size:13px;cursor:pointer;color:var(--blue);font-weight:600;}
+.reader-back:hover{background:var(--blue-l);}
+.btn-mark-sent{padding:8px 16px;border-radius:8px;border:none;background:var(--blue);color:#fff;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-delete-email{padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:13px;cursor:pointer;}
+.btn-delete-email:hover{border-color:var(--terra);color:var(--terra);}
+.reader-meta{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:16px;}
+.reader-meta-row{display:flex;gap:10px;align-items:baseline;margin-bottom:6px;font-size:13px;}
+.reader-meta-row:last-child{margin-bottom:0;}
+.reader-lbl{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;min-width:64px;}
+.reader-body{border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.sent-log-empty{padding:32px;text-align:center;color:var(--muted);font-size:13px;}
+
+
+/* ── Logo images ── */
+.ll-logo-img{width:220px;height:auto;border-radius:12px;margin-bottom:18px;display:block;margin-left:auto;margin-right:auto;}
+.header-logo{height:44px;width:auto;border-radius:6px;display:block;}
+
+
+/* ══ QR CODE PANEL ══════════════════════════════════════════ */
+.qr-panel{background:#fff;border:1px solid var(--border);border-radius:14px;padding:28px;text-align:center;max-width:480px;margin:0 auto;}
+.qr-title{font-size:18px;font-weight:700;color:var(--blue);margin-bottom:6px;}
+.qr-sub{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.5;}
+.qr-canvas-wrap{display:flex;justify-content:center;margin-bottom:20px;}
+#qr-canvas{border-radius:12px;border:6px solid #fff;box-shadow:0 4px 24px rgba(0,0,0,.12);}
+.qr-url-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted);word-break:break-all;margin-bottom:16px;text-align:left;}
+.qr-url-box span{color:var(--blue);font-weight:600;}
+.qr-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.btn-qr-dl{background:var(--blue);color:#fff;border:none;border-radius:9px;padding:11px 22px;font-size:13px;font-weight:700;cursor:pointer;}
+.btn-qr-dl:hover{background:var(--blue-m);}
+.btn-qr-copy{background:#fff;color:var(--blue);border:1.5px solid var(--blue);border-radius:9px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;}
+.btn-qr-copy:hover{background:var(--blue-l);}
+.btn-qr-print{background:var(--gold-l);color:#7A5C0A;border:1px solid #C4972A30;border-radius:9px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;}
+.qr-pending-panel{background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:20px;max-width:480px;margin-left:auto;margin-right:auto;}
+.qr-pending-title{font-size:15px;font-weight:700;color:var(--char);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;}
+.qr-pending-sub{font-size:12px;color:var(--muted);margin-bottom:14px;}
+.pending-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:9px;margin-bottom:8px;background:var(--green-l);}
+.pending-item-info{flex:1;}
+.pending-item-name{font-size:13px;font-weight:700;color:var(--char);}
+.pending-item-meta{font-size:11px;color:var(--muted);}
+.btn-approve{background:var(--green);color:#fff;border:none;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;cursor:pointer;}
+.btn-reject{background:none;color:var(--terra);border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;}
+.db-subnav{display:flex;gap:6px;margin-bottom:18px;border-bottom:2px solid var(--border);padding-bottom:0;}
+.db-snbtn{padding:8px 16px;border:none;background:transparent;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;}
+.db-snbtn.active{color:var(--blue);border-bottom-color:var(--blue);}
+
+.auth-err{
+  color:#B52C1D;
+  font-size:13px;
+  font-weight:600;
+  background:#FAEAE8;
+  border:1px solid #B52C1D30;
+  border-radius:8px;
+  padding:9px 13px;
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.auth-err::before{content:"⚠ ";}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════
+     LOGIN PAGE
+═══════════════════════════════════════════════════════════ -->
+<div id="login-page" style="display:block;">
+  <!-- Left branding panel -->
+  <div class="login-left">
+    <div class="ll-content">
+      <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNjAgMTAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWw9IkdyZWVrIFRvIEdvIFRhdmVybmEiPgogIDxyZWN0IHdpZHRoPSIyNjAiIGhlaWdodD0iMTAwIiByeD0iMTAiIGZpbGw9IiMyODM1OTMiLz4KICA8IS0tIFdoaXRlIGNhcmQgc2hhcGUgd2l0aCBvbGl2ZSBicmFuY2ggLS0+CiAgPHJlY3QgeD0iOCIgeT0iMTIiIHdpZHRoPSI1MiIgaGVpZ2h0PSI3NiIgcng9IjgiIGZpbGw9IndoaXRlIi8+CiAgPCEtLSBPbGl2ZSBicmFuY2ggc2ltcGxpZmllZCAtLT4KICA8ZyBmaWxsPSIjMjgzNTkzIj4KICAgIDxlbGxpcHNlIGN4PSIyOCIgY3k9IjU4IiByeD0iNyIgcnk9IjQiIHRyYW5zZm9ybT0icm90YXRlKC00MCAyOCA1OCkiLz4KICAgIDxlbGxpcHNlIGN4PSIyMiIgY3k9IjUwIiByeD0iNiIgcnk9IjMuNSIgdHJhbnNmb3JtPSJyb3RhdGUoLTUwIDIyIDUwKSIvPgogICAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iNDgiIHJ4PSI2IiByeT0iMy41IiB0cmFuc2Zvcm09InJvdGF0ZSgtMzAgMzIgNDgpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMTgiIGN5PSI0MiIgcng9IjUiIHJ5PSIzIiB0cmFuc2Zvcm09InJvdGF0ZSgtNTUgMTggNDIpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjgiIGN5PSIzOCIgcng9IjUiIHJ5PSIzIiB0cmFuc2Zvcm09InJvdGF0ZSgtMzUgMjggMzgpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzYiIGN5PSIzNiIgcng9IjUiIHJ5PSIzIiB0cmFuc2Zvcm09InJvdGF0ZSgtMjAgMzYgMzYpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIzMiIgcng9IjQiIHJ5PSIyLjUiIHRyYW5zZm9ybT0icm90YXRlKC02MCAyMCAzMikiLz4KICAgIDxlbGxpcHNlIGN4PSIzMCIgY3k9IjI4IiByeD0iNCIgcnk9IjIuNSIgdHJhbnNmb3JtPSJyb3RhdGUoLTQwIDMwIDI4KSIvPgogICAgPGNpcmNsZSBjeD0iMjQiIGN5PSI0NCIgcj0iMi41Ii8+CiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjQwIiByPSIyLjUiLz4KICAgIDxjaXJjbGUgY3g9IjI4IiBjeT0iMzIiIHI9IjIiLz4KICAgIDwhLS0gc3RlbSAtLT4KICAgIDxsaW5lIHgxPSIyOCIgeTE9IjY1IiB4Mj0iMjgiIHkyPSIyNSIgc3Ryb2tlPSIjMjgzNTkzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8L2c+CiAgPCEtLSBHUkVFSyBUTyBHTyB0ZXh0IC0tPgogIDx0ZXh0IHg9IjcyIiB5PSI0NiIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iOTAwIiBsZXR0ZXItc3BhY2luZz0iMSI+R1JFRUs8L3RleHQ+CiAgPHRleHQgeD0iNzIiIHk9IjcyIiBmaWxsPSJ3aGl0ZSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtd2VpZ2h0PSI5MDAiIGxldHRlci1zcGFjaW5nPSIxIj5UTyBHTzwvdGV4dD4KICA8IS0tIFRBVkVSTkEgc3ViIC0tPgogIDx0ZXh0IHg9IjcyIiB5PSI4OCIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iNDAwIiBsZXR0ZXItc3BhY2luZz0iNSI+VEFWRVJOQTwvdGV4dD4KPC9zdmc+" alt="GreekToGo Taverna" class="ll-logo-img"/>
+      
+      <div class="ll-tagline">Manage your guests, orders, reviews,<br>loyalty, and marketing — all in one place.</div>
+      <ul class="ll-perks">
+        <li>Full guest database with loyalty tiers</li>
+        <li>CSAT satisfaction tracking</li>
+        <li>Email blast</li>
+        <li>Birthday alerts &amp; perk management</li>
+        <li>Real-time dashboard analytics</li>
+      </ul>
+      <svg class="ll-meander" width="200" height="8" xmlns="http://www.w3.org/2000/svg">
+        <pattern id="lm" x="0" y="0" width="40" height="8" patternUnits="userSpaceOnUse">
+          <path d="M0 4 L4 4 L4 0 L12 0 L12 4 L20 4 L20 8 L28 8 L28 4 L36 4 L36 0 L40 0" fill="none" stroke="#C4972A" stroke-width="1.5"/>
+        </pattern>
+        <rect width="200" height="8" fill="url(#lm)"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Right auth panel -->
+  <div class="login-right">
+    <div class="login-box">
+
+      
+
+      <!-- SIGN IN -->
+      <div class="auth-panel active" id="panel-signin">
+        <div id="si-err" class="auth-err" style="display:none;"></div>
+        <div class="lf">
+          <label>Username</label>
+          <input id="si-user" placeholder="Enter username" autocomplete="username"
+                 onkeydown="if(event.key==='Enter')document.getElementById('si-pass').focus()"/>
+        </div>
+        <div class="lf">
+          <label>Password</label>
+          <div class="pw-wrap">
+            <input id="si-pass" type="password" placeholder="Enter password" autocomplete="current-password"
+                   onkeydown="if(event.key==='Enter')doSignIn()"/>
+            <button class="pw-eye" id="pw-toggle" onclick="togglePw()" type="button">Show</button>
+          </div>
+        </div>
+        <button class="login-btn" onclick="doSignIn()">Sign In →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     CRM APP (hidden until login)
+═══════════════════════════════════════════════════════════ -->
+<div id="crm-app" style="display:none;">
+
+  <div class="header">
+    <div class="header-inner">
+      <div class="header-top">
+        <div class="logo">
+          <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNjAgMTAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWw9IkdyZWVrIFRvIEdvIFRhdmVybmEiPgogIDxyZWN0IHdpZHRoPSIyNjAiIGhlaWdodD0iMTAwIiByeD0iMTAiIGZpbGw9IiMyODM1OTMiLz4KICA8IS0tIFdoaXRlIGNhcmQgc2hhcGUgd2l0aCBvbGl2ZSBicmFuY2ggLS0+CiAgPHJlY3QgeD0iOCIgeT0iMTIiIHdpZHRoPSI1MiIgaGVpZ2h0PSI3NiIgcng9IjgiIGZpbGw9IndoaXRlIi8+CiAgPCEtLSBPbGl2ZSBicmFuY2ggc2ltcGxpZmllZCAtLT4KICA8ZyBmaWxsPSIjMjgzNTkzIj4KICAgIDxlbGxpcHNlIGN4PSIyOCIgY3k9IjU4IiByeD0iNyIgcnk9IjQiIHRyYW5zZm9ybT0icm90YXRlKC00MCAyOCA1OCkiLz4KICAgIDxlbGxpcHNlIGN4PSIyMiIgY3k9IjUwIiByeD0iNiIgcnk9IjMuNSIgdHJhbnNmb3JtPSJyb3RhdGUoLTUwIDIyIDUwKSIvPgogICAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iNDgiIHJ4PSI2IiByeT0iMy41IiB0cmFuc2Zvcm09InJvdGF0ZSgtMzAgMzIgNDgpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMTgiIGN5PSI0MiIgcng9IjUiIHJ5PSIzIiB0cmFuc2Zvcm09InJvdGF0ZSgtNTUgMTggNDIpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjgiIGN5PSIzOCIgcng9IjUiIHJ5PSIzIiB0cmFuc2Zvcm09InJvdGF0ZSgtMzUgMjggMzgpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzYiIGN5PSIzNiIgcng9IjUiIHJ5PSIzIiB0cmFuc2Zvcm09InJvdGF0ZSgtMjAgMzYgMzYpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIzMiIgcng9IjQiIHJ5PSIyLjUiIHRyYW5zZm9ybT0icm90YXRlKC02MCAyMCAzMikiLz4KICAgIDxlbGxpcHNlIGN4PSIzMCIgY3k9IjI4IiByeD0iNCIgcnk9IjIuNSIgdHJhbnNmb3JtPSJyb3RhdGUoLTQwIDMwIDI4KSIvPgogICAgPGNpcmNsZSBjeD0iMjQiIGN5PSI0NCIgcj0iMi41Ii8+CiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjQwIiByPSIyLjUiLz4KICAgIDxjaXJjbGUgY3g9IjI4IiBjeT0iMzIiIHI9IjIiLz4KICAgIDwhLS0gc3RlbSAtLT4KICAgIDxsaW5lIHgxPSIyOCIgeTE9IjY1IiB4Mj0iMjgiIHkyPSIyNSIgc3Ryb2tlPSIjMjgzNTkzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8L2c+CiAgPCEtLSBHUkVFSyBUTyBHTyB0ZXh0IC0tPgogIDx0ZXh0IHg9IjcyIiB5PSI0NiIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iOTAwIiBsZXR0ZXItc3BhY2luZz0iMSI+R1JFRUs8L3RleHQ+CiAgPHRleHQgeD0iNzIiIHk9IjcyIiBmaWxsPSJ3aGl0ZSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtd2VpZ2h0PSI5MDAiIGxldHRlci1zcGFjaW5nPSIxIj5UTyBHTzwvdGV4dD4KICA8IS0tIFRBVkVSTkEgc3ViIC0tPgogIDx0ZXh0IHg9IjcyIiB5PSI4OCIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iNDAwIiBsZXR0ZXItc3BhY2luZz0iNSI+VEFWRVJOQTwvdGV4dD4KPC9zdmc+" alt="GreekToGo Taverna" class="header-logo"/>
+        </div>
+        <div class="user-chip">
+          <div class="u-av" id="u-av"></div>
+          <span class="u-name" id="u-name"></span>
+          <span class="u-role" id="u-role"></span>
+        </div>
+        <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+      </div>
+      <nav class="nav">
+        <button class="nav-btn active" data-tab="dashboard">🏛 Dashboard</button>
+        <button class="nav-btn" data-tab="database">🗄 Database</button>
+        <button class="nav-btn" data-tab="orders">🍽 Orders</button>
+        <button class="nav-btn" data-tab="csat">⭐ CSAT</button>
+        <button class="nav-btn" data-tab="loyalty">🏆 Loyalty</button>
+        <button class="nav-btn" data-tab="blast">📣 Blast</button>
+      </nav>
+    </div>
+  </div>
+
+  <svg class="meander" xmlns="http://www.w3.org/2000/svg">
+    <defs><pattern id="meander" x="0" y="0" width="40" height="8" patternUnits="userSpaceOnUse">
+      <path d="M0 4 L4 4 L4 0 L12 0 L12 4 L20 4 L20 8 L28 8 L28 4 L36 4 L36 0 L40 0" fill="none" stroke="#C4972A" stroke-width="1.5"/>
+    </pattern></defs>
+    <rect width="100%" height="8" fill="url(#meander)"/>
+  </svg>
+
+  <div class="main">
+
+    <!-- DASHBOARD -->
+    <div class="tab-panel active" id="tab-dashboard">
+      <div class="sec-header">
+        <div><div class="sec-title">🏛 Overview</div><div class="sec-sub" id="dash-date"></div></div>
+      </div>
+      <div class="stat-row" id="dash-stats"></div>
+      <div class="grid-2">
+        <div class="panel"><div class="panel-title">Loyalty Tier Breakdown</div><div id="dash-tiers"></div></div>
+        <div class="panel"><div class="panel-title">CSAT by Category</div><div id="dash-csat-cats"></div></div>
+      </div>
+      <div class="grid-2">
+        <div class="panel"><div class="panel-title">💰 Top Spenders</div><div id="dash-top"></div></div>
+        <div class="panel"><div class="panel-title">⭐ Recent Reviews</div><div id="dash-reviews"></div></div>
+      </div>
+    </div>
+
+    <!-- DATABASE -->
+    <div class="tab-panel" id="tab-database">
+      <div class="sec-header">
+        <div class="sec-title">Customer Database</div>
+        <button class="btn btn-primary" onclick="openModal('modal-add-guest')">+ Add Guest</button>
+      </div>
+      <div class="db-subnav">
+        <button class="db-snbtn active" id="dbn-list"  onclick="dbSwitchTab('list')">👥 Guest List</button>
+        <button class="db-snbtn"        id="dbn-qr"    onclick="dbSwitchTab('qr')">📱 QR Registration</button>
+      </div>
+      <div class="filter-bar">
+        <input id="db-search" placeholder="Search name, email, city…" oninput="renderDatabase()"/>
+        <select id="db-seg" onchange="renderDatabase()">
+          <option value="">All Segments</option>
+          <option>VIP</option><option>Regular</option><option>Occasional</option><option>New</option>
+        </select>
+        <select id="db-tier" onchange="renderDatabase()">
+          <option value="">All Tiers</option>
+          <option>Platinum</option><option>Gold</option><option>Silver</option><option>Bronze</option>
+        </select>
+        <span class="text-muted fs-12" id="db-count" style="align-self:center;"></span>
+      </div>
+      <div class="db-table-wrap"><div style="overflow-x:auto;">
+        <table class="db-table">
+          <thead><tr>
+            <th data-col="name" onclick="dbSort(this)">Guest</th>
+            <th data-col="tier" onclick="dbSort(this)">Tier</th>
+            <th data-col="segment" onclick="dbSort(this)">Segment</th>
+            <th data-col="visits" onclick="dbSort(this)">Visits</th>
+            <th data-col="totalSpent" onclick="dbSort(this)">Spent</th>
+            <th data-col="lastVisit" onclick="dbSort(this)">Last Visit</th>
+            <th data-col="city" onclick="dbSort(this)">City</th>
+            <th></th>
+          </tr></thead>
+          <tbody id="db-tbody"></tbody>
+        </table>
+      </div></div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="tab-panel" id="tab-orders">
+      <div class="sec-header">
+        <div class="sec-title">Orders</div>
+        <button class="btn btn-primary" onclick="openModal('modal-add-order');populateGuestSelect();buildOrderMenu()">+ New Order</button>
+      </div>
+      <div class="filter-bar">
+        <input id="ord-search" placeholder="Search by guest name…" oninput="renderOrders()"/>
+      </div>
+      <div id="orders-list"></div>
+    </div>
+
+    <!-- CSAT -->
+    <div class="tab-panel" id="tab-csat">
+      <div class="sec-header">
+        <div><div class="sec-title">CSAT — Guest Satisfaction</div><div class="sec-sub">Customer satisfaction scores and feedback analytics</div></div>
+      </div>
+      <div class="stat-row" id="csat-stats"></div>
+      <div class="grid-2" style="margin-bottom:20px;">
+        <div class="panel"><div class="panel-title">Score Distribution</div><div id="csat-dist"></div></div>
+        <div class="panel"><div class="panel-title">Category Breakdown</div><div id="csat-cats"></div></div>
+      </div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border);">
+          <div class="panel-title" id="csat-list-title" style="margin:0;"></div>
+          <div class="flex gap-6" id="csat-filters"></div>
+        </div>
+        <div style="padding:20px;" id="csat-reviews-list"></div>
+      </div>
+    </div>
+
+    <!-- LOYALTY -->
+    <div class="tab-panel" id="tab-loyalty">
+      <div class="sec-header">
+        <div><div class="sec-title">Loyalty — Filoxenia Club</div><div class="sec-sub">Rewarding our most faithful guests</div></div>
+      </div>
+      <div id="loyalty-birthdays"></div>
+      <div id="loyalty-tiers"></div>
+    </div>
+
+    <!-- BLAST -->
+    <div class="tab-panel" id="tab-blast">
+      <div class="sec-header">
+        <div>
+          <div class="sec-title">📧 Email Blast</div>
+          <div class="sec-sub">Compose and send personalised emails to your guests — all inside the CRM</div>
+        </div>
+      </div>
+
+      <!-- Sub-nav -->
+      <div class="blast-subnav">
+        <button class="bsnav-btn active" id="bsn-compose" onclick="blastSwitchTab('compose')">✏️ Compose</button>
+        <button class="bsnav-btn" id="bsn-outbox" onclick="blastSwitchTab('outbox')">📤 Outbox <span class="bsn-badge" id="bsn-outbox-count">0</span></button>
+        <button class="bsnav-btn" id="bsn-history" onclick="blastSwitchTab('history')">📬 Sent History</button>
+      </div>
+
+      <!-- ═══ COMPOSE ═══════════════════════════════════════ -->
+      <div id="bpanel-compose">
+        <div class="blast-grid">
+
+          <!-- LEFT: compose form -->
+          <div class="compose-card">
+            <div class="compose-card-title">📧 Compose Email</div>
+
+            <div class="bl-field">
+              <label>Quick Template</label>
+              <select id="bl-template" onchange="applyTemplate()">
+                <option value="">— Choose a template —</option>
+                <option value="promo">🎉 Promotional Offer</option>
+                <option value="birthday">🎂 Birthday Greeting</option>
+                <option value="loyalty">⭐ Loyalty Reward</option>
+                <option value="event">🏺 Special Event Invite</option>
+                <option value="feedback">💬 Feedback Request</option>
+                <option value="reactivate">💤 Re-engagement</option>
+                <option value="seasonal">🌿 Seasonal Menu</option>
+                <option value="thankyou">🙏 Thank You</option>
+              </select>
+            </div>
+
+            <div class="bl-field">
+              <label>From Name</label>
+              <input id="bl-from" value="GreekToGo Taverna" oninput="livePreview()"/>
+            </div>
+
+            <div class="bl-field">
+              <label>Subject Line <span style="color:var(--terra)">*</span></label>
+              <input id="bl-subject" placeholder="e.g. A special offer just for you, {{name}}!" oninput="livePreview()"/>
+            </div>
+
+            <div class="bl-field">
+              <label>Personalisation Tags — click to insert</label>
+              <div class="tag-vars">
+                <span class="tag-var" onclick="insertTag('{{name}}')">{{name}}</span>
+                <span class="tag-var" onclick="insertTag('{{first_name}}')">{{first_name}}</span>
+                <span class="tag-var" onclick="insertTag('{{tier}}')">{{tier}}</span>
+                <span class="tag-var" onclick="insertTag('{{favorite}}')">{{favorite}}</span>
+                <span class="tag-var" onclick="insertTag('{{visits}}')">{{visits}}</span>
+                <span class="tag-var" onclick="insertTag('{{city}}')">{{city}}</span>
+                <span class="tag-var" onclick="insertTag('{{discount_code}}')">{{discount_code}}</span>
+              </div>
+            </div>
+
+            <div class="bl-field">
+              <label>Message Body <span style="color:var(--terra)">*</span></label>
+              <textarea id="bl-body" rows="8" placeholder="Write your message here…" oninput="livePreview()"></textarea>
+              <div class="char-count" id="char-count">0 characters</div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+              <div class="bl-field" style="margin:0;">
+                <label>CTA Button Text</label>
+                <input id="bl-cta-text" placeholder="Book Your Table" oninput="livePreview()"/>
+              </div>
+              <div class="bl-field" style="margin:0;">
+                <label>CTA Button Link</label>
+                <input id="bl-cta-link" placeholder="https://greektogo.com/book" oninput="livePreview()"/>
+              </div>
+            </div>
+
+            <!-- Live preview -->
+            <div>
+              <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px;display:flex;justify-content:space-between;">
+                <span>📋 Live Preview</span>
+                <span style="font-weight:400;">Personalised for first selected recipient</span>
+              </div>
+              <div class="ep-chrome">
+                <div class="ep-dots"><span style="background:#FF5F57;"></span><span style="background:#FEBC2E;"></span><span style="background:#28C840;"></span></div>
+                <div class="ep-addr" id="ep-addr">—</div>
+              </div>
+              <div class="ep-body" id="ep-body">
+                <div style="color:var(--muted);text-align:center;padding:30px;font-size:13px;">Your email preview will appear here…</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT: recipients + send -->
+          <div>
+            <div class="rec-panel">
+              <div style="font-size:15px;font-weight:700;margin-bottom:12px;">👥 Select Recipients</div>
+              <div class="rec-filter-row">
+                <button class="rec-f-btn on" data-seg="All"       onclick="setRecFilter(this)">All</button>
+                <button class="rec-f-btn"    data-seg="VIP"       onclick="setRecFilter(this)">VIP</button>
+                <button class="rec-f-btn"    data-seg="Regular"   onclick="setRecFilter(this)">Regular</button>
+                <button class="rec-f-btn"    data-seg="Occasional"onclick="setRecFilter(this)">Occasional</button>
+                <button class="rec-f-btn"    data-seg="New"       onclick="setRecFilter(this)">New</button>
+                <button class="rec-f-btn"    data-seg="Gold"      onclick="setRecFilter(this)">⭐ Gold+</button>
+                <button class="rec-f-btn"    data-seg="Platinum"  onclick="setRecFilter(this)">🏅 Platinum</button>
+                <button class="rec-f-btn"    data-seg="Birthday"  onclick="setRecFilter(this)">🎂 Birthday</button>
+              </div>
+              <div class="rec-list">
+                <div class="rec-all-row">
+                  <input type="checkbox" id="rec-all" class="rec-check" onchange="toggleAllRec(this.checked)"/>
+                  <label for="rec-all" style="font-size:12px;font-weight:700;color:var(--muted);flex:1;cursor:pointer;">Select / Deselect All</label>
+                  <span class="rec-count-chip" id="rec-count">0 selected</span>
+                </div>
+                <div id="rec-items"></div>
+              </div>
+
+              <!-- Blast summary -->
+              <div id="blast-summary" style="margin-top:12px;"></div>
+
+              <!-- Send button -->
+              <div style="margin-top:14px;">
+                <button class="btn-blast-send" onclick="queueBlast()">📤 Send to Outbox</button>
+                <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5;">
+                  Emails are queued in the Outbox where you can review each one before marking as sent.
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ═══ OUTBOX ════════════════════════════════════════ -->
+      <div id="bpanel-outbox" class="hidden">
+        <div class="outbox-header">
+          <div>
+            <div style="font-size:18px;font-weight:700;color:var(--char);">📤 Outbox</div>
+            <div style="font-size:13px;color:var(--muted);margin-top:2px;">Review personalised emails before sending. Click any email to read it.</div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-mark-all" onclick="markAllSent()">✓ Mark All as Sent</button>
+            <button class="btn-clear-outbox" onclick="clearOutbox()">🗑 Clear</button>
+          </div>
+        </div>
+        <div id="outbox-list"></div>
+
+        <!-- Inline email reader -->
+        <div id="email-reader" class="hidden">
+          <div class="reader-header">
+            <button onclick="closeReader()" class="reader-back">← Back to Outbox</button>
+            <div style="flex:1;"></div>
+            <button class="btn-mark-sent" id="reader-mark-btn" onclick="markCurrentSent()">✓ Mark as Sent</button>
+            <button class="btn-delete-email" onclick="deleteCurrentEmail()">🗑 Delete</button>
+          </div>
+          <div class="reader-meta">
+            <div class="reader-meta-row"><span class="reader-lbl">To:</span><span id="reader-to"></span></div>
+            <div class="reader-meta-row"><span class="reader-lbl">From:</span><span id="reader-from"></span></div>
+            <div class="reader-meta-row"><span class="reader-lbl">Subject:</span><strong id="reader-subject"></strong></div>
+            <div class="reader-meta-row"><span class="reader-lbl">Queued:</span><span id="reader-queued"></span></div>
+          </div>
+          <div class="reader-body" id="reader-body-wrap"></div>
+        </div>
+      </div>
+
+      <!-- ═══ SENT HISTORY ══════════════════════════════════ -->
+      <div id="bpanel-history" class="hidden">
+        <div class="sent-log">
+          <div class="sent-log-head">
+            <div class="sent-log-title">📬 Sent Email History</div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span id="history-stats" style="font-size:12px;color:var(--muted);"></span>
+              <button onclick="clearSentLog()" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--muted);">Clear all</button>
+            </div>
+          </div>
+          <div id="sent-log-list"></div>
+        </div>
+      </div>
+
+    </div><!-- /tab-blast -->
+
+  </div><!-- /main -->
+</div><!-- /crm-app -->
+
+<!-- ══ MODALS ════════════════════════════════════════════ -->
+
+<!-- Add Guest -->
+<div class="modal-overlay hidden" id="modal-add-guest" onclick="if(event.target===this)closeModal('modal-add-guest')">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">➕ Add New Guest</span><button class="modal-close" onclick="closeModal('modal-add-guest')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="field"><label>Full Name <span class="req">*</span></label><input id="ag-name" placeholder="Eleni Papadaki"/></div>
+        <div class="field"><label>Phone</label><input id="ag-phone" placeholder="555-0100"/></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Email</label><input id="ag-email" type="email" placeholder="eleni@email.com"/></div>
+        <div class="field"><label>City</label><input id="ag-city" placeholder="Athens"/></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Birthday</label><input id="ag-birthday" type="date"/></div>
+        <div class="field"><label>Segment</label><select id="ag-segment"><option>New</option><option>Occasional</option><option>Regular</option><option>VIP</option></select></div>
+      </div>
+      <div class="field"><label>Favourite Dish</label><input id="ag-favorite" placeholder="Moussaka"/></div>
+      <div class="field"><label>Tags (comma-separated)</label><input id="ag-tags" placeholder="VIP, Vegetarian, Window Seat"/></div>
+      <div class="field"><label>Notes</label><textarea id="ag-notes" rows="2" placeholder="Allergies, preferences…"></textarea></div>
+      <div class="flex gap-8" style="justify-content:flex-end;margin-top:4px;">
+        <button class="btn btn-secondary" onclick="closeModal('modal-add-guest')">Cancel</button>
+        <button class="btn btn-primary" onclick="addGuest()">Add Guest</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Guest -->
+<div class="modal-overlay hidden" id="modal-edit-guest" onclick="if(event.target===this)closeModal('modal-edit-guest')">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title" id="edit-guest-title">Edit Guest</span><button class="modal-close" onclick="closeModal('modal-edit-guest')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="eg-id"/>
+      <div class="form-row">
+        <div class="field"><label>Full Name <span class="req">*</span></label><input id="eg-name"/></div>
+        <div class="field"><label>Phone</label><input id="eg-phone"/></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Email</label><input id="eg-email" type="email"/></div>
+        <div class="field"><label>City</label><input id="eg-city"/></div>
+      </div>
+      <div class="form-row">
+        <div class="field"><label>Birthday</label><input id="eg-birthday" type="date"/></div>
+        <div class="field"><label>Segment</label><select id="eg-segment"><option>New</option><option>Occasional</option><option>Regular</option><option>VIP</option></select></div>
+      </div>
+      <div class="field"><label>Favourite Dish</label><input id="eg-favorite"/></div>
+      <div class="field"><label>Tags (comma-separated)</label><input id="eg-tags"/></div>
+      <div class="field"><label>Notes</label><textarea id="eg-notes" rows="2"></textarea></div>
+      <div class="flex gap-8" style="justify-content:flex-end;margin-top:4px;">
+        <button class="btn btn-secondary" onclick="closeModal('modal-edit-guest')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveEditGuest()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Order -->
+<div class="modal-overlay hidden" id="modal-add-order" onclick="if(event.target===this)closeModal('modal-add-order')">
+  <div class="modal wide">
+    <div class="modal-head"><span class="modal-title">🍽 New Order</span><button class="modal-close" onclick="closeModal('modal-add-order')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="field"><label>Guest <span class="req">*</span></label><select id="ao-guest"></select></div>
+        <div class="field"><label>Table No.</label><input id="ao-table" type="number" placeholder="1–20"/></div>
+      </div>
+      <div class="field"><label>Menu Items</label><div id="ao-menu"></div></div>
+      <div class="order-total-bar">
+        <span class="text-muted fs-13"><span id="ao-count">0</span> items selected</span>
+        <span style="font-size:15px;font-weight:700;color:var(--olive);">Total: $<span id="ao-total">0.00</span></span>
+      </div>
+      <div class="flex gap-8" style="justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="closeModal('modal-add-order')">Cancel</button>
+        <button class="btn btn-primary" onclick="addOrder()">Record Order</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add CSAT -->
+<div class="modal-overlay hidden" id="modal-add-csat" onclick="if(event.target===this)closeModal('modal-add-csat')">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title" id="csat-modal-title">⭐ Log Review</span><button class="modal-close" onclick="closeModal('modal-add-csat')">×</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="cs-order-id"/><input type="hidden" id="cs-cust-id"/>
+      <div id="cs-order-info" style="background:var(--surface);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:var(--muted);"></div>
+      <div id="cs-stars"></div>
+      <div class="field"><label>Comment</label><textarea id="cs-comment" rows="3" placeholder="What did the guest say?"></textarea></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <input type="checkbox" id="cs-rec" checked/>
+        <label for="cs-rec" style="font-size:13px;cursor:pointer;">Guest would recommend GreekToGo</label>
+      </div>
+      <div class="flex gap-8" style="justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="closeModal('modal-add-csat')">Cancel</button>
+        <button class="btn btn-primary" onclick="submitCSAT()">Submit Review</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════ -->
+
+<!-- Auth script — isolated so login always works -->
+<script>
+var accounts = [{username:"Wahlene",password:"5678",firstName:"Wahlene",lastName:"",role:"Owner",email:"wahlene@greektogo.com"}];
+var currentUser = null;
+
+function doSignIn(){
+  var u = document.getElementById("si-user").value.trim();
+  var p = document.getElementById("si-pass").value.trim();
+  var errEl = document.getElementById("si-err");
+  if(!u || !p){
+    errEl.textContent = "Please enter your username and password.";
+    errEl.style.display = "flex";
+    return;
+  }
+  var acc = null;
+  for(var i=0;i<accounts.length;i++){
+    if(accounts[i].username===u && accounts[i].password===p){ acc=accounts[i]; break; }
+  }
+  if(!acc){
+    errEl.textContent = "Invalid username or password.";
+    errEl.style.display = "flex";
+    return;
+  }
+  errEl.style.display = "none";
+  currentUser = acc;
+  launchCRM();
+}
+
+function togglePw(){
+  var inp = document.getElementById("si-pass");
+  var btn = document.getElementById("pw-toggle");
+  if(!inp || !btn) return;
+  if(inp.type === "password"){
+    inp.type = "text";
+    btn.textContent = "Hide";
+    btn.style.color = "#1B4F8A";
+  } else {
+    inp.type = "password";
+    btn.textContent = "Show";
+    btn.style.color = "#6B6B68";
+  }
+}
+
+function doLogout(){
+  currentUser = null;
+  document.getElementById("crm-app").style.display = "none";
+  document.getElementById("login-page").style.display = "";
+  document.getElementById("si-user").value = "";
+  document.getElementById("si-pass").value = "";
+  document.getElementById("si-err").style.display = "none";
+}
+
+function launchCRM(){
+  document.getElementById("login-page").style.display = "none";
+  document.getElementById("crm-app").style.display = "block";
+  document.getElementById("u-av").textContent = (currentUser.firstName[0]||"W").toUpperCase();
+  document.getElementById("u-name").textContent = currentUser.firstName||currentUser.username;
+  document.getElementById("u-role").textContent = "· "+currentUser.role;
+  var dd = document.getElementById("dash-date");
+  if(dd) dd.textContent = new Date().toLocaleDateString("en-GB",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  try{ if(typeof renderDashboard==="function") renderDashboard(); }catch(e){ console.error("Dashboard error:",e); }
+}
+
+// Enter key support
+document.addEventListener("DOMContentLoaded", function(){
+  var su = document.getElementById("si-user");
+  var sp = document.getElementById("si-pass");
+  if(su) su.addEventListener("keydown", function(e){ if(e.key==="Enter") sp && sp.focus(); });
+  if(sp) sp.addEventListener("keydown", function(e){ if(e.key==="Enter") doSignIn(); });
+});
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+// ─── ACCOUNTS (defined in auth script above) ─────────────────
+
+// ─── DATA ────────────────────────────────────────────────────
+const LC={
+  Platinum:{bg:"#EEE8FB",text:"#4A3B8F",dot:"#7B6BD4"},
+  Gold:{bg:"#FBF5E4",text:"#7A5C0A",dot:"#C4972A"},
+  Silver:{bg:"#F0F0EE",text:"#4A4A48",dot:"#8A8A86"},
+  Bronze:{bg:"#FAEEE6",text:"#7A3010",dot:"#B5541D"}
+};
+const MENU=[
+  {name:"Moussaka",cat:"Mains",price:18.50},{name:"Souvlaki",cat:"Mains",price:16.00},
+  {name:"Gyros Platter",cat:"Mains",price:17.50},{name:"Pastitsio",cat:"Mains",price:17.00},
+  {name:"Spanakopita",cat:"Starters",price:12.00},{name:"Dolmades",cat:"Starters",price:11.00},
+  {name:"Pita Bread",cat:"Starters",price:3.50},{name:"Greek Salad",cat:"Salads",price:10.50},
+  {name:"Tzatziki",cat:"Dips",price:7.00},{name:"Baklava",cat:"Desserts",price:8.50},
+  {name:"Loukoumades",cat:"Desserts",price:9.00},{name:"House Wine",cat:"Drinks",price:8.00},
+  {name:"Retsina",cat:"Drinks",price:9.00},{name:"Beer",cat:"Drinks",price:5.50},
+  {name:"Greek Coffee",cat:"Drinks",price:3.50}
+];
+
+let customers=[
+  {id:1,name:"Maria Papadopoulos",phone:"555-0101",email:"maria@email.com",visits:14,lastVisit:"2026-08-20",totalSpent:892.50,favorite:"Moussaka",notes:"Allergic to nuts",birthday:"1985-03-12",segment:"Regular",tags:["Allergen Alert","Window Seat"],city:"Athens",joinDate:"2024-03-15"},
+  {id:2,name:"Nikos Stavros",phone:"555-0102",email:"nikos@email.com",visits:8,lastVisit:"2026-08-18",totalSpent:445.00,favorite:"Souvlaki",notes:"Prefers window seat",birthday:"1990-07-22",segment:"Occasional",tags:["Window Seat"],city:"Piraeus",joinDate:"2024-07-08"},
+  {id:3,name:"Elena Vasiliou",phone:"555-0103",email:"elena@email.com",visits:23,lastVisit:"2026-08-22",totalSpent:1560.75,favorite:"Spanakopita",notes:"VIP regular",birthday:"1978-11-05",segment:"VIP",tags:["VIP","Early Adopter"],city:"Athens",joinDate:"2023-11-22"},
+  {id:4,name:"Dmitri Alexopoulos",phone:"555-0104",email:"dmitri@email.com",visits:3,lastVisit:"2026-07-30",totalSpent:148.25,favorite:"Gyros",notes:"",birthday:"1995-09-14",segment:"New",tags:[],city:"Thessaloniki",joinDate:"2026-06-01"},
+  {id:5,name:"Sofia Konstantinou",phone:"555-0105",email:"sofia@email.com",visits:17,lastVisit:"2026-08-15",totalSpent:1102.00,favorite:"Dolmades",notes:"Vegetarian",birthday:"1988-06-30",segment:"Regular",tags:["Vegetarian","Loyal"],city:"Athens",joinDate:"2024-01-10"},
+  {id:6,name:"Andreas Georgiadis",phone:"555-0106",email:"andreas@email.com",visits:5,lastVisit:"2026-08-01",totalSpent:287.50,favorite:"Pastitsio",notes:"Business lunches",birthday:"1972-02-18",segment:"Occasional",tags:["Corporate"],city:"Athens",joinDate:"2025-02-20"},
+  {id:7,name:"Despina Katsaros",phone:"555-0107",email:"despina@email.com",visits:11,lastVisit:"2026-08-10",totalSpent:634.00,favorite:"Baklava",notes:"Loves desserts",birthday:"2001-04-03",segment:"Regular",tags:["Sweet Tooth"],city:"Athens",joinDate:"2024-09-05"},
+  {id:8,name:"Yannis Tsolakis",phone:"555-0108",email:"yannis@email.com",visits:2,lastVisit:"2026-08-05",totalSpent:89.50,favorite:"Gyros",notes:"",birthday:"1999-12-25",segment:"New",tags:[],city:"Corfu",joinDate:"2026-07-20"}
+];
+let orders=[
+  {id:1,customerId:3,date:"2026-08-22",items:["Spanakopita x2","House Wine x1","Baklava x1"],total:78.50,status:"Completed",tableNo:4},
+  {id:2,customerId:1,date:"2026-08-20",items:["Moussaka x1","Greek Salad x2","Retsina x1"],total:65.25,status:"Completed",tableNo:7},
+  {id:3,customerId:5,date:"2026-08-15",items:["Dolmades x3","Tzatziki x1","Sparkling Water x2"],total:52.00,status:"Completed",tableNo:2},
+  {id:4,customerId:2,date:"2026-08-18",items:["Souvlaki Platter x2","Pita Bread x4","Beer x2"],total:89.75,status:"Completed",tableNo:5},
+  {id:5,customerId:6,date:"2026-08-01",items:["Pastitsio x2","Greek Coffee x2"],total:48.50,status:"Completed",tableNo:1},
+  {id:6,customerId:4,date:"2026-07-30",items:["Gyros x2","Fries x1"],total:35.00,status:"Completed",tableNo:3},
+  {id:7,customerId:7,date:"2026-08-10",items:["Baklava x3","Loukoumades x1","Greek Coffee x2"],total:54.50,status:"Completed",tableNo:6},
+  {id:8,customerId:8,date:"2026-08-05",items:["Gyros x2","Beer x1"],total:38.50,status:"Completed",tableNo:8}
+];
+let csatData=[
+  {id:1,customerId:3,orderId:1,date:"2026-08-22",overall:5,food:5,service:5,ambiance:4,value:5,comment:"Absolutely wonderful as always. The spanakopita was perfect!",recommend:true},
+  {id:2,customerId:1,orderId:2,date:"2026-08-20",overall:4,food:5,service:4,ambiance:4,value:4,comment:"Moussaka was divine but service was a little slow tonight.",recommend:true},
+  {id:3,customerId:5,orderId:3,date:"2026-08-15",overall:5,food:5,service:5,ambiance:5,value:4,comment:"Best vegetarian options in Athens. Dolmades were exceptional!",recommend:true},
+  {id:4,customerId:2,orderId:4,date:"2026-08-18",overall:3,food:4,service:3,ambiance:4,value:3,comment:"Food was great but waited 30 mins for seating. Could be better.",recommend:false},
+  {id:5,customerId:6,orderId:5,date:"2026-08-01",overall:4,food:4,service:5,ambiance:3,value:4,comment:"Great for business lunches. Professional service.",recommend:true},
+  {id:6,customerId:7,orderId:7,date:"2026-08-10",overall:5,food:5,service:5,ambiance:5,value:5,comment:"The loukoumades are INCREDIBLE. I'll be back every week!",recommend:true}
+];
+let sentLog=[];
+
+// ─── HELPERS ─────────────────────────────────────────────────
+function getTier(v){return v>=20?"Platinum":v>=12?"Gold":v>=6?"Silver":"Bronze";}
+function avg(a){return a.length?a.reduce((s,b)=>s+b,0)/a.length:0;}
+function $$(n){return document.getElementById(n);}
+function dollar(n){return"$"+parseFloat(n||0).toFixed(2);}
+function sColor(s){return s>=4.5?"#2E7D50":s>=3.5?"#C4972A":"#B52C1D";}
+function stars(n,sz=14){let h="";for(let i=1;i<=5;i++)h+=`<span style="color:${i<=n?"#C4972A":"#D8D4C8"};font-size:${sz}px;">★</span>`;return h;}
+function av(name,tier,size=36){
+  const lc=LC[tier]||LC.Bronze,ini=name.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase();
+  return`<div class="avatar ${tier}" style="width:${size}px;height:${size}px;font-size:${size*.33}px;">${ini}</div>`;
+}
+function badge(t){return`<span class="badge ${t}"><span class="badge-dot"></span>${t}</span>`;}
+function segBadge(s){return`<span class="seg ${s}">${s}</span>`;}
+function showToast(msg,type="ok"){
+  const t=$$("toast");t.textContent=msg;
+  t.className=`show t-${type}`;
+  clearTimeout(t._timer);t._timer=setTimeout(()=>t.className="",2800);
+}
+function openModal(id){$$(id).classList.remove("hidden");}
+function closeModal(id){$$(id).classList.add("hidden");}
+
+// ─── NAV ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll(".nav-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      document.querySelectorAll(".nav-btn").forEach(function(b){ b.classList.remove("active"); });
+      document.querySelectorAll(".tab-panel").forEach(function(p){ p.classList.remove("active"); });
+      btn.classList.add("active");
+      var tab = btn.dataset.tab;
+      var panel = document.getElementById("tab-"+tab);
+      if(panel) panel.classList.add("active");
+      try {
+        if(tab==="dashboard") renderDashboard();
+        else if(tab==="database") renderDatabase();
+        else if(tab==="orders") renderOrders();
+        else if(tab==="csat") renderCSAT();
+        else if(tab==="loyalty") renderLoyalty();
+        else if(tab==="blast") renderBlast();
+      } catch(e){ console.error("Tab render error:", e); }
+    });
+  });
+});
+
+// ─── DASHBOARD ───────────────────────────────────────────────
+function renderDashboard(){
+  const rev=orders.reduce((s,o)=>s+o.total,0),avgOrd=orders.length?rev/orders.length:0;
+  const cs=csatData.map(r=>r.overall),avgC=avg(cs),rec=csatData.length?Math.round(csatData.filter(r=>r.recommend).length/csatData.length*100):0;
+  const tc={Platinum:0,Gold:0,Silver:0,Bronze:0};
+  customers.forEach(c=>tc[getTier(c.visits)]++);
+  $$("dash-stats").innerHTML=`
+    <div class="stat blue-s"><div class="stat-label">Total Guests</div><div class="stat-value">${customers.length}</div><div class="stat-sub">+2 this month</div></div>
+    <div class="stat olive-s"><div class="stat-label">Revenue</div><div class="stat-value">${dollar(rev)}</div><div class="stat-sub">all time</div></div>
+    <div class="stat"><div class="stat-label">Avg Order</div><div class="stat-value">${dollar(avgOrd)}</div></div>
+    <div class="stat gold-s"><div class="stat-label">CSAT Score</div><div class="stat-value">${avgC.toFixed(1)}/5</div><div class="stat-sub">${csatData.length} reviews</div></div>
+    <div class="stat green-s"><div class="stat-label">Recommend %</div><div class="stat-value">${rec}%</div></div>
+  `;
+  $$("dash-tiers").innerHTML=["Platinum","Gold","Silver","Bronze"].map(t=>{
+    const lc=LC[t],cnt=tc[t],pct=Math.round(cnt/customers.length*100)||0;
+    return`<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span style="color:${lc.text};font-weight:600;">${t}</span><span style="color:var(--muted);">${cnt} · ${pct}%</span></div><div style="height:6px;border-radius:4px;background:${lc.bg};"><div style="height:6px;border-radius:4px;background:${lc.dot};width:${pct}%;"></div></div></div>`;
+  }).join("");
+  $$("dash-csat-cats").innerHTML=[["Overall","overall"],["Food","food"],["Service","service"],["Ambiance","ambiance"],["Value","value"]].map(([label,key])=>{
+    const val=avg(csatData.map(r=>r[key])),color=sColor(val);
+    return`<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><span style="font-size:13px;color:var(--muted);min-width:80px;">${label}</span><div class="score-bar-wrap"><div class="score-bar-fill" style="background:${color};width:${val/5*100}%;"></div></div><span style="font-size:13px;font-weight:700;color:${color};min-width:28px;">${val.toFixed(1)}</span></div>`;
+  }).join("");
+  $$("dash-top").innerHTML=[...customers].sort((a,b)=>b.totalSpent-a.totalSpent).slice(0,5).map((c,i)=>
+    `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><span style="font-size:12px;color:var(--muted);min-width:18px;">#${i+1}</span>${av(c.name,getTier(c.visits),30)}<div style="flex:1;"><div style="font-size:13px;font-weight:600;">${c.name}</div><div style="font-size:11px;color:var(--muted);">${c.visits} visits</div></div><span style="font-size:13px;font-weight:700;color:var(--blue);">${dollar(c.totalSpent)}</span></div>`
+  ).join("");
+  $$("dash-reviews").innerHTML=[...csatData].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4).map(r=>{
+    const c=customers.find(x=>x.id===r.customerId);
+    return`<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);"><div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span style="font-size:13px;font-weight:600;">${c?.name||"Guest"}</span>${stars(r.overall,13)}</div>${r.comment?`<div style="font-size:12px;color:var(--muted);font-style:italic;">"${r.comment.slice(0,72)}${r.comment.length>72?"…":""}"</div>`:""}</div>`;
+  }).join("");
+}
+
+// ─── DATABASE ────────────────────────────────────────────────
+let dbSortCol="name",dbSortDir="asc",dbExpId=null;
+function dbSort(th){
+  const col=th.dataset.col;
+  if(dbSortCol===col)dbSortDir=dbSortDir==="asc"?"desc":"asc";
+  else{dbSortCol=col;dbSortDir="asc";}
+  document.querySelectorAll(".db-table th").forEach(t=>{t.classList.remove("sorted");t.textContent=t.textContent.replace(/ [↑↓]$/,"");});
+  th.classList.add("sorted");th.textContent+=(dbSortDir==="asc"?" ↑":" ↓");
+  renderDatabase();
+}
+function renderDatabase(){
+  const q=($$("db-search")?.value||"").toLowerCase(),seg=$$("db-seg")?.value||"",tierF=$$("db-tier")?.value||"";
+  let list=customers.filter(c=>{
+    const t=getTier(c.visits);
+    const mq=!q||(c.name.toLowerCase().includes(q)||c.email.toLowerCase().includes(q)||c.phone.includes(q)||(c.city||"").toLowerCase().includes(q));
+    return mq&&(!seg||c.segment===seg)&&(!tierF||t===tierF);
+  });
+  list.sort((a,b)=>{
+    let av2,bv;
+    if(dbSortCol==="tier"){av2=["Bronze","Silver","Gold","Platinum"].indexOf(getTier(a.visits));bv=["Bronze","Silver","Gold","Platinum"].indexOf(getTier(b.visits));}
+    else{av2=a[dbSortCol]??0;bv=b[dbSortCol]??0;}
+    if(typeof av2==="string")return dbSortDir==="asc"?av2.localeCompare(bv):bv.localeCompare(av2);
+    return dbSortDir==="asc"?av2-bv:bv-av2;
+  });
+  $$("db-count").textContent=list.length+" of "+customers.length;
+  const tb=$$("db-tbody");tb.innerHTML="";
+  list.forEach(c=>{
+    const tier=getTier(c.visits),isExp=dbExpId===c.id;
+    const co=orders.filter(o=>o.customerId===c.id),cr=csatData.filter(r=>r.customerId===c.id);
+    const avgR=cr.length?avg(cr.map(r=>r.overall)).toFixed(1):"—";
+    const row=document.createElement("tr");
+    row.className=isExp?"selected-row":"";row.style.cursor="pointer";
+    row.onclick=()=>{dbExpId=isExp?null:c.id;renderDatabase();};
+    row.innerHTML=`
+      <td><div class="guest-cell">${av(c.name,tier,32)}<div><div class="guest-name">${c.name}</div><div class="guest-email">${c.email}</div></div></div></td>
+      <td>${badge(tier)}</td><td>${segBadge(c.segment)}</td>
+      <td style="text-align:center;font-size:13px;">${c.visits}</td>
+      <td style="font-size:13px;font-weight:700;color:var(--olive);">${dollar(c.totalSpent)}</td>
+      <td style="font-size:12px;color:var(--muted);">${c.lastVisit}</td>
+      <td style="font-size:12px;color:var(--muted);">${c.city||"—"}</td>
+      <td><div style="display:flex;gap:4px;">
+        <button class="btn-edit" onclick="event.stopPropagation();editGuest(${c.id})">Edit</button>
+        <button class="btn-danger" onclick="event.stopPropagation();deleteGuest(${c.id})">✕</button>
+      </div></td>`;
+    tb.appendChild(row);
+    if(isExp){
+      const dr=document.createElement("tr");dr.className="selected-row";
+      dr.innerHTML=`<td colspan="8" style="padding:0 14px 16px;"><div class="card-detail" style="padding-top:12px;">
+        <div class="card-detail-block"><div class="detail-label">Profile</div>
+          <div class="d-row"><span>Phone: </span>${c.phone||"—"}</div>
+          <div class="d-row"><span>Birthday: </span>${c.birthday||"—"}</div>
+          <div class="d-row"><span>Favourite: </span>${c.favorite||"—"}</div>
+          <div class="d-row"><span>Joined: </span>${c.joinDate||"—"}</div>
+          ${c.notes?`<div class="note-chip">📝 ${c.notes}</div>`:""}
+          ${c.tags?.length?`<div class="wrap-chips" style="margin-top:8px;">${c.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>`:""}
+        </div>
+        <div class="card-detail-block"><div class="detail-label">Orders (${co.length})</div>
+          ${co.length===0?`<div style="font-size:12px;color:var(--muted);">No orders yet</div>`:co.slice(0,4).map(o=>`<div style="font-size:12px;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid var(--border);"><div style="display:flex;justify-content:space-between;"><span>${o.date}</span><span style="font-weight:700;color:var(--olive);">${dollar(o.total)}</span></div><div style="color:var(--muted);">${o.items.join(", ").slice(0,50)}</div></div>`).join("")}
+        </div>
+        <div class="card-detail-block"><div class="detail-label">CSAT (${cr.length} · avg ${avgR})</div>
+          ${cr.length===0?`<div style="font-size:12px;color:var(--muted);">No reviews yet</div>`:cr.map(r=>`<div style="margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border);"><div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span style="font-size:11px;color:var(--muted);">${r.date}</span>${stars(r.overall,12)}</div>${r.comment?`<div style="font-size:11px;color:var(--muted);font-style:italic;">"${r.comment.slice(0,60)}…"</div>`:""}</div>`).join("")}
+        </div>
+      </div></td>`;
+      tb.appendChild(dr);
+    }
+  });
+  if(list.length===0){const e=document.createElement("tr");e.innerHTML=`<td colspan="8" class="empty">No guests match your filters</td>`;tb.appendChild(e);}
+}
+function addGuest(){
+  const name=v("ag-name").trim();if(!name){showToast("Name is required","err");return;}
+  const tags=v("ag-tags").split(",").map(t=>t.trim()).filter(Boolean);
+  const id=Math.max(0,...customers.map(c=>c.id))+1;
+  customers.push({id,name,phone:v("ag-phone"),email:v("ag-email"),birthday:v("ag-birthday"),city:v("ag-city"),favorite:v("ag-favorite"),segment:v("ag-segment"),tags,notes:v("ag-notes"),visits:0,lastVisit:"—",totalSpent:0,joinDate:new Date().toISOString().slice(0,10)});
+  ["ag-name","ag-phone","ag-email","ag-birthday","ag-city","ag-favorite","ag-tags","ag-notes"].forEach(i=>{const el=$$(i);if(el)el.value="";});
+  closeModal("modal-add-guest");renderDatabase();renderDashboard();showToast("✅ Guest added!");
+}
+function editGuest(id){
+  const c=customers.find(x=>x.id===id);if(!c)return;
+  $$("eg-id").value=id;$$("edit-guest-title").textContent="Edit — "+c.name;
+  $$("eg-name").value=c.name;$$("eg-phone").value=c.phone||"";$$("eg-email").value=c.email||"";
+  $$("eg-city").value=c.city||"";$$("eg-birthday").value=c.birthday||"";
+  $$("eg-segment").value=c.segment||"New";$$("eg-favorite").value=c.favorite||"";
+  $$("eg-tags").value=(c.tags||[]).join(", ");$$("eg-notes").value=c.notes||"";
+  openModal("modal-edit-guest");
+}
+function saveEditGuest(){
+  const id=parseInt(v("eg-id")),idx=customers.findIndex(c=>c.id===id);if(idx<0)return;
+  const tags=v("eg-tags").split(",").map(t=>t.trim()).filter(Boolean);
+  customers[idx]={...customers[idx],name:v("eg-name"),phone:v("eg-phone"),email:v("eg-email"),city:v("eg-city"),birthday:v("eg-birthday"),segment:v("eg-segment"),favorite:v("eg-favorite"),tags,notes:v("eg-notes")};
+  closeModal("modal-edit-guest");renderDatabase();renderDashboard();showToast("✅ Guest updated!");
+}
+function deleteGuest(id){
+  if(!confirm("Remove this guest?"))return;
+  customers=customers.filter(c=>c.id!==id);if(dbExpId===id)dbExpId=null;
+  renderDatabase();renderDashboard();showToast("Guest removed","err");
+}
+
+// ─── ORDERS ──────────────────────────────────────────────────
+function renderOrders(){
+  const q=($$("ord-search")?.value||"").toLowerCase();
+  const list=[...orders].sort((a,b)=>b.date.localeCompare(a.date)).filter(o=>{const c=customers.find(x=>x.id===o.customerId);return!q||(c?.name||"").toLowerCase().includes(q);});
+  $$("orders-list").innerHTML=list.length===0?`<div class="empty">No orders found</div>`:list.map(o=>{
+    const c=customers.find(x=>x.id===o.customerId),tier=c?getTier(c.visits):"Bronze";
+    return`<div class="card"><div class="card-row">${av(c?.name||"G",tier,38)}<div style="flex:1;"><div style="font-size:14px;font-weight:700;">${c?.name||"Guest"}</div><div style="font-size:12px;color:var(--muted);">${o.date} · Table ${o.tableNo}</div></div><div style="text-align:right;margin-right:10px;"><div style="font-size:16px;font-weight:700;color:var(--olive);">${dollar(o.total)}</div><div style="font-size:11px;background:var(--green-l);color:var(--green);padding:1px 7px;border-radius:8px;display:inline-block;">${o.status}</div></div><button class="btn btn-ghost btn-sm" onclick="openCSATModal(${o.id})">+ Review</button></div><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">${o.items.map(i=>`<span class="item-chip">${i}</span>`).join("")}</div></div>`;
+  }).join("");
+}
+function buildOrderMenu(){
+  const bycat={};MENU.forEach(m=>{if(!bycat[m.cat])bycat[m.cat]=[];bycat[m.cat].push(m);});
+  let html="";
+  Object.entries(bycat).forEach(([cat,items])=>{
+    html+=`<div class="menu-section-label">${cat}</div><div class="menu-chips">`;
+    items.forEach(item=>{html+=`<button type="button" class="menu-chip" data-name="${item.name}" data-price="${item.price}" onclick="toggleMenuItem(this)">${item.name} <span class="mp">$${item.price.toFixed(2)}</span></button>`;});
+    html+="</div>";
+  });
+  $$("ao-menu").innerHTML=html;$$("ao-count").textContent="0";$$("ao-total").textContent="0.00";
+}
+function populateGuestSelect(){
+  const sel=$$("ao-guest");sel.innerHTML=`<option value="">Select guest…</option>`;
+  customers.forEach(c=>{const o=document.createElement("option");o.value=c.id;o.textContent=c.name;sel.appendChild(o);});
+}
+function toggleMenuItem(btn){
+  btn.classList.toggle("selected");
+  const sel=document.querySelectorAll(".menu-chip.selected");
+  let total=0;sel.forEach(c=>total+=parseFloat(c.dataset.price)||0);
+  $$("ao-count").textContent=sel.length;$$("ao-total").textContent=total.toFixed(2);
+}
+function addOrder(){
+  const gid=parseInt(v("ao-guest"));if(!gid){showToast("Select a guest","err");return;}
+  const chips=[...document.querySelectorAll(".menu-chip.selected")];if(!chips.length){showToast("Select menu items","err");return;}
+  const total=chips.reduce((s,c)=>s+parseFloat(c.dataset.price),0);
+  const id=Math.max(0,...orders.map(o=>o.id))+1,today=new Date().toISOString().slice(0,10);
+  orders.unshift({id,customerId:gid,date:today,items:chips.map(c=>c.dataset.name+" x1"),total,status:"Completed",tableNo:parseInt(v("ao-table"))||1});
+  const idx=customers.findIndex(c=>c.id===gid);
+  if(idx>=0){customers[idx].visits=(customers[idx].visits||0)+1;customers[idx].totalSpent=(customers[idx].totalSpent||0)+total;customers[idx].lastVisit=today;}
+  closeModal("modal-add-order");renderOrders();renderDashboard();showToast("✅ Order recorded!");
+}
+
+// ─── CSAT ────────────────────────────────────────────────────
+let csatFilter="All";
+const csatFields=["overall","food","service","ambiance","value"];
+const csatLabels={overall:"Overall ★",food:"Food Quality",service:"Service",ambiance:"Ambiance",value:"Value"};
+const csatRatings={overall:5,food:5,service:5,ambiance:5,value:5};
+
+function renderCSAT(){
+  const avgF=k=>avg(csatData.map(r=>r[k]));
+  const avgAll=avgF("overall"),rec=csatData.length?Math.round(csatData.filter(r=>r.recommend).length/csatData.length*100):0;
+  $$("csat-stats").innerHTML=`
+    <div class="stat" style="background:${avgAll>=4.5?"var(--green-l)":avgAll>=3.5?"var(--gold-l)":"var(--red-l)"};border-color:${sColor(avgAll)}30;"><div class="stat-label">Overall</div><div class="stat-value" style="color:${sColor(avgAll)};">${avgAll.toFixed(1)}/5</div><div class="stat-sub">${avgAll>=4.5?"Excellent":avgAll>=3.5?"Good":"Needs Work"}</div></div>
+    <div class="stat terra-s"><div class="stat-label">Food</div><div class="stat-value">${avgF("food").toFixed(1)}/5</div></div>
+    <div class="stat blue-s"><div class="stat-label">Service</div><div class="stat-value">${avgF("service").toFixed(1)}/5</div></div>
+    <div class="stat" style="background:var(--purple-l);border-color:var(--purple)30;"><div class="stat-label">Ambiance</div><div class="stat-value" style="color:var(--purple);">${avgF("ambiance").toFixed(1)}/5</div></div>
+    <div class="stat green-s"><div class="stat-label">Recommend %</div><div class="stat-value">${rec}%</div></div>
+  `;
+  $$("csat-dist").innerHTML=[5,4,3,2,1].map(s=>{
+    const cnt=csatData.filter(r=>r.overall===s).length,pct=csatData.length?Math.round(cnt/csatData.length*100):0;
+    const col=s>=4?"#2E7D50":s===3?"#C4972A":"#B52C1D";
+    return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><div style="min-width:60px;">${stars(s,13)}</div><div class="score-bar-wrap"><div class="score-bar-fill" style="background:${col};width:${pct}%;"></div></div><span style="font-size:12px;color:var(--muted);min-width:70px;">${cnt} (${pct}%)</span></div>`;
+  }).join("");
+  $$("csat-cats").innerHTML=[["Overall","overall"],["Food Quality","food"],["Service","service"],["Ambiance","ambiance"],["Value","value"]].map(([label,key])=>{
+    const val=avgF(key),col=sColor(val);
+    return`<div style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:13px;"><span>${label}</span><div style="display:flex;align-items:center;gap:6px;">${stars(Math.round(val),12)}<span style="font-weight:700;color:${col};">${val.toFixed(1)}</span></div></div><div class="score-bar-wrap"><div class="score-bar-fill" style="background:${col};width:${val/5*100}%;"></div></div></div>`;
+  }).join("");
+  $$("csat-filters").innerHTML=["All","5","4","3","2","1"].map(f=>`<button class="filter-pill${csatFilter===f?" active":""}" onclick="csatFilter='${f}';renderCSAT()">${f==="All"?f:f+"★"}</button>`).join("");
+  const filtered=csatData.filter(r=>csatFilter==="All"||String(r.overall)===csatFilter);
+  $$("csat-list-title").textContent=`All Reviews (${filtered.length})`;
+  $$("csat-reviews-list").innerHTML=filtered.length===0?`<div class="empty">No reviews yet</div>`:filtered.map(r=>{
+    const c=customers.find(x=>x.id===r.customerId),tier=c?getTier(c.visits):"Bronze";
+    const cls=r.overall>=4?"great":r.overall===3?"ok":"poor";
+    return`<div class="review-card ${cls}"><div style="display:flex;align-items:flex-start;gap:12px;">${av(c?.name||"G",tier,36)}<div style="flex:1;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><div><span style="font-size:14px;font-weight:700;">${c?.name||"Guest"}</span><span style="font-size:12px;color:var(--muted);margin-left:8px;">${r.date}</span></div><div style="display:flex;align-items:center;gap:6px;">${stars(r.overall,14)}<span style="font-size:13px;font-weight:700;color:${sColor(r.overall)};">${r.overall}/5</span></div></div><div class="review-chips"><span class="review-chip">🍽 Food <strong style="color:${sColor(r.food)};">${r.food}/5</strong></span><span class="review-chip">👨‍💼 Service <strong style="color:${sColor(r.service)};">${r.service}/5</strong></span><span class="review-chip">🏛 Ambiance <strong style="color:${sColor(r.ambiance)};">${r.ambiance}/5</strong></span><span class="review-chip">💰 Value <strong style="color:${sColor(r.value)};">${r.value}/5</strong></span><span class="review-chip" style="${r.recommend?"background:var(--green-l);border-color:var(--green);color:var(--green);":"color:var(--muted);"}">${r.recommend?"✓ Would recommend":"✗ Wouldn't recommend"}</span></div>${r.comment?`<div style="font-size:13px;font-style:italic;line-height:1.5;">"${r.comment}"</div>`:""}</div><button onclick="csatData=csatData.filter(x=>x.id!==${r.id});renderCSAT();renderDashboard();" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted);">×</button></div></div>`;
+  }).join("");
+}
+function openCSATModal(ordId){
+  const o=orders.find(x=>x.id===ordId);if(!o)return;
+  const c=customers.find(x=>x.id===o.customerId);
+  $$("csat-modal-title").textContent="⭐ Review — "+(c?.name||"Guest");
+  $$("cs-order-id").value=ordId;$$("cs-cust-id").value=o.customerId;
+  $$("cs-order-info").textContent=`Order #${o.id} · ${o.date} · Table ${o.tableNo} · ${dollar(o.total)}`;
+  $$("cs-comment").value="";$$("cs-rec").checked=true;
+  csatFields.forEach(f=>csatRatings[f]=5);buildCSATStars();openModal("modal-add-csat");
+}
+function buildCSATStars(){
+  $$("cs-stars").innerHTML=csatFields.map(f=>`<div class="star-row"><span class="cat-lbl">${csatLabels[f]}</span><div class="star-picker" id="sp-${f}">${[1,2,3,4,5].map(n=>`<span class="${n<=csatRatings[f]?"on":""}" onclick="setCSATStar('${f}',${n})">★</span>`).join("")}</div><span class="star-val" id="sv-${f}">${csatRatings[f]}/5</span></div>`).join("");
+}
+function setCSATStar(field,val){
+  csatRatings[field]=val;
+  $$("sp-"+field).querySelectorAll("span").forEach((s,i)=>s.classList.toggle("on",i<val));
+  $$("sv-"+field).textContent=val+"/5";
+}
+function submitCSAT(){
+  const ordId=parseInt(v("cs-order-id")),custId=parseInt(v("cs-cust-id"));
+  const o=orders.find(x=>x.id===ordId);
+  csatData.unshift({id:Math.max(0,...csatData.map(r=>r.id))+1,customerId:custId,orderId:ordId,date:o?.date||new Date().toISOString().slice(0,10),...Object.fromEntries(csatFields.map(f=>[f,csatRatings[f]])),comment:v("cs-comment"),recommend:$$("cs-rec").checked});
+  closeModal("modal-add-csat");renderCSAT();renderDashboard();showToast("⭐ Review submitted!");
+}
+
+// ─── LOYALTY ─────────────────────────────────────────────────
+function renderLoyalty(){
+  const tiers=[
+    {name:"Platinum",min:20,perks:["Free dessert every visit","Priority booking","Birthday dinner for 2","Exclusive menu preview"]},
+    {name:"Gold",min:12,perks:["10% discount on all orders","Free wine monthly","Birthday baklava platter"]},
+    {name:"Silver",min:6,perks:["5% discount","Free Greek coffee","Birthday dessert"]},
+    {name:"Bronze",min:0,perks:["Welcome drink on first visit","Access to specials menu"]}
+  ];
+  const now=new Date();
+  const upcoming=customers.filter(c=>c.birthday).map(c=>{
+    const[,m,d]=c.birthday.split("-");
+    let dt=new Date(now.getFullYear(),parseInt(m)-1,parseInt(d));
+    if(dt<now)dt.setFullYear(now.getFullYear()+1);
+    return{...c,daysLeft:Math.ceil((dt-now)/86400000)};
+  }).filter(c=>c.daysLeft<=30).sort((a,b)=>a.daysLeft-b.daysLeft);
+  $$("loyalty-birthdays").innerHTML=upcoming.length===0?"":
+    `<div class="bday-alert"><div style="font-size:14px;font-weight:700;margin-bottom:10px;">🎂 Upcoming Birthdays (next 30 days)</div>${upcoming.map(c=>`<div class="bday-row">${av(c.name,getTier(c.visits),28)}<span style="font-size:13px;font-weight:600;flex:1;">${c.name}</span><span style="font-size:12px;color:var(--muted);">${c.birthday}</span><span class="bday-badge">in ${c.daysLeft}d</span></div>`).join("")}</div>`;
+  $$("loyalty-tiers").innerHTML=tiers.map(t=>{
+    const lc=LC[t.name],members=customers.filter(c=>getTier(c.visits)===t.name);
+    return`<div class="loyalty-tier"><div class="loyalty-head" style="background:${lc.bg};"><div style="display:flex;align-items:center;gap:10px;"><span style="width:10px;height:10px;border-radius:50%;background:${lc.dot};display:inline-block;"></span><span style="font-size:16px;font-weight:700;color:${lc.text};">${t.name}</span><span style="font-size:12px;color:${lc.text};opacity:.7;">${t.min>0?t.min+"+":"0+"} visits</span></div><span style="font-size:14px;font-weight:700;color:${lc.text};">${members.length} guest${members.length!==1?"s":""}</span></div><div class="loyalty-body"><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:${members.length?12:0}px;">${t.perks.map(p=>`<span class="perk-chip">✓ ${p}</span>`).join("")}</div>${members.length?`<div class="members-row">${members.map(m=>`<div class="member-pill">${av(m.name,t.name,24)}<span style="font-size:12px;">${m.name.split(" ")[0]}</span></div>`).join("")}</div>`:""}</div></div>`;
+  }).join("");
+}
+
+
+// ─── QR CODE ENGINE ──────────────────────────────────────────
+// Minimal QR Code generator (no external libs needed)
+// Uses a compact built-in QR matrix builder for URL encoding
+
+const QRCode = (function(){
+  // Reed-Solomon & QR encode for short URLs — pure JS
+  function _encode(text){
+    // We build a simple 25x25 QR (version 2) enough for short URLs
+    // For reliability we use a data-URI approach with the qr-server API
+    // rendered entirely onto a canvas from image
+    return text;
+  }
+
+  function draw(canvasId, text, size=220){
+    const canvas = document.getElementById(canvasId);
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = size; canvas.height = size;
+
+    // Use Google Charts QR API (works offline-friendly via CDN)
+    // Fallback: draw a manual pattern
+    const img = new Image();
+    const encoded = encodeURIComponent(text);
+    img.crossOrigin = "anonymous";
+
+    // Primary: Google Charts
+    img.src = `https://chart.googleapis.com/chart?cht=qr&chs=${size}x${size}&chl=${encoded}&choe=UTF-8&chld=M|2`;
+
+    img.onload = () => {
+      ctx.clearRect(0,0,size,size);
+      // White bg
+      ctx.fillStyle="#fff";
+      ctx.roundRect(0,0,size,size,14);
+      ctx.fill();
+      ctx.drawImage(img, 10, 10, size-20, size-20);
+      // Add tiny logo watermark center
+      ctx.fillStyle="rgba(27,79,138,0.08)";
+      ctx.font="bold 9px system-ui";
+      ctx.textAlign="center";
+      ctx.fillText("GREEK TO GO",size/2,size-6);
+    };
+
+    img.onerror = () => {
+      // Offline fallback: draw a simple branded placeholder
+      ctx.fillStyle="#1B4F8A";
+      ctx.roundRect(0,0,size,size,14); ctx.fill();
+      ctx.fillStyle="#fff";
+      ctx.font="bold 18px system-ui";
+      ctx.textAlign="center";
+      ctx.fillText("QR CODE",size/2,size/2-24);
+      ctx.font="12px system-ui";
+      ctx.fillStyle="rgba(255,255,255,.7)";
+      ctx.fillText("Connect to internet",size/2,size/2);
+      ctx.fillText("to generate QR",size/2,size/2+18);
+      ctx.fillText(text.slice(0,32)+"…",size/2,size/2+44);
+    };
+  }
+  return { draw };
+})();
+
+let currentQRUrl = "greektogo-register.html";
+
+function initQR(){
+  const url = currentQRUrl;
+  document.getElementById("qr-url-display").textContent = url;
+  document.getElementById("qr-custom-url").value = url.startsWith("greektogo") ? "" : url;
+  QRCode.draw("qr-canvas", url, 220);
+}
+
+function regenerateQR(){
+  const custom = document.getElementById("qr-custom-url").value.trim();
+  currentQRUrl = custom || "greektogo-register.html";
+  document.getElementById("qr-url-display").textContent = currentQRUrl;
+  QRCode.draw("qr-canvas", currentQRUrl, 220);
+  showToast("QR code updated!","ok");
+}
+
+function downloadQR(){
+  const canvas = document.getElementById("qr-canvas");
+  const link = document.createElement("a");
+  link.download = "greektogo-qr-registration.png";
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+  showToast("QR code downloaded!","ok");
+}
+
+function copyQRUrl(){
+  navigator.clipboard.writeText(currentQRUrl)
+    .then(()=>showToast("URL copied to clipboard!","ok"))
+    .catch(()=>showToast("Copy failed — copy from the box above","err"));
+}
+
+function printQR(){
+  const canvas = document.getElementById("qr-canvas");
+  const dataUrl = canvas.toDataURL("image/png");
+  const w = window.open("","_blank");
+  w.document.write(`
+    <!DOCTYPE html><html><head><title>GreekToGo — QR Registration</title>
+    <style>
+      body{font-family:system-ui,sans-serif;text-align:center;padding:40px;background:#fff;}
+      .qr-print-card{display:inline-block;border:2px solid #1B4F8A;border-radius:16px;padding:32px 40px;margin:auto;}
+      .logo-name{font-size:28px;font-weight:900;color:#1B4F8A;letter-spacing:-.01em;}
+      .logo-sub{font-size:13px;letter-spacing:.15em;text-transform:uppercase;color:#C4972A;margin-bottom:20px;}
+      img{display:block;margin:0 auto 20px;width:220px;height:220px;}
+      .scan-msg{font-size:16px;font-weight:700;color:#1B4F8A;margin-bottom:6px;}
+      .scan-sub{font-size:13px;color:#6B6B68;margin-bottom:14px;}
+      .meander{height:5px;background:repeating-linear-gradient(90deg,#C4972A 0,#C4972A 4px,transparent 4px,transparent 9px);border-radius:4px;margin:16px 0;}
+      .perks{font-size:12px;color:#6B6B68;line-height:1.8;}
+      @media print{body{padding:0;}}
+    </style></head>
+    <body>
+    <div class="qr-print-card">
+      <div class="logo-name">Greek To Go</div>
+      <div class="logo-sub">Taverna · Filoxenia Club</div>
+      <div class="meander"></div>
+      <img src="${dataUrl}" alt="QR Code"/>
+      <div class="scan-msg">📱 Scan to join our Guest Club</div>
+      <div class="scan-sub">Register in 60 seconds and unlock exclusive perks</div>
+      <div class="meander"></div>
+      <div class="perks">
+        🎂 Birthday treats &nbsp;·&nbsp; ⭐ Loyalty rewards<br>
+        🍽 Personalised offers &nbsp;·&nbsp; 🏆 VIP experiences
+      </div>
+    </div>
+    <scr'+'ipt>window.onload=()=>{window.print();}<\/scr'+'ipt>
+    </body></html>`);
+  w.document.close();
+}
+
+// ── Pending registrations (from localStorage) ─────────────────
+let pendingGuests = [];
+
+function loadPending(){
+  try {
+    pendingGuests = JSON.parse(localStorage.getItem("gtg_pending_guests")||"[]");
+  } catch(e){ pendingGuests=[]; }
+  renderPending();
+}
+
+function renderPending(){
+  const el = document.getElementById("pending-list");
+  const count = pendingGuests.length;
+  document.getElementById("pending-count").textContent = count;
+  document.getElementById("pending-actions").classList.toggle("hidden", count===0);
+
+  if(!count){
+    el.innerHTML=`<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">No pending registrations yet.<br>Share the QR code so guests can self-register!</div>`;
+    return;
+  }
+
+  el.innerHTML = pendingGuests.map((g,i)=>`
+    <div class="pending-item" id="pi-${i}">
+      <div style="flex-shrink:0;">${avatar(g.name||"G","Bronze",36)}</div>
+      <div class="pending-item-info">
+        <div class="pending-item-name">${g.name||"Unknown"}</div>
+        <div class="pending-item-meta">${g.email||""} ${g.phone?"· "+g.phone:""}</div>
+        <div class="pending-item-meta" style="color:var(--olive);">📱 Via QR · ${g.joinDate||""} ${g.city?"· "+g.city:""}</div>
+        ${g.tags?.length?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">${g.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>`:""}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <button class="btn-approve" onclick="approvePending(${i})">✓ Add</button>
+        <button class="btn-reject"  onclick="rejectPending(${i})">✕</button>
+      </div>
+    </div>`).join("");
+}
+
+function approvePending(idx){
+  const g = pendingGuests[idx];
+  if(!g) return;
+  const newId = Math.max(0,...customers.map(c=>c.id))+1;
+  customers.push({
+    id:newId, name:g.name||"Guest", phone:g.phone||"", email:g.email||"",
+    birthday:g.birthday||"", city:g.city||"", favorite:g.favorite||"",
+    segment:g.segment||"New", tags:g.tags||[], notes:g.notes||"",
+    visits:0, lastVisit:"—", totalSpent:0, joinDate:g.joinDate||"",
+    source:"QR Registration"
+  });
+  pendingGuests.splice(idx,1);
+  localStorage.setItem("gtg_pending_guests", JSON.stringify(pendingGuests));
+  renderPending();
+  renderDatabase();
+  renderDashboard();
+  showToast(`✅ ${g.name} added to the database!`,"ok");
+}
+
+function rejectPending(idx){
+  const g = pendingGuests[idx];
+  pendingGuests.splice(idx,1);
+  localStorage.setItem("gtg_pending_guests", JSON.stringify(pendingGuests));
+  renderPending();
+  showToast(`${g?.name||"Guest"} removed from pending`,"ok");
+}
+
+function approveAllPending(){
+  if(!pendingGuests.length) return;
+  const count = pendingGuests.length;
+  [...pendingGuests].forEach((_,i)=>approvePending(0));
+  showToast(`✅ ${count} guest${count>1?"s":""} added to the database!`,"ok");
+}
+
+function clearPending(){
+  if(!confirm("Clear all pending registrations?")) return;
+  pendingGuests=[];
+  localStorage.setItem("gtg_pending_guests","[]");
+  renderPending();
+}
+
+// ── DB tab switcher ───────────────────────────────────────────
+function dbSwitchTab(tab){
+  document.getElementById("dbpanel-list").classList.toggle("hidden", tab!=="list");
+  document.getElementById("dbpanel-qr").classList.toggle("hidden",  tab!=="qr");
+  document.getElementById("dbn-list").classList.toggle("active", tab==="list");
+  document.getElementById("dbn-qr").classList.toggle("active",   tab==="qr");
+  if(tab==="qr"){ initQR(); loadPending(); }
+}
+
+
+// ─── BLAST — BUILT-IN EMAIL SYSTEM ──────────────────────────
+let recSegFilter="All", selectedRecs=new Set();
+let outbox=[], currentEmailId=null;
+
+// ── TEMPLATES ────────────────────────────────────────────────
+const TEMPLATES={
+  promo:     {subject:"🎉 An exclusive offer for you, {{name}}!",     body:"Dear {{first_name}},\n\nAs one of our cherished {{tier}} guests, we have a very special offer waiting for you.\n\nEnjoy 20% off your next visit with the code {{discount_code}} — valid this week only!\n\nWe look forward to seeing you at GreekToGo very soon.\n\nOpa! 🏺\nThe GreekToGo Team", cta:"Claim Your Offer", ctaLink:"https://greektogo.com/book"},
+  birthday:  {subject:"🎂 Happy Birthday from GreekToGo, {{name}}!",  body:"Dear {{first_name}},\n\nHappy Birthday! 🎂🎉\n\nAll of us at GreekToGo want to make your special day even more memorable. Come celebrate with us and enjoy a complimentary dessert — on the house!\n\nYour favourite table is waiting for you.\n\nWith love from Athens,\nThe GreekToGo Team 🏺", cta:"Reserve Your Birthday Table", ctaLink:"https://greektogo.com/book"},
+  loyalty:   {subject:"⭐ You've reached {{tier}} status, {{name}}!", body:"Dear {{first_name}},\n\nWith {{visits}} visits to GreekToGo, you've officially achieved {{tier}} status in our Filoxenia Club!\n\nAs a thank you, you now enjoy exclusive perks including priority seating, complimentary treats, and more.\n\nThank you for being a part of our family.\n\nKalimera! 🏺\nThe GreekToGo Team", cta:"View Your Perks", ctaLink:"https://greektogo.com/loyalty"},
+  event:     {subject:"🏺 You're invited to our Greek Night, {{name}}!", body:"Dear {{first_name}},\n\nWe are hosting an exclusive Greek Night on Friday, September 5th — and you're on the VIP list!\n\nLive bouzouki music · Traditional meze · Curated wine menu\n\nSeating is very limited. Reply to reserve your table today.\n\nΟπα! 🎶\nThe GreekToGo Team", cta:"Reserve My Seat", ctaLink:"https://greektogo.com/greek-night"},
+  feedback:  {subject:"💬 How was your visit, {{name}}?",              body:"Dear {{first_name}},\n\nThank you for visiting GreekToGo! We hope you enjoyed your time with us.\n\nWe'd love to hear what you thought — your feedback helps us serve you better.\n\nWith appreciation,\nThe GreekToGo Team 🏺", cta:"Share Your Feedback", ctaLink:"https://greektogo.com/feedback"},
+  reactivate:{subject:"We miss you, {{name}}! 💙",                     body:"Dear {{first_name}},\n\nIt has been a while since we've seen you at GreekToGo, and we miss you!\n\nCome back and enjoy your favourite {{favorite}} — use code WELCOME10 for 10% off your next visit. This offer is just for you.\n\nKalos irthate — welcome back! 🏺\nThe GreekToGo Team", cta:"Come Back & Dine", ctaLink:"https://greektogo.com/book"},
+  seasonal:  {subject:"🌿 Our new seasonal menu is here, {{name}}!",   body:"Dear {{first_name}},\n\nSpring has arrived in Athens, and so has our brand-new seasonal menu at GreekToGo!\n\nFresh ingredients, classic flavours, and a few exciting new dishes await you.\n\nKali orexi! 🌿\nThe GreekToGo Team", cta:"See the New Menu", ctaLink:"https://greektogo.com/menu"},
+  thankyou:  {subject:"🙏 Thank you, {{name}} — you mean the world to us!", body:"Dear {{first_name}},\n\nWe simply wanted to say thank you. Your support, your loyalty, and your smiles make everything we do worthwhile.\n\nWith {{visits}} visits to GreekToGo, you are truly part of our family.\n\nWith warmth from Athens,\nThe GreekToGo Team 🏺", cta:"", ctaLink:""},
+};
+
+function applyTemplate(){
+  const key=document.getElementById("bl-template").value;
+  if(!key) return;
+  const t=TEMPLATES[key];
+  document.getElementById("bl-subject").value  = t.subject;
+  document.getElementById("bl-body").value     = t.body;
+  document.getElementById("bl-cta-text").value = t.cta||"";
+  document.getElementById("bl-cta-link").value = t.ctaLink||"";
+  livePreview();
+}
+
+function insertTag(tag){
+  const ta=document.getElementById("bl-body");
+  const s=ta.selectionStart, e=ta.selectionEnd;
+  ta.value=ta.value.slice(0,s)+tag+ta.value.slice(e);
+  ta.selectionStart=ta.selectionEnd=s+tag.length;
+  ta.focus(); livePreview();
+}
+
+// ── PERSONALISE ──────────────────────────────────────────────
+function personalize(text, cust){
+  if(!cust||!text) return text||"";
+  const code="GREEK"+Math.floor(Math.random()*9000+1000);
+  return text
+    .replace(/{{name}}/g,        cust.name||"")
+    .replace(/{{first_name}}/g,  (cust.name||"Guest").split(" ")[0])
+    .replace(/{{tier}}/g,        getTier(cust.visits))
+    .replace(/{{favorite}}/g,    cust.favorite||"your favourite dish")
+    .replace(/{{visits}}/g,      cust.visits||0)
+    .replace(/{{city}}/g,        cust.city||"your city")
+    .replace(/{{discount_code}}/g, code);
+}
+
+// ── BUILD RENDERED EMAIL HTML ─────────────────────────────────
+function buildRenderedEmail(cust){
+  const fromName = document.getElementById("bl-from").value||"GreekToGo Taverna";
+  const subject  = personalize(document.getElementById("bl-subject").value||"", cust);
+  const body     = personalize(document.getElementById("bl-body").value||"", cust);
+  const ctaText  = document.getElementById("bl-cta-text").value||"";
+  const ctaLink  = document.getElementById("bl-cta-link").value||"#";
+  const firstName= (cust.name||"Guest").split(" ")[0];
+
+  const ctaBlock = ctaText
+    ? `<div style="margin:22px 0;text-align:center;">
+        <a href="${ctaLink}" style="background:#1B4F8A;color:#fff;padding:13px 30px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;font-family:system-ui,sans-serif;">${ctaText}</a>
+       </div>` : "";
+
+  const bodyLines = body.split("\n").map(l=>
+    l.trim()===""
+      ? `<div style="height:10px;"></div>`
+      : `<div style="margin-bottom:4px;">${l}</div>`
+  ).join("");
+
+  return `<div style="background:#E0DDD6;padding:20px;border-radius:10px;">
+    <div style="background:#fff;border-radius:10px;max-width:540px;margin:0 auto;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.1);font-family:Georgia,serif;">
+      <!-- Header -->
+      <div style="background:#1B4F8A;padding:22px 28px;text-align:center;">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNjAgMTAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWw9IkdyZWVrIFRvIEdvIFRhdmVybmEiPgogIDxyZWN0IHdpZHRoPSIyNjAiIGhlaWdodD0iMTAwIiByeD0iMTAiIGZpbGw9IiMyODM1OTMiLz4KICA8IS0tIFdoaXRlIGNhcmQgc2hhcGUgd2l0aCBvbGl2ZSBicmFuY2ggLS0+CiAgPHJlY3QgeD0iOCIgeT0iMTIiIHdpZHRoPSI1MiIgaGVpZ2h0PSI3NiIgcng9IjgiIGZpbGw9IndoaXRlIi8+CiAgPCEtLSBPbGl2ZSBicmFuY2ggc2ltcGxpZmllZCAtLT4KICA8ZyBmaWxsPSIjMjgzNTkzIj4KICAgIDxlbGxpcHNlIGN4PSIyOCIgY3k9IjU4IiByeD0iNyIgcnk9IjQiIHRyYW5zZm9ybT0icm90YXRlKC00MCAyOCA1OCkiLz4KICAgIDxlbGxpcHNlIGN4PSIyMiIgY3k9IjUwIiByeD0iNiIgcnk9IjMuNSIgdHJhbnNmb3JtPSJyb3RhdGUoLTUwIDIyIDUwKSIvPgogICAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iNDgiIHJ4PSI2IiByeT0iMy41IiB0cmFuc2Zvcm09InJvdGF0ZSgtMzAgMzIgNDgpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMTgiIGN5PSI0MiIgcng9IjUiIHJ5PSIzIiB0cmFuc2Zvcm09InJvdGF0ZSgtNTUgMTggNDIpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjgiIGN5PSIzOCIgcng9IjUiIHJ5PSIzIiB0cmFuc2Zvcm09InJvdGF0ZSgtMzUgMjggMzgpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzYiIGN5PSIzNiIgcng9IjUiIHJ5PSIzIiB0cmFuc2Zvcm09InJvdGF0ZSgtMjAgMzYgMzYpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIzMiIgcng9IjQiIHJ5PSIyLjUiIHRyYW5zZm9ybT0icm90YXRlKC02MCAyMCAzMikiLz4KICAgIDxlbGxpcHNlIGN4PSIzMCIgY3k9IjI4IiByeD0iNCIgcnk9IjIuNSIgdHJhbnNmb3JtPSJyb3RhdGUoLTQwIDMwIDI4KSIvPgogICAgPGNpcmNsZSBjeD0iMjQiIGN5PSI0NCIgcj0iMi41Ii8+CiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjQwIiByPSIyLjUiLz4KICAgIDxjaXJjbGUgY3g9IjI4IiBjeT0iMzIiIHI9IjIiLz4KICAgIDwhLS0gc3RlbSAtLT4KICAgIDxsaW5lIHgxPSIyOCIgeTE9IjY1IiB4Mj0iMjgiIHkyPSIyNSIgc3Ryb2tlPSIjMjgzNTkzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8L2c+CiAgPCEtLSBHUkVFSyBUTyBHTyB0ZXh0IC0tPgogIDx0ZXh0IHg9IjcyIiB5PSI0NiIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iOTAwIiBsZXR0ZXItc3BhY2luZz0iMSI+R1JFRUs8L3RleHQ+CiAgPHRleHQgeD0iNzIiIHk9IjcyIiBmaWxsPSJ3aGl0ZSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtd2VpZ2h0PSI5MDAiIGxldHRlci1zcGFjaW5nPSIxIj5UTyBHTzwvdGV4dD4KICA8IS0tIFRBVkVSTkEgc3ViIC0tPgogIDx0ZXh0IHg9IjcyIiB5PSI4OCIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iNDAwIiBsZXR0ZXItc3BhY2luZz0iNSI+VEFWRVJOQTwvdGV4dD4KPC9zdmc+" alt="GreekToGo" style="height:40px;width:auto;border-radius:4px;margin-bottom:4px;"/>
+        <div style="color:#fff;font-size:18px;font-weight:800;font-family:system-ui,sans-serif;margin-top:4px;">${fromName}</div>
+        <div style="color:rgba(255,255,255,.55);font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-family:system-ui,sans-serif;margin-top:2px;">Μεσόγειος Restaurant Group · Athens</div>
+      </div>
+      <!-- Gold meander -->
+      <div style="height:5px;background:repeating-linear-gradient(90deg,#C4972A 0,#C4972A 4px,transparent 4px,transparent 9px);"></div>
+      <!-- Body -->
+      <div style="padding:24px 28px;">
+        <div style="font-size:15px;font-weight:700;color:#1B4F8A;margin-bottom:12px;font-family:system-ui,sans-serif;">Dear ${firstName},</div>
+        <div style="font-size:14px;color:#2A2A28;line-height:1.8;font-family:Georgia,serif;">${bodyLines}</div>
+        ${ctaBlock}
+      </div>
+      <!-- Divider -->
+      <div style="height:1px;background:#D8D4C8;margin:0 28px;"></div>
+      <!-- Footer -->
+      <div style="background:#F5F3EE;padding:14px 28px;text-align:center;">
+        <div style="font-size:10px;color:#6B6B68;line-height:1.7;font-family:system-ui,sans-serif;">
+          © 2026 GreekToGo Taverna · Athens, Greece<br>
+          <span style="color:#1B4F8A;cursor:pointer;">Unsubscribe</span> · <span style="color:#1B4F8A;cursor:pointer;">Privacy Policy</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── LIVE PREVIEW ─────────────────────────────────────────────
+function livePreview(){
+  const body = document.getElementById("bl-body").value||"";
+  const subj = document.getElementById("bl-subject").value||"";
+  const cc   = document.getElementById("char-count");
+  cc.textContent = body.length+" characters";
+  cc.className   = "char-count"+(body.length>800?" char-warn":"");
+
+  const cust = [...selectedRecs].map(id=>customers.find(c=>c.id===id)).filter(Boolean)[0] || customers[0];
+
+  document.getElementById("ep-addr").textContent = subj
+    ? personalize(subj, cust) : "(no subject)";
+
+  const epBody = document.getElementById("ep-body");
+  if(!body.trim()){
+    epBody.innerHTML=`<div style="color:var(--muted);text-align:center;padding:30px;font-size:13px;">Your email preview will appear here…</div>`;
+  } else {
+    epBody.innerHTML = buildRenderedEmail(cust);
+  }
+  updateBlastSummary();
+}
+
+function updateBlastSummary(){
+  const count    = selectedRecs.size;
+  const withEmail= customers.filter(c=>selectedRecs.has(c.id)&&c.email).length;
+  const noEmail  = count-withEmail;
+  const tiers    = {Platinum:0,Gold:0,Silver:0,Bronze:0};
+  customers.filter(c=>selectedRecs.has(c.id)).forEach(c=>tiers[getTier(c.visits)]++);
+  document.getElementById("blast-summary").innerHTML = count===0 ? "" :
+    `<div style="background:var(--blue-l);border-radius:10px;padding:12px 14px;font-size:12px;">
+      <div style="display:flex;gap:16px;margin-bottom:8px;">
+        <div><span style="font-size:18px;font-weight:700;color:var(--blue);">${count}</span> <span style="color:var(--muted);">recipients</span></div>
+        <div><span style="font-size:18px;font-weight:700;color:var(--green);">${withEmail}</span> <span style="color:var(--muted);">with email</span></div>
+        ${noEmail>0?`<div><span style="font-size:18px;font-weight:700;color:var(--terra);">${noEmail}</span> <span style="color:var(--muted);">no email (skipped)</span></div>`:""}
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;">
+        ${Object.entries(tiers).filter(([,v])=>v>0).map(([t,v])=>`<span class="badge ${t}">${t} ${v}</span>`).join("")}
+      </div>
+    </div>`;
+}
+
+// ── RECIPIENT LIST ────────────────────────────────────────────
+function getFilteredRecs(){
+  const now=new Date();
+  return customers.filter(c=>{
+    if(recSegFilter==="All") return true;
+    if(recSegFilter==="Gold") return getTier(c.visits)==="Gold"||getTier(c.visits)==="Platinum";
+    if(["Platinum","Silver","Bronze"].includes(recSegFilter)) return getTier(c.visits)===recSegFilter;
+    if(recSegFilter==="Birthday"){
+      if(!c.birthday) return false;
+      const[,m,d]=c.birthday.split("-");
+      let dt=new Date(now.getFullYear(),parseInt(m)-1,parseInt(d));
+      if(dt<now) dt.setFullYear(now.getFullYear()+1);
+      return Math.ceil((dt-now)/86400000)<=30;
+    }
+    return c.segment===recSegFilter;
+  });
+}
+
+function renderRecList(){
+  const recs=getFilteredRecs();
+  document.getElementById("rec-items").innerHTML = recs.length===0
+    ? `<div class="empty">No guests in this filter</div>`
+    : recs.map(c=>`
+        <div class="rec-item${selectedRecs.has(c.id)?" on":""}" onclick="toggleRec(${c.id},this)">
+          <input type="checkbox" class="rec-check" ${selectedRecs.has(c.id)?"checked":""} onclick="event.stopPropagation()" onchange="toggleRec(${c.id},this.closest('.rec-item'))"/>
+          ${av(c.name,getTier(c.visits),26)}
+          <div style="flex:1;">
+            <div class="rec-name">${c.name}</div>
+            <div class="rec-contact">${c.email||"<span style='color:var(--terra);'>no email address</span>"}</div>
+          </div>
+          ${badge(getTier(c.visits))}
+        </div>`).join("");
+  updateRecCount();
+}
+
+function toggleRec(id,el){
+  if(selectedRecs.has(id)){selectedRecs.delete(id);el.classList.remove("on");el.querySelector("input").checked=false;}
+  else{selectedRecs.add(id);el.classList.add("on");el.querySelector("input").checked=true;}
+  updateRecCount(); livePreview();
+}
+
+function toggleAllRec(checked){
+  getFilteredRecs().forEach(c=>{if(checked)selectedRecs.add(c.id);else selectedRecs.delete(c.id);});
+  renderRecList(); livePreview();
+}
+
+function setRecFilter(btn){
+  document.querySelectorAll(".rec-f-btn").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on"); recSegFilter=btn.dataset.seg;
+  renderRecList();
+}
+
+function updateRecCount(){
+  document.getElementById("rec-count").textContent=selectedRecs.size+" selected";
+  const all=getFilteredRecs();
+  document.getElementById("rec-all").checked=all.length>0&&all.every(c=>selectedRecs.has(c.id));
+}
+
+// ── QUEUE TO OUTBOX ───────────────────────────────────────────
+function queueBlast(){
+  if(!selectedRecs.size){showToast("Select at least one recipient","err");return;}
+  const subj=document.getElementById("bl-subject").value.trim();
+  const body=document.getElementById("bl-body").value.trim();
+  const from=document.getElementById("bl-from").value||"GreekToGo Taverna";
+  if(!subj){showToast("Add a subject line first","err");return;}
+  if(!body){showToast("Write a message body first","err");return;}
+
+  const recips=customers.filter(c=>selectedRecs.has(c.id)&&c.email);
+  const skipped=customers.filter(c=>selectedRecs.has(c.id)&&!c.email);
+  if(!recips.length){showToast("No selected guests have email addresses","err");return;}
+
+  const ts=new Date().toLocaleString("en-GB",{dateStyle:"short",timeStyle:"short"});
+
+  recips.forEach(cust=>{
+    outbox.push({
+      id: Date.now()+Math.random(),
+      guestId:   cust.id,
+      guestName: cust.name,
+      email:     cust.email,
+      from:      from,
+      subject:   personalize(subj, cust),
+      body:      personalize(body, cust),
+      html:      buildRenderedEmail(cust),
+      ctaText:   document.getElementById("bl-cta-text").value,
+      ctaLink:   document.getElementById("bl-cta-link").value,
+      queuedAt:  ts,
+      status:    "queued",
+      tier:      getTier(cust.visits),
+    });
+  });
+
+  updateOutboxBadge();
+  blastSwitchTab("outbox");
+  let msg=`📤 ${recips.length} email${recips.length>1?"s":""} queued in Outbox!`;
+  if(skipped.length) msg+=` (${skipped.length} skipped — no email)`;
+  showToast(msg,"ok");
+
+  // Reset form
+  selectedRecs.clear();
+  renderRecList();
+}
+
+function updateOutboxBadge(){
+  const q=outbox.filter(e=>e.status==="queued").length;
+  document.getElementById("bsn-outbox-count").textContent=q;
+  document.getElementById("bsn-outbox-count").style.display=q>0?"inline":"none";
+}
+
+// ── OUTBOX ───────────────────────────────────────────────────
+function renderOutbox(){
+  const el=document.getElementById("outbox-list");
+  const list=[...outbox].reverse();
+  if(!list.length){
+    el.innerHTML=`<div class="sent-log-empty">No emails in outbox. Compose a blast and it will appear here for review.</div>`;
+    document.getElementById("email-reader").classList.add("hidden");
+    return;
+  }
+  el.innerHTML=list.map(e=>`
+    <div class="outbox-item${e.status==="sent"?" ob-sent":""}" id="ob-${e.id}" onclick="openEmailReader('${e.id}')">
+      <div class="ob-left">
+        ${av(e.guestName,e.tier,34)}
+        <div class="ob-info">
+          <div class="ob-name">${e.guestName} <span class="ob-email">&lt;${e.email}&gt;</span></div>
+          <div class="ob-subject">${e.subject}</div>
+          <div class="ob-meta">Queued ${e.queuedAt}</div>
+        </div>
+      </div>
+      <div class="ob-right">
+        ${e.status==="sent"
+          ?`<span class="status-badge sent">✓ Sent</span>`
+          :`<span class="status-badge queued">Queued</span>`}
+        <button class="ob-mark-btn" onclick="event.stopPropagation();markSingle('${e.id}')">${e.status==="sent"?"Undo":"✓ Mark Sent"}</button>
+        <button class="ob-del-btn"  onclick="event.stopPropagation();deleteEmail('${e.id}')">🗑</button>
+      </div>
+    </div>`).join("");
+}
+
+function openEmailReader(id){
+  const e=outbox.find(x=>String(x.id)===String(id));
+  if(!e) return;
+  currentEmailId=id;
+  document.getElementById("reader-to").textContent=`${e.guestName} <${e.email}>`;
+  document.getElementById("reader-from").textContent=e.from;
+  document.getElementById("reader-subject").textContent=e.subject;
+  document.getElementById("reader-queued").textContent=e.queuedAt;
+  document.getElementById("reader-body-wrap").innerHTML=e.html;
+  const markBtn=document.getElementById("reader-mark-btn");
+  markBtn.textContent=e.status==="sent"?"✓ Sent (Undo)":"✓ Mark as Sent";
+  markBtn.style.background=e.status==="sent"?"var(--green)":"var(--blue)";
+  document.getElementById("email-reader").classList.remove("hidden");
+  document.getElementById("outbox-list").classList.add("hidden");
+}
+
+function closeReader(){
+  document.getElementById("email-reader").classList.add("hidden");
+  document.getElementById("outbox-list").classList.remove("hidden");
+  currentEmailId=null;
+}
+
+function markCurrentSent(){
+  if(!currentEmailId) return;
+  markSingle(currentEmailId);
+  const e=outbox.find(x=>String(x.id)===String(currentEmailId));
+  const markBtn=document.getElementById("reader-mark-btn");
+  if(e){
+    markBtn.textContent=e.status==="sent"?"✓ Sent (Undo)":"✓ Mark as Sent";
+    markBtn.style.background=e.status==="sent"?"var(--green)":"var(--blue)";
+  }
+}
+
+function markSingle(id){
+  const e=outbox.find(x=>String(x.id)===String(id));
+  if(!e) return;
+  if(e.status==="queued"){
+    e.status="sent";
+    e.sentAt=new Date().toLocaleString("en-GB",{dateStyle:"short",timeStyle:"short"});
+    sentLog.unshift({...e});
+    showToast(`✅ "${e.subject.slice(0,40)}" marked as sent`,"ok");
+  } else {
+    e.status="queued";
+    sentLog=sentLog.filter(s=>String(s.id)!==String(id));
+    showToast("Email moved back to queued","ok");
+  }
+  updateOutboxBadge();
+  renderOutbox();
+  renderSentLog();
+}
+
+function deleteCurrentEmail(){
+  if(!currentEmailId) return;
+  deleteEmail(currentEmailId);
+  closeReader();
+}
+
+function deleteEmail(id){
+  outbox=outbox.filter(e=>String(e.id)!==String(id));
+  sentLog=sentLog.filter(e=>String(e.id)!==String(id));
+  updateOutboxBadge();
+  renderOutbox();
+  renderSentLog();
+  showToast("Email deleted","ok");
+}
+
+function markAllSent(){
+  const queued=outbox.filter(e=>e.status==="queued");
+  if(!queued.length){showToast("No queued emails","err");return;}
+  queued.forEach(e=>{
+    e.status="sent";
+    e.sentAt=new Date().toLocaleString("en-GB",{dateStyle:"short",timeStyle:"short"});
+    sentLog.unshift({...e});
+  });
+  updateOutboxBadge();
+  renderOutbox();
+  renderSentLog();
+  showToast(`✅ ${queued.length} email${queued.length>1?"s":""} marked as sent!`,"ok");
+}
+
+function clearOutbox(){
+  if(!outbox.length) return;
+  if(!confirm("Clear all emails from outbox?")) return;
+  outbox=[];
+  updateOutboxBadge();
+  renderOutbox();
+  showToast("Outbox cleared","ok");
+}
+
+// ── SENT HISTORY ─────────────────────────────────────────────
+function renderSentLog(){
+  const el=document.getElementById("sent-log-list");
+  if(!sentLog.length){
+    el.innerHTML=`<div class="sent-log-empty">No emails sent yet. Mark emails as sent from the Outbox.</div>`;
+    document.getElementById("history-stats").textContent="";
+    return;
+  }
+  document.getElementById("history-stats").textContent=sentLog.length+" total";
+  el.innerHTML=sentLog.map(s=>`
+    <div class="sent-item">
+      <div class="sent-icon">📧</div>
+      <div class="sent-info">
+        <div class="sent-name">${s.guestName} <span style="font-weight:400;color:var(--muted);">&lt;${s.email||""}&gt;</span></div>
+        <div class="sent-subj">${s.subject}</div>
+        <div class="sent-meta">Sent ${s.sentAt||s.queuedAt} · ${s.from}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+        <span class="ch-badge email">Email</span>
+        <span class="status-badge sent">✓ Sent</span>
+      </div>
+    </div>`).join("");
+}
+
+function clearSentLog(){
+  if(!confirm("Clear all sent history?")) return;
+  sentLog=[];
+  renderSentLog();
+  showToast("Sent history cleared","ok");
+}
+
+// ── TAB SWITCHER ─────────────────────────────────────────────
+function blastSwitchTab(tab){
+  ["compose","outbox","history"].forEach(t=>{
+    document.getElementById("bpanel-"+t).classList.toggle("hidden",t!==tab);
+    document.getElementById("bsn-"+t).classList.toggle("active",t===tab);
+  });
+  if(tab==="outbox"){renderOutbox();}
+  if(tab==="history"){renderSentLog();}
+}
+
+function renderBlast(){
+  renderRecList();
+  livePreview();
+  renderSentLog();
+  updateOutboxBadge();
+}
+
+
+
+}); // end DOMContentLoaded
+</script>
+</body>
+</html>
