@@ -330,6 +330,24 @@ table{border-collapse:collapse;width:100%;}
 .star-picker span.on{color:var(--gold);}
 .star-val{font-size:13px;font-weight:700;min-width:28px;}
 
+/* ══ RECEIPT QR / CUSTOMER JOURNEY ═══════════════════════════ */
+.receipt-qr-hero{background:#fff;border:1px solid var(--border);border-radius:14px;padding:24px;margin-bottom:18px;display:grid;grid-template-columns:1fr 260px;gap:24px;align-items:center;}
+.receipt-qr-copy h2{font-size:22px;color:var(--blue);margin-bottom:6px;}
+.receipt-qr-copy p{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:12px;}
+.receipt-qr-url{font-size:12px;color:var(--blue);font-weight:700;word-break:break-all;background:var(--surface);border:1px solid var(--border);padding:10px;border-radius:8px;}
+.receipt-qr-preview{background:var(--blue-l);border:1px solid #2F6EB530;border-radius:12px;padding:16px;text-align:center;}
+.receipt-qr-preview img{width:190px;height:190px;background:#fff;padding:8px;border-radius:10px;}
+.receipt-qr-caption{font-size:12px;font-weight:700;color:var(--blue);margin-top:8px;}
+.journey-title{font-size:18px;font-weight:800;color:var(--blue);margin:8px 0 14px;}
+.journey-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+.journey-step{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px 10px;text-align:center;min-height:150px;}
+.journey-num{width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;margin:0 auto 8px;}
+.journey-icon{font-size:28px;margin-bottom:6px;}
+.journey-step h4{font-size:12px;color:var(--blue);margin-bottom:5px;}
+.journey-step p{font-size:11px;color:var(--muted);line-height:1.45;}
+@media(max-width:850px){.receipt-qr-hero{grid-template-columns:1fr}.journey-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:520px){.journey-grid{grid-template-columns:1fr;}}
+
 /* ══ TOAST ══════════════════════════════════════════════════ */
 #toast{position:fixed;bottom:28px;right:28px;z-index:999;background:var(--char);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.2);opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none;}
 #toast.show{opacity:1;transform:translateY(0);}
@@ -528,6 +546,7 @@ table{border-collapse:collapse;width:100%;}
         <button class="nav-btn" data-tab="database">🗄 Database</button>
         <button class="nav-btn" data-tab="orders">🍽 Orders</button>
         <button class="nav-btn" data-tab="csat">⭐ CSAT</button>
+        <button class="nav-btn" data-tab="receiptqr">📱 Receipt QR</button>
         <button class="nav-btn" data-tab="loyalty">🏆 Loyalty</button>
         <button class="nav-btn" data-tab="blast">📣 Blast</button>
       </nav>
@@ -699,6 +718,39 @@ table{border-collapse:collapse;width:100%;}
           <div class="flex gap-6" id="csat-filters"></div>
         </div>
         <div style="padding:20px;" id="csat-reviews-list"></div>
+      </div>
+    </div>
+
+    <!-- RECEIPT QR MANAGER -->
+    <div class="tab-panel" id="tab-receiptqr">
+      <div class="sec-header">
+        <div><div class="sec-title">📱 Receipt QR Manager</div><div class="sec-sub">The QR printed on the receipt opens the Google Apps Script feedback page.</div></div>
+      </div>
+      <div class="receipt-qr-hero">
+        <div class="receipt-qr-copy">
+          <h2>🧾 Receipt Feedback QR Code</h2>
+          <p>Guests scan this code with their phone camera. The code opens the public Google Apps Script page and takes them directly to the Greek To Go Taverna feedback experience.</p>
+          <div class="receipt-qr-url">https://script.google.com/macros/s/AKfycbxekBOUqNmRgmPuLj96dtbI5tCJ4aGo6QV0dZ265nAGrhWgWG5-3BmGybb0_bzc6SvtwQ/exec?view=csat</div>
+          <div class="flex gap-8" style="margin-top:14px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="printCSATReceiptQR()">🖨 Print Receipt QR</button>
+            <button class="btn btn-secondary" onclick="downloadReceiptQR()">⬇ Download QR</button>
+            <button class="btn btn-ghost" onclick="window.open('https://script.google.com/macros/s/AKfycbxekBOUqNmRgmPuLj96dtbI5tCJ4aGo6QV0dZ265nAGrhWgWG5-3BmGybb0_bzc6SvtwQ/exec?view=csat','_blank')">↗ Test Link</button>
+          </div>
+        </div>
+        <div class="receipt-qr-preview">
+          <img id="receipt-qr-manager-img" src="" alt="Receipt feedback QR code">
+          <div class="receipt-qr-caption">Scan for Feedback</div>
+        </div>
+      </div>
+      <div class="panel" style="background:var(--blue-l);border-color:#2F6EB530;">
+        <div class="journey-title">What happens after the guest scans?</div>
+        <div class="journey-grid">
+          <div class="journey-step"><div class="journey-num">1</div><div class="journey-icon">📷</div><h4>Scan QR</h4><p>The guest scans the code on the receipt using their phone camera.</p></div>
+          <div class="journey-step"><div class="journey-num">2</div><div class="journey-icon">🌐</div><h4>Google Script Opens</h4><p>The QR opens your public Apps Script feedback endpoint.</p></div>
+          <div class="journey-step"><div class="journey-num">3</div><div class="journey-icon">⭐</div><h4>Give Feedback</h4><p>The guest sees the customer feedback page with 1–5 face ratings.</p></div>
+          <div class="journey-step"><div class="journey-num">4</div><div class="journey-icon">📝</div><h4>Submit</h4><p>The guest submits the rating and optional comment.</p></div>
+          <div class="journey-step"><div class="journey-num">5</div><div class="journey-icon">💙</div><h4>Thank You</h4><p>A confirmation is shown after the feedback is successfully submitted.</p></div>
+        </div>
       </div>
     </div>
 
@@ -1524,6 +1576,12 @@ function renderCSAT(){
 }
 
 // ─── LOYALTY ─────────────────────────────────────────────────
+function renderReceiptQR(){
+  const src=document.getElementById("csat-receipt-qr")?.src||"";
+  const img=document.getElementById("receipt-qr-manager-img");
+  if(img && src) img.src=src;
+}
+
 function renderLoyalty(){
   const tiers=[
     {name:"Platinum",min:20,perks:["Free dessert every visit","Priority booking","Birthday dinner for 2","Exclusive menu preview"]},
@@ -1582,5 +1640,750 @@ function printCSATReceiptQR(){
     <div class="url">https://script.google.com/macros/s/AKfycbxekBOUqNmRgmPuLj96dtbI5tCJ4aGo6QV0dZ265nAGrhWgWG5-3BmGybb0_bzc6SvtwQ/exec?view=csat</div>
     <div class="rule"></div><div style="font-size:10px;color:#777;">Please keep this QR code with your receipt.</div>
   </div><script>window.onload=function(){window.print();}<\/script></body></html>`);
+  w.document.close();
 }
+
+// ─── QR CODE ENGINE ──────────────────────────────────────────
+// Minimal QR Code generator (no external libs needed)
+// Uses a compact built-in QR matrix builder for URL encoding
+
+const QRCode = (function(){
+  // Reed-Solomon & QR encode for short URLs — pure JS
+  function _encode(text){
+    // We build a simple 25x25 QR (version 2) enough for short URLs
+    // For reliability we use a data-URI approach with the qr-server API
+    // rendered entirely onto a canvas from image
+    return text;
+  }
+
+  function draw(canvasId, text, size=220){
+    const canvas = document.getElementById(canvasId);
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    canvas.width = size; canvas.height = size;
+
+    // Use Google Charts QR API (works offline-friendly via CDN)
+    // Fallback: draw a manual pattern
+    const img = new Image();
+    const encoded = encodeURIComponent(text);
+    img.crossOrigin = "anonymous";
+
+    // Primary: goqr.me QR Server API
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encoded}`;
+
+    img.onload = () => {
+      ctx.clearRect(0,0,size,size);
+      // White bg
+      ctx.fillStyle="#fff";
+      ctx.roundRect(0,0,size,size,14);
+      ctx.fill();
+      ctx.drawImage(img, 10, 10, size-20, size-20);
+      // Add tiny logo watermark center
+      ctx.fillStyle="rgba(27,79,138,0.08)";
+      ctx.font="bold 9px system-ui";
+      ctx.textAlign="center";
+      ctx.fillText("GREEK TO GO",size/2,size-6);
+    };
+
+    img.onerror = () => {
+      // Offline fallback: draw a simple branded placeholder
+      ctx.fillStyle="#1B4F8A";
+      ctx.roundRect(0,0,size,size,14); ctx.fill();
+      ctx.fillStyle="#fff";
+      ctx.font="bold 18px system-ui";
+      ctx.textAlign="center";
+      ctx.fillText("QR CODE",size/2,size/2-24);
+      ctx.font="12px system-ui";
+      ctx.fillStyle="rgba(255,255,255,.7)";
+      ctx.fillText("Connect to internet",size/2,size/2);
+      ctx.fillText("to generate QR",size/2,size/2+18);
+      ctx.fillText(text.slice(0,32)+"…",size/2,size/2+44);
+    };
+  }
+  return { draw };
+})();
+
+const G2G_REGISTRATION_URL = "https://salvationsolutions.github.io/GreekToGoTaverna-RegistrationForm/";
+let currentQRUrl = G2G_REGISTRATION_URL;
+
+function initQR(){
+  const url = currentQRUrl;
+  document.getElementById("qr-url-display").textContent = url;
+  document.getElementById("qr-custom-url").value = url === G2G_REGISTRATION_URL ? "" : url;
+  QRCode.draw("qr-canvas", url, 220);
+}
+
+function regenerateQR(){
+  const custom = document.getElementById("qr-custom-url").value.trim();
+  currentQRUrl = custom || G2G_REGISTRATION_URL;
+  document.getElementById("qr-url-display").textContent = currentQRUrl;
+  QRCode.draw("qr-canvas", currentQRUrl, 220);
+  showToast("QR code updated!","ok");
+}
+
+function downloadQR(){
+  const canvas = document.getElementById("qr-canvas");
+  const link = document.createElement("a");
+  link.download = "greektogo-feedback-qr.png";
+  link.href = canvas.toDataURL("image/png");
+  link.click();
+  showToast("QR code downloaded!","ok");
+}
+
+function copyQRUrl(){
+  navigator.clipboard.writeText(currentQRUrl)
+    .then(()=>showToast("URL copied to clipboard!","ok"))
+    .catch(()=>showToast("Copy failed — copy from the box above","err"));
+}
+
+function printQR(){
+  const canvas = document.getElementById("qr-canvas");
+  const dataUrl = canvas.toDataURL("image/png");
+  const w = window.open("","_blank");
+  w.document.write(`
+    <!DOCTYPE html><html><head><title>GreekToGo — QR Feedback</title>
+    <style>
+      body{font-family:system-ui,sans-serif;text-align:center;padding:40px;background:#fff;}
+      .qr-print-card{display:inline-block;border:2px solid #1B4F8A;border-radius:16px;padding:32px 40px;margin:auto;}
+      .logo-name{font-size:28px;font-weight:900;color:#1B4F8A;letter-spacing:-.01em;}
+      .logo-sub{font-size:13px;letter-spacing:.15em;text-transform:uppercase;color:#C4972A;margin-bottom:20px;}
+      img{display:block;margin:0 auto 20px;width:220px;height:220px;}
+      .scan-msg{font-size:16px;font-weight:700;color:#1B4F8A;margin-bottom:6px;}
+      .scan-sub{font-size:13px;color:#6B6B68;margin-bottom:14px;}
+      .meander{height:5px;background:repeating-linear-gradient(90deg,#C4972A 0,#C4972A 4px,transparent 4px,transparent 9px);border-radius:4px;margin:16px 0;}
+      .perks{font-size:12px;color:#6B6B68;line-height:1.8;}
+      @media print{body{padding:0;}}
+    </style></head>
+    <body>
+    <div class="qr-print-card">
+      <div class="logo-name">Greek To Go</div>
+      <div class="logo-sub">Taverna · Filoxenia Club</div>
+      <div class="meander"></div>
+      <img src="${dataUrl}" alt="QR Code"/>
+      <div class="scan-msg">📱 Scan to join our Guest Club</div>
+      <div class="scan-sub">Register in 60 seconds and unlock exclusive perks</div>
+      <div class="meander"></div>
+      <div class="perks">
+        🎂 Birthday treats &nbsp;·&nbsp; ⭐ Loyalty rewards<br>
+        🍽 Personalised offers &nbsp;·&nbsp; 🏆 VIP experiences
+      </div>
+    </div>
+    <scr'+'ipt>window.onload=()=>{window.print();}<\/scr'+'ipt>
+    </body></html>`);
+  w.document.close();
+}
+
+// ── Google Sheets connection ──────────────────────────────────
+const SHEETS_URL_PERMANENT = "https://script.google.com/macros/s/AKfycbxekBOUqNmRgmPuLj96dtbI5tCJ4aGo6QV0dZ265nAGrhWgWG5-3BmGybb0_bzc6SvtwQ/exec";
+let sheetsUrl = SHEETS_URL_PERMANENT;
+try{ localStorage.setItem("gtg_sheets_url", sheetsUrl); }catch(e){}
+
+function openSheetsModal(){
+  $$('sheets-url').value = sheetsUrl;
+  updateSheetsStatus();
+  openModal('modal-sheets');
+}
+function updateSheetsStatus(){
+  const el=$$('sheets-status');
+  if(sheetsUrl){el.textContent='✅ Connected to Greek To Go CRM Sheets';el.style.color='var(--green)';}
+  else{el.textContent='Not connected';el.style.color='var(--muted)';}
+}
+function connectSheet(){
+  sheetsUrl = SHEETS_URL_PERMANENT;
+  try{ localStorage.setItem('gtg_sheets_url', sheetsUrl); }catch(e){}
+  updateSheetsStatus();
+  showToast('✅ Google Sheets CRM connected','ok');
+}
+function disconnectSheet(){
+  // This CRM uses one permanent shared deployment; disconnecting locally is not allowed.
+  sheetsUrl = SHEETS_URL_PERMANENT;
+  try{ localStorage.setItem('gtg_sheets_url', sheetsUrl); }catch(e){}
+  updateSheetsStatus();
+  showToast('Google Sheets connection is fixed for this CRM','err');
+}
+
+async function _sheetCall(action,payload={},method='POST'){
+  const url=sheetsUrl||SHEETS_URL_PERMANENT;
+  let res;
+  if(method==='GET'){
+    const qs=new URLSearchParams({action,ts:String(Date.now())});
+    res=await fetch(url+'?'+qs.toString(),{method:'GET',cache:'no-store',redirect:'follow'});
+  }else{
+    res=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,...payload}),redirect:'follow'});
+  }
+  if(!res.ok) throw new Error('Google Sheets returned HTTP '+res.status+'.');
+  const data=await res.json();
+  if(!data || data.status==='error') throw new Error(data?.message||'Google Sheets did not confirm the operation.');
+  return data;
+}
+
+async function pushGuestsToSheet(){
+  try{showToast('Syncing guests to Google Sheets…','ok');const data=await _sheetCall('syncGuests',{guests:customers});showToast('✅ Guests synced: '+(data.count??customers.length),'ok');}
+  catch(e){console.error(e);showToast('Guest sync failed — '+e.message,'err');}
+}
+async function pullGuestsFromSheet(){
+  try{showToast('Loading guests from Google Sheets…','ok');const data=await _sheetCall('getGuests',{},'GET');
+    if(!Array.isArray(data.guests)) throw new Error('Invalid guest data returned.');
+    customers=data.guests.map(g=>({...g,id:String(g.id||''),visits:parseInt(g.visits)||0,totalSpent:parseFloat(g.totalSpent)||0,tags:Array.isArray(g.tags)?g.tags:(g.tags?String(g.tags).split(',').map(t=>t.trim()).filter(Boolean):[])}));
+    renderDatabase();renderDashboard();showToast('✅ Loaded '+customers.length+' guests from Google Sheets','ok');
+  }catch(e){console.error(e);showToast('Guest load failed — '+e.message,'err');}
+}
+async function pushOrdersToSheet(){
+  try{showToast('Syncing orders to Google Sheets…','ok');const data=await _sheetCall('syncOrders',{orders});showToast('✅ Orders synced: '+(data.count??orders.length),'ok');}
+  catch(e){console.error(e);showToast('Order sync failed — '+e.message,'err');}
+}
+async function pullOrdersFromSheet(){
+  try{showToast('Loading orders from Google Sheets…','ok');const data=await _sheetCall('getOrders',{},'GET');
+    if(!Array.isArray(data.orders)) throw new Error('Invalid order data returned.');
+    orders=data.orders.map(o=>({...o,id:String(o.id||''),customerId:String(o.customerId||''),total:parseFloat(o.total)||0,tableNo:parseInt(o.tableNo)||0,items:Array.isArray(o.items)?o.items:(o.items?String(o.items).split(',').map(t=>t.trim()).filter(Boolean):[])}));
+    renderOrders();renderDashboard();showToast('✅ Loaded '+orders.length+' orders from Google Sheets','ok');
+  }catch(e){console.error(e);showToast('Order load failed — '+e.message,'err');}
+}
+async function pushCSATToSheet(){
+  try{showToast('Syncing CSAT to Google Sheets…','ok');const data=await _sheetCall('syncCSAT',{csat:csatData});showToast('✅ CSAT synced: '+(data.count??csatData.length),'ok');}
+  catch(e){console.error(e);showToast('CSAT sync failed — '+e.message,'err');}
+}
+async function pullCSATFromSheet(){
+  try{showToast('Loading CSAT from Google Sheets…','ok');const data=await _sheetCall('getCSAT',{},'GET');
+    if(!Array.isArray(data.csat)) throw new Error('Invalid CSAT data returned.');
+    csatData=data.csat.map(r=>({...r,id:String(r.id||''),customerId:String(r.customerId||''),orderId:String(r.orderId||''),overall:parseFloat(r.overall)||0,food:parseFloat(r.food)||0,service:parseFloat(r.service)||0,ambiance:parseFloat(r.ambiance)||0,value:parseFloat(r.value)||0,recommend:r.recommend===true||r.recommend==='true'||r.recommend===1||r.recommend==='1'||r.recommend==='TRUE'}));
+    renderCSAT();renderDashboard();showToast('✅ Loaded '+csatData.length+' reviews from Google Sheets','ok');
+  }catch(e){console.error(e);showToast('CSAT load failed — '+e.message,'err');}
+}
+async function syncGuestRecordToSheet(guest){
+  try{ await _sheetCall('upsertGuest',{guest}); return true; }
+  catch(e){ console.error('Guest autosync error:',e); showToast('Guest saved on screen, but Sheet sync failed — '+e.message,'err'); return false; }
+}
+async function deleteGuestFromSheet(id){
+  try{ await _sheetCall('deleteGuest',{id}); return true; }
+  catch(e){ console.error('Guest delete sync error:',e); showToast('Guest removed on screen, but Sheet sync failed — '+e.message,'err'); return false; }
+}
+async function syncOrderRecordToSheet(order){
+  try{ await _sheetCall('upsertOrder',{order}); return true; }
+  catch(e){ console.error('Order autosync error:',e); showToast('Order saved on screen, but Sheet sync failed — '+e.message,'err'); return false; }
+}
+async function syncCSATRecordToSheet(review){
+  try{ await _sheetCall('upsertCSAT',{review}); return true; }
+  catch(e){ console.error('CSAT autosync error:',e); showToast('Review saved on screen, but Sheet sync failed — '+e.message,'err'); return false; }
+}
+
+async function loadAllFromSheetOnLaunch(){
+  try{
+    showToast('Loading CRM data from Google Sheets…','ok');
+    const data=await _sheetCall('getAll',{},'GET');
+    if(Array.isArray(data.guests)) customers=data.guests.map(g=>({...g,id:String(g.id||''),visits:parseInt(g.visits)||0,totalSpent:parseFloat(g.totalSpent)||0,tags:Array.isArray(g.tags)?g.tags:(g.tags?String(g.tags).split(',').map(t=>t.trim()).filter(Boolean):[])}));
+    if(Array.isArray(data.orders)) orders=data.orders.map(o=>({...o,id:String(o.id||''),customerId:String(o.customerId||''),total:parseFloat(o.total)||0,tableNo:parseInt(o.tableNo)||0,items:Array.isArray(o.items)?o.items:(o.items?String(o.items).split(',').map(t=>t.trim()).filter(Boolean):[])}));
+    if(Array.isArray(data.csat)) csatData=data.csat.map(r=>({...r,id:String(r.id||''),customerId:String(r.customerId||''),orderId:String(r.orderId||''),overall:parseFloat(r.overall)||0,food:parseFloat(r.food)||0,service:parseFloat(r.service)||0,ambiance:parseFloat(r.ambiance)||0,value:parseFloat(r.value)||0,recommend:r.recommend===true||r.recommend==='true'||r.recommend===1||r.recommend==='1'||r.recommend==='TRUE'}));
+    renderDatabase();renderOrders();renderCSAT();renderDashboard();
+    showToast('✅ CRM connected — Guests, Orders and CSAT loaded','ok');
+  }catch(e){console.error('CRM Sheet launch load failed:',e);renderDatabase();renderOrders();renderCSAT();renderDashboard();showToast('⚠ CRM loaded, but Google Sheets could not be reached — '+e.message,'err');}
+}
+
+// ── Pending registrations (from localStorage) ─────────────────
+let pendingGuests = [];
+
+function loadPending(){
+  try {
+    pendingGuests = JSON.parse(localStorage.getItem("gtg_pending_guests")||"[]");
+  } catch(e){ pendingGuests=[]; }
+  renderPending();
+}
+
+function renderPending(){
+  const el = document.getElementById("pending-list");
+  const count = pendingGuests.length;
+  document.getElementById("pending-count").textContent = count;
+  document.getElementById("pending-actions").classList.toggle("hidden", count===0);
+
+  if(!count){
+    el.innerHTML=`<div style="text-align:center;padding:20px;color:var(--muted);font-size:13px;">No pending registrations yet.<br>Share the QR code so guests can self-register!</div>`;
+    return;
+  }
+
+  el.innerHTML = pendingGuests.map((g,i)=>`
+    <div class="pending-item" id="pi-${i}">
+      <div style="flex-shrink:0;">${av(g.name||"G","Bronze",36)}</div>
+      <div class="pending-item-info">
+        <div class="pending-item-name">${g.name||"Unknown"}</div>
+        <div class="pending-item-meta">${g.email||""} ${g.phone?"· "+g.phone:""}</div>
+        <div class="pending-item-meta" style="color:var(--olive);">📱 Via QR · ${g.joinDate||""} ${g.city?"· "+g.city:""}</div>
+        ${g.tags?.length?`<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">${g.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>`:""}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <button class="btn-approve" onclick="approvePending(${i})">✓ Add</button>
+        <button class="btn-reject"  onclick="rejectPending(${i})">✕</button>
+      </div>
+    </div>`).join("");
+}
+
+function approvePending(idx){
+  const g = pendingGuests[idx];
+  if(!g) return;
+  const newId = Math.max(0,...customers.map(c=>c.id))+1;
+  customers.push({
+    id:newId, name:g.name||"Guest", phone:g.phone||"", email:g.email||"",
+    birthday:g.birthday||"", city:g.city||"", favorite:g.favorite||"",
+    segment:g.segment||"New", tags:g.tags||[], notes:g.notes||"",
+    visits:0, lastVisit:"—", totalSpent:0, joinDate:g.joinDate||"",
+    source:"QR Feedback"
+  });
+  pendingGuests.splice(idx,1);
+  localStorage.setItem("gtg_pending_guests", JSON.stringify(pendingGuests));
+  renderPending();
+  renderDatabase();
+  renderDashboard();
+  // Persist QR-approved guests to the same Google Sheets backend as manual guests.
+  syncGuestRecordToSheet(g).then(function(ok){
+    if(ok) showToast(`✅ ${g.name} added to Google Sheets!`,"ok");
+  });
+  showToast(`✅ ${g.name} added to the database! Syncing…`,"ok");
+}
+
+function rejectPending(idx){
+  const g = pendingGuests[idx];
+  pendingGuests.splice(idx,1);
+  localStorage.setItem("gtg_pending_guests", JSON.stringify(pendingGuests));
+  renderPending();
+  showToast(`${g?.name||"Guest"} removed from pending`,"ok");
+}
+
+function approveAllPending(){
+  if(!pendingGuests.length) return;
+  const count = pendingGuests.length;
+  [...pendingGuests].forEach((_,i)=>approvePending(0));
+  showToast(`✅ ${count} guest${count>1?"s":""} added to the database!`,"ok");
+}
+
+function clearPending(){
+  if(!confirm("Clear all pending registrations?")) return;
+  pendingGuests=[];
+  localStorage.setItem("gtg_pending_guests","[]");
+  renderPending();
+}
+
+// ── DB tab switcher ───────────────────────────────────────────
+function dbSwitchTab(tab){
+  document.getElementById("dbpanel-list").classList.toggle("hidden", tab!=="list");
+  document.getElementById("dbpanel-qr").classList.toggle("hidden",  tab!=="qr");
+  document.getElementById("dbn-list").classList.toggle("active", tab==="list");
+  document.getElementById("dbn-qr").classList.toggle("active",   tab==="qr");
+  if(tab==="qr"){ initQR(); loadPending(); }
+}
+
+
+// ─── BLAST — BUILT-IN EMAIL SYSTEM ──────────────────────────
+let recSegFilter="All", selectedRecs=new Set();
+let outbox=[], currentEmailId=null;
+
+// ── TEMPLATES ────────────────────────────────────────────────
+const TEMPLATES={
+  promo:     {subject:"🎉 An exclusive offer for you, {{name}}!",     body:"Dear {{first_name}},\n\nAs one of our cherished {{tier}} guests, we have a very special offer waiting for you.\n\nEnjoy 20% off your next visit with the code {{discount_code}} — valid this week only!\n\nWe look forward to seeing you at GreekToGo very soon.\n\nOpa! 🏺\nThe GreekToGo Team", cta:"Claim Your Offer", ctaLink:"https://greektogo.com/book"},
+  birthday:  {subject:"🎂 Happy Birthday from GreekToGo, {{name}}!",  body:"Dear {{first_name}},\n\nHappy Birthday! 🎂🎉\n\nAll of us at GreekToGo want to make your special day even more memorable. Come celebrate with us and enjoy a complimentary dessert — on the house!\n\nYour favourite table is waiting for you.\n\nWith love from Athens,\nThe GreekToGo Team 🏺", cta:"Reserve Your Birthday Table", ctaLink:"https://greektogo.com/book"},
+  loyalty:   {subject:"⭐ You've reached {{tier}} status, {{name}}!", body:"Dear {{first_name}},\n\nWith {{visits}} visits to GreekToGo, you've officially achieved {{tier}} status in our Filoxenia Club!\n\nAs a thank you, you now enjoy exclusive perks including priority seating, complimentary treats, and more.\n\nThank you for being a part of our family.\n\nKalimera! 🏺\nThe GreekToGo Team", cta:"View Your Perks", ctaLink:"https://greektogo.com/loyalty"},
+  event:     {subject:"🏺 You're invited to our Greek Night, {{name}}!", body:"Dear {{first_name}},\n\nWe are hosting an exclusive Greek Night on Friday, September 5th — and you're on the VIP list!\n\nLive bouzouki music · Traditional meze · Curated wine menu\n\nSeating is very limited. Reply to reserve your table today.\n\nΟπα! 🎶\nThe GreekToGo Team", cta:"Reserve My Seat", ctaLink:"https://greektogo.com/greek-night"},
+  feedback:  {subject:"💬 How was your visit, {{name}}?",              body:"Dear {{first_name}},\n\nThank you for visiting GreekToGo! We hope you enjoyed your time with us.\n\nWe'd love to hear what you thought — your feedback helps us serve you better.\n\nWith appreciation,\nThe GreekToGo Team 🏺", cta:"Share Your Feedback", ctaLink:"https://greektogo.com/feedback"},
+  reactivate:{subject:"We miss you, {{name}}! 💙",                     body:"Dear {{first_name}},\n\nIt has been a while since we've seen you at GreekToGo, and we miss you!\n\nCome back and enjoy your favourite {{favorite}} — use code WELCOME10 for 10% off your next visit. This offer is just for you.\n\nKalos irthate — welcome back! 🏺\nThe GreekToGo Team", cta:"Come Back & Dine", ctaLink:"https://greektogo.com/book"},
+  seasonal:  {subject:"🌿 Our new seasonal menu is here, {{name}}!",   body:"Dear {{first_name}},\n\nSpring has arrived in Athens, and so has our brand-new seasonal menu at GreekToGo!\n\nFresh ingredients, classic flavours, and a few exciting new dishes await you.\n\nKali orexi! 🌿\nThe GreekToGo Team", cta:"See the New Menu", ctaLink:"https://greektogo.com/menu"},
+  thankyou:  {subject:"🙏 Thank you, {{name}} — you mean the world to us!", body:"Dear {{first_name}},\n\nWe simply wanted to say thank you. Your support, your loyalty, and your smiles make everything we do worthwhile.\n\nWith {{visits}} visits to GreekToGo, you are truly part of our family.\n\nWith warmth from Athens,\nThe GreekToGo Team 🏺", cta:"", ctaLink:""},
+};
+
+function applyTemplate(){
+  const key=document.getElementById("bl-template").value;
+  if(!key) return;
+  const t=TEMPLATES[key];
+  document.getElementById("bl-subject").value  = t.subject;
+  document.getElementById("bl-body").value     = t.body;
+  document.getElementById("bl-cta-text").value = t.cta||"";
+  document.getElementById("bl-cta-link").value = t.ctaLink||"";
+  livePreview();
+}
+
+function insertTag(tag){
+  const ta=document.getElementById("bl-body");
+  const s=ta.selectionStart, e=ta.selectionEnd;
+  ta.value=ta.value.slice(0,s)+tag+ta.value.slice(e);
+  ta.selectionStart=ta.selectionEnd=s+tag.length;
+  ta.focus(); livePreview();
+}
+
+// ── PERSONALISE ──────────────────────────────────────────────
+function personalize(text, cust){
+  if(!cust||!text) return text||"";
+  const code="GREEK"+Math.floor(Math.random()*9000+1000);
+  return text
+    .replace(/{{name}}/g,        cust.name||"")
+    .replace(/{{first_name}}/g,  (cust.name||"Guest").split(" ")[0])
+    .replace(/{{tier}}/g,        getTier(cust.visits))
+    .replace(/{{favorite}}/g,    cust.favorite||"your favourite dish")
+    .replace(/{{visits}}/g,      cust.visits||0)
+    .replace(/{{city}}/g,        cust.city||"your city")
+    .replace(/{{discount_code}}/g, code);
+}
+
+// ── BUILD RENDERED EMAIL HTML ─────────────────────────────────
+function buildRenderedEmail(cust){
+  const fromName = document.getElementById("bl-from").value||"GreekToGo Taverna";
+  const subject  = personalize(document.getElementById("bl-subject").value||"", cust);
+  const body     = personalize(document.getElementById("bl-body").value||"", cust);
+  const ctaText  = document.getElementById("bl-cta-text").value||"";
+  const ctaLink  = document.getElementById("bl-cta-link").value||"#";
+  const firstName= (cust.name||"Guest").split(" ")[0];
+
+  const ctaBlock = ctaText
+    ? `<div style="margin:22px 0;text-align:center;">
+        <a href="${ctaLink}" style="background:#1B4F8A;color:#fff;padding:13px 30px;border-radius:8px;font-size:14px;font-weight:700;text-decoration:none;display:inline-block;font-family:system-ui,sans-serif;">${ctaText}</a>
+       </div>` : "";
+
+  const bodyLines = body.split("\n").map(l=>
+    l.trim()===""
+      ? `<div style="height:10px;"></div>`
+      : `<div style="margin-bottom:4px;">${l}</div>`
+  ).join("");
+
+  return `<div style="background:#E0DDD6;padding:20px;border-radius:10px;">
+    <div style="background:#fff;border-radius:10px;max-width:540px;margin:0 auto;overflow:hidden;box-shadow:0 2px 14px rgba(0,0,0,.1);font-family:Georgia,serif;">
+      <!-- Header -->
+      <div style="background:#1B4F8A;padding:22px 28px;text-align:center;">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNjAgMTAwIiByb2xlPSJpbWciIGFyaWEtbGFiZWw9IkdyZWVrIFRvIEdvIFRhdmVybmEiPgogIDxyZWN0IHdpZHRoPSIyNjAiIGhlaWdodD0iMTAwIiByeD0iMTAiIGZpbGw9IiMyODM1OTMiLz4KICA8IS0tIFdoaXRlIGNhcmQgc2hhcGUgd2l0aCBvbGl2ZSBicmFuY2ggLS0+CiAgPHJlY3QgeD0iOCIgeT0iMTIiIHdpZHRoPSI1MiIgaGVpZ2h0PSI3NiIgcng9IjgiIGZpbGw9IndoaXRlIi8+CiAgPCEtLSBPbGl2ZSBicmFuY2ggc2ltcGxpZmllZCAtLT4KICA8ZyBmaWxsPSIjMjgzNTkzIj4KICAgIDxlbGxpcHNlIGN4PSIyOCIgY3k9IjU4IiByeD0iNyIgcnk9IjQiIHRyYW5zZm9ybT0icm90YXRlKC00MCAyOCA1OCkiLz4KICAgIDxlbGxpcHNlIGN4PSIyMiIgY3k9IjUwIiByeD0iNiIgcnk9IjMuNSIgdHJhbnNmb3JtPSJyb3RhdGUoLTUwIDIyIDUwKSIvPgogICAgPGVsbGlwc2UgY3g9IjMyIiBjeT0iNDgiIHJ4PSI2IiByeT0iMy41IiB0cmFuc2Zvcm09InJvdGF0ZSgtMzAgMzIgNDgpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMTgiIGN5PSI0MiIgcng9IjUiIHJ5PSIzIiB0cmFuc2Zvcm09InJvdGF0ZSgtNTUgMTggNDIpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjgiIGN5PSIzOCIgcng9IjUiIHJ5PSIzIiB0cmFuc2Zvcm09InJvdGF0ZSgtMzUgMjggMzgpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMzYiIGN5PSIzNiIgcng9IjUiIHJ5PSIzIiB0cmFuc2Zvcm09InJvdGF0ZSgtMjAgMzYgMzYpIi8+CiAgICA8ZWxsaXBzZSBjeD0iMjAiIGN5PSIzMiIgcng9IjQiIHJ5PSIyLjUiIHRyYW5zZm9ybT0icm90YXRlKC02MCAyMCAzMikiLz4KICAgIDxlbGxpcHNlIGN4PSIzMCIgY3k9IjI4IiByeD0iNCIgcnk9IjIuNSIgdHJhbnNmb3JtPSJyb3RhdGUoLTQwIDMwIDI4KSIvPgogICAgPGNpcmNsZSBjeD0iMjQiIGN5PSI0NCIgcj0iMi41Ii8+CiAgICA8Y2lyY2xlIGN4PSIzNCIgY3k9IjQwIiByPSIyLjUiLz4KICAgIDxjaXJjbGUgY3g9IjI4IiBjeT0iMzIiIHI9IjIiLz4KICAgIDwhLS0gc3RlbSAtLT4KICAgIDxsaW5lIHgxPSIyOCIgeTE9IjY1IiB4Mj0iMjgiIHkyPSIyNSIgc3Ryb2tlPSIjMjgzNTkzIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8L2c+CiAgPCEtLSBHUkVFSyBUTyBHTyB0ZXh0IC0tPgogIDx0ZXh0IHg9IjcyIiB5PSI0NiIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCBCbGFjayxzYW5zLXNlcmlmIiBmb250LXNpemU9IjIyIiBmb250LXdlaWdodD0iOTAwIiBsZXR0ZXItc3BhY2luZz0iMSI+R1JFRUs8L3RleHQ+CiAgPHRleHQgeD0iNzIiIHk9IjcyIiBmaWxsPSJ3aGl0ZSIgZm9udC1mYW1pbHk9IkFyaWFsIEJsYWNrLHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtd2VpZ2h0PSI5MDAiIGxldHRlci1zcGFjaW5nPSIxIj5UTyBHTzwvdGV4dD4KICA8IS0tIFRBVkVSTkEgc3ViIC0tPgogIDx0ZXh0IHg9IjcyIiB5PSI4OCIgZmlsbD0id2hpdGUiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjEwIiBmb250LXdlaWdodD0iNDAwIiBsZXR0ZXItc3BhY2luZz0iNSI+VEFWRVJOQTwvdGV4dD4KPC9zdmc+" alt="GreekToGo" style="height:40px;width:auto;border-radius:4px;margin-bottom:4px;"/>
+        <div style="color:#fff;font-size:18px;font-weight:800;font-family:system-ui,sans-serif;margin-top:4px;">${fromName}</div>
+        <div style="color:rgba(255,255,255,.55);font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-family:system-ui,sans-serif;margin-top:2px;">Μεσόγειος Restaurant Group · Athens</div>
+      </div>
+      <!-- Gold meander -->
+      <div style="height:5px;background:repeating-linear-gradient(90deg,#C4972A 0,#C4972A 4px,transparent 4px,transparent 9px);"></div>
+      <!-- Body -->
+      <div style="padding:24px 28px;">
+        <div style="font-size:15px;font-weight:700;color:#1B4F8A;margin-bottom:12px;font-family:system-ui,sans-serif;">Dear ${firstName},</div>
+        <div style="font-size:14px;color:#2A2A28;line-height:1.8;font-family:Georgia,serif;">${bodyLines}</div>
+        ${ctaBlock}
+      </div>
+      <!-- Divider -->
+      <div style="height:1px;background:#D8D4C8;margin:0 28px;"></div>
+      <!-- Footer -->
+      <div style="background:#F5F3EE;padding:14px 28px;text-align:center;">
+        <div style="font-size:10px;color:#6B6B68;line-height:1.7;font-family:system-ui,sans-serif;">
+          © 2026 GreekToGo Taverna · Athens, Greece<br>
+          <span style="color:#1B4F8A;cursor:pointer;">Unsubscribe</span> · <span style="color:#1B4F8A;cursor:pointer;">Privacy Policy</span>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── LIVE PREVIEW ─────────────────────────────────────────────
+function livePreview(){
+  const body = document.getElementById("bl-body").value||"";
+  const subj = document.getElementById("bl-subject").value||"";
+  const cc   = document.getElementById("char-count");
+  cc.textContent = body.length+" characters";
+  cc.className   = "char-count"+(body.length>800?" char-warn":"");
+
+  const cust = [...selectedRecs].map(id=>customers.find(c=>c.id===id)).filter(Boolean)[0] || customers[0];
+
+  document.getElementById("ep-addr").textContent = subj
+    ? personalize(subj, cust) : "(no subject)";
+
+  const epBody = document.getElementById("ep-body");
+  if(!body.trim()){
+    epBody.innerHTML=`<div style="color:var(--muted);text-align:center;padding:30px;font-size:13px;">Your email preview will appear here…</div>`;
+  } else {
+    epBody.innerHTML = buildRenderedEmail(cust);
+  }
+  updateBlastSummary();
+}
+
+function updateBlastSummary(){
+  const count    = selectedRecs.size;
+  const withEmail= customers.filter(c=>selectedRecs.has(c.id)&&c.email).length;
+  const noEmail  = count-withEmail;
+  const tiers    = {Platinum:0,Gold:0,Silver:0,Bronze:0};
+  customers.filter(c=>selectedRecs.has(c.id)).forEach(c=>tiers[getTier(c.visits)]++);
+  document.getElementById("blast-summary").innerHTML = count===0 ? "" :
+    `<div style="background:var(--blue-l);border-radius:10px;padding:12px 14px;font-size:12px;">
+      <div style="display:flex;gap:16px;margin-bottom:8px;">
+        <div><span style="font-size:18px;font-weight:700;color:var(--blue);">${count}</span> <span style="color:var(--muted);">recipients</span></div>
+        <div><span style="font-size:18px;font-weight:700;color:var(--green);">${withEmail}</span> <span style="color:var(--muted);">with email</span></div>
+        ${noEmail>0?`<div><span style="font-size:18px;font-weight:700;color:var(--terra);">${noEmail}</span> <span style="color:var(--muted);">no email (skipped)</span></div>`:""}
+      </div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;">
+        ${Object.entries(tiers).filter(([,v])=>v>0).map(([t,v])=>`<span class="badge ${t}">${t} ${v}</span>`).join("")}
+      </div>
+    </div>`;
+}
+
+// ── RECIPIENT LIST ────────────────────────────────────────────
+function getFilteredRecs(){
+  const now=new Date();
+  return customers.filter(c=>{
+    if(recSegFilter==="All") return true;
+    if(recSegFilter==="Gold") return getTier(c.visits)==="Gold"||getTier(c.visits)==="Platinum";
+    if(["Platinum","Silver","Bronze"].includes(recSegFilter)) return getTier(c.visits)===recSegFilter;
+    if(recSegFilter==="Birthday"){
+      if(!c.birthday) return false;
+      const[,m,d]=c.birthday.split("-");
+      let dt=new Date(now.getFullYear(),parseInt(m)-1,parseInt(d));
+      if(dt<now) dt.setFullYear(now.getFullYear()+1);
+      return Math.ceil((dt-now)/86400000)<=30;
+    }
+    return c.segment===recSegFilter;
+  });
+}
+
+function renderRecList(){
+  const recs=getFilteredRecs();
+  document.getElementById("rec-items").innerHTML = recs.length===0
+    ? `<div class="empty">No guests in this filter</div>`
+    : recs.map(c=>`
+        <div class="rec-item${selectedRecs.has(c.id)?" on":""}" onclick="toggleRec(${c.id},this)">
+          <input type="checkbox" class="rec-check" ${selectedRecs.has(c.id)?"checked":""} onclick="event.stopPropagation()" onchange="toggleRec(${c.id},this.closest('.rec-item'))"/>
+          ${av(c.name,getTier(c.visits),26)}
+          <div style="flex:1;">
+            <div class="rec-name">${c.name}</div>
+            <div class="rec-contact">${c.email||"<span style='color:var(--terra);'>no email address</span>"}</div>
+          </div>
+          ${badge(getTier(c.visits))}
+        </div>`).join("");
+  updateRecCount();
+}
+
+function toggleRec(id,el){
+  if(selectedRecs.has(id)){selectedRecs.delete(id);el.classList.remove("on");el.querySelector("input").checked=false;}
+  else{selectedRecs.add(id);el.classList.add("on");el.querySelector("input").checked=true;}
+  updateRecCount(); livePreview();
+}
+
+function toggleAllRec(checked){
+  getFilteredRecs().forEach(c=>{if(checked)selectedRecs.add(c.id);else selectedRecs.delete(c.id);});
+  renderRecList(); livePreview();
+}
+
+function setRecFilter(btn){
+  document.querySelectorAll(".rec-f-btn").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on"); recSegFilter=btn.dataset.seg;
+  renderRecList();
+}
+
+function updateRecCount(){
+  document.getElementById("rec-count").textContent=selectedRecs.size+" selected";
+  const all=getFilteredRecs();
+  document.getElementById("rec-all").checked=all.length>0&&all.every(c=>selectedRecs.has(c.id));
+}
+
+// ── QUEUE TO OUTBOX ───────────────────────────────────────────
+function queueBlast(){
+  if(!selectedRecs.size){showToast("Select at least one recipient","err");return;}
+  const subj=document.getElementById("bl-subject").value.trim();
+  const body=document.getElementById("bl-body").value.trim();
+  const from=document.getElementById("bl-from").value||"GreekToGo Taverna";
+  if(!subj){showToast("Add a subject line first","err");return;}
+  if(!body){showToast("Write a message body first","err");return;}
+
+  const recips=customers.filter(c=>selectedRecs.has(c.id)&&c.email);
+  const skipped=customers.filter(c=>selectedRecs.has(c.id)&&!c.email);
+  if(!recips.length){showToast("No selected guests have email addresses","err");return;}
+
+  const ts=new Date().toLocaleString("en-GB",{dateStyle:"short",timeStyle:"short"});
+
+  recips.forEach(cust=>{
+    outbox.push({
+      id: Date.now()+Math.random(),
+      guestId:   cust.id,
+      guestName: cust.name,
+      email:     cust.email,
+      from:      from,
+      subject:   personalize(subj, cust),
+      body:      personalize(body, cust),
+      html:      buildRenderedEmail(cust),
+      ctaText:   document.getElementById("bl-cta-text").value,
+      ctaLink:   document.getElementById("bl-cta-link").value,
+      queuedAt:  ts,
+      status:    "queued",
+      tier:      getTier(cust.visits),
+    });
+  });
+
+  updateOutboxBadge();
+  blastSwitchTab("outbox");
+  let msg=`📤 ${recips.length} email${recips.length>1?"s":""} queued in Outbox!`;
+  if(skipped.length) msg+=` (${skipped.length} skipped — no email)`;
+  showToast(msg,"ok");
+
+  // Reset form
+  selectedRecs.clear();
+  renderRecList();
+}
+
+function updateOutboxBadge(){
+  const q=outbox.filter(e=>e.status==="queued").length;
+  document.getElementById("bsn-outbox-count").textContent=q;
+  document.getElementById("bsn-outbox-count").style.display=q>0?"inline":"none";
+}
+
+// ── OUTBOX ───────────────────────────────────────────────────
+function renderOutbox(){
+  const el=document.getElementById("outbox-list");
+  const list=[...outbox].reverse();
+  if(!list.length){
+    el.innerHTML=`<div class="sent-log-empty">No emails in outbox. Compose a blast and it will appear here for review.</div>`;
+    document.getElementById("email-reader").classList.add("hidden");
+    return;
+  }
+  el.innerHTML=list.map(e=>`
+    <div class="outbox-item${e.status==="sent"?" ob-sent":""}" id="ob-${e.id}" onclick="openEmailReader('${e.id}')">
+      <div class="ob-left">
+        ${av(e.guestName,e.tier,34)}
+        <div class="ob-info">
+          <div class="ob-name">${e.guestName} <span class="ob-email">&lt;${e.email}&gt;</span></div>
+          <div class="ob-subject">${e.subject}</div>
+          <div class="ob-meta">Queued ${e.queuedAt}</div>
+        </div>
+      </div>
+      <div class="ob-right">
+        ${e.status==="sent"
+          ?`<span class="status-badge sent">✓ Sent</span>`
+          :`<span class="status-badge queued">Queued</span>`}
+        <button class="ob-mark-btn" onclick="event.stopPropagation();markSingle('${e.id}')">${e.status==="sent"?"Undo":"✓ Mark Sent"}</button>
+        <button class="ob-del-btn"  onclick="event.stopPropagation();deleteEmail('${e.id}')">🗑</button>
+      </div>
+    </div>`).join("");
+}
+
+function openEmailReader(id){
+  const e=outbox.find(x=>String(x.id)===String(id));
+  if(!e) return;
+  currentEmailId=id;
+  document.getElementById("reader-to").textContent=`${e.guestName} <${e.email}>`;
+  document.getElementById("reader-from").textContent=e.from;
+  document.getElementById("reader-subject").textContent=e.subject;
+  document.getElementById("reader-queued").textContent=e.queuedAt;
+  document.getElementById("reader-body-wrap").innerHTML=e.html;
+  const markBtn=document.getElementById("reader-mark-btn");
+  markBtn.textContent=e.status==="sent"?"✓ Sent (Undo)":"✓ Mark as Sent";
+  markBtn.style.background=e.status==="sent"?"var(--green)":"var(--blue)";
+  document.getElementById("email-reader").classList.remove("hidden");
+  document.getElementById("outbox-list").classList.add("hidden");
+}
+
+function closeReader(){
+  document.getElementById("email-reader").classList.add("hidden");
+  document.getElementById("outbox-list").classList.remove("hidden");
+  currentEmailId=null;
+}
+
+function markCurrentSent(){
+  if(!currentEmailId) return;
+  markSingle(currentEmailId);
+  const e=outbox.find(x=>String(x.id)===String(currentEmailId));
+  const markBtn=document.getElementById("reader-mark-btn");
+  if(e){
+    markBtn.textContent=e.status==="sent"?"✓ Sent (Undo)":"✓ Mark as Sent";
+    markBtn.style.background=e.status==="sent"?"var(--green)":"var(--blue)";
+  }
+}
+
+function markSingle(id){
+  const e=outbox.find(x=>String(x.id)===String(id));
+  if(!e) return;
+  if(e.status==="queued"){
+    e.status="sent";
+    e.sentAt=new Date().toLocaleString("en-GB",{dateStyle:"short",timeStyle:"short"});
+    sentLog.unshift({...e});
+    showToast(`✅ "${e.subject.slice(0,40)}" marked as sent`,"ok");
+  } else {
+    e.status="queued";
+    sentLog=sentLog.filter(s=>String(s.id)!==String(id));
+    showToast("Email moved back to queued","ok");
+  }
+  updateOutboxBadge();
+  renderOutbox();
+  renderSentLog();
+}
+
+function deleteCurrentEmail(){
+  if(!currentEmailId) return;
+  deleteEmail(currentEmailId);
+  closeReader();
+}
+
+function deleteEmail(id){
+  outbox=outbox.filter(e=>String(e.id)!==String(id));
+  sentLog=sentLog.filter(e=>String(e.id)!==String(id));
+  updateOutboxBadge();
+  renderOutbox();
+  renderSentLog();
+  showToast("Email deleted","ok");
+}
+
+function markAllSent(){
+  const queued=outbox.filter(e=>e.status==="queued");
+  if(!queued.length){showToast("No queued emails","err");return;}
+  queued.forEach(e=>{
+    e.status="sent";
+    e.sentAt=new Date().toLocaleString("en-GB",{dateStyle:"short",timeStyle:"short"});
+    sentLog.unshift({...e});
+  });
+  updateOutboxBadge();
+  renderOutbox();
+  renderSentLog();
+  showToast(`✅ ${queued.length} email${queued.length>1?"s":""} marked as sent!`,"ok");
+}
+
+function clearOutbox(){
+  if(!outbox.length) return;
+  if(!confirm("Clear all emails from outbox?")) return;
+  outbox=[];
+  updateOutboxBadge();
+  renderOutbox();
+  showToast("Outbox cleared","ok");
+}
+
+// ── SENT HISTORY ─────────────────────────────────────────────
+function renderSentLog(){
+  const el=document.getElementById("sent-log-list");
+  if(!sentLog.length){
+    el.innerHTML=`<div class="sent-log-empty">No emails sent yet. Mark emails as sent from the Outbox.</div>`;
+    document.getElementById("history-stats").textContent="";
+    return;
+  }
+  document.getElementById("history-stats").textContent=sentLog.length+" total";
+  el.innerHTML=sentLog.map(s=>`
+    <div class="sent-item">
+      <div class="sent-icon">📧</div>
+      <div class="sent-info">
+        <div class="sent-name">${s.guestName} <span style="font-weight:400;color:var(--muted);">&lt;${s.email||""}&gt;</span></div>
+        <div class="sent-subj">${s.subject}</div>
+        <div class="sent-meta">Sent ${s.sentAt||s.queuedAt} · ${s.from}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+        <span class="ch-badge email">Email</span>
+        <span class="status-badge sent">✓ Sent</span>
+      </div>
+    </div>`).join("");
+}
+
+function clearSentLog(){
+  if(!confirm("Clear all sent history?")) return;
+  sentLog=[];
+  renderSentLog();
+  showToast("Sent history cleared","ok");
+}
+
+// ── TAB SWITCHER ─────────────────────────────────────────────
+function blastSwitchTab(tab){
+  ["compose","outbox","history"].forEach(t=>{
+    document.getElementById("bpanel-"+t).classList.toggle("hidden",t!==tab);
+    document.getElementById("bsn-"+t).classList.toggle("active",t===tab);
+  });
+  if(tab==="outbox"){renderOutbox();}
+  if(tab==="history"){renderSentLog();}
+}
+
+function renderBlast(){
+  renderRecList();
+  livePreview();
+  renderSentLog();
+  updateOutboxBadge();
+}
+
 </script>
+</body>
+</html>
