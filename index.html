@@ -636,6 +636,21 @@ table{border-collapse:collapse;width:100%;}
 
     <!-- CSAT -->
     <div class="tab-panel" id="tab-csat">
+      <!-- RECEIPT QR: fixed Greek To Go registration QR -->
+      <div class="panel" id="csat-receipt-qr-panel" style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:260px;">
+          <div class="panel-title" style="margin-bottom:6px;">🧾 Receipt QR Code</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:8px;">This QR can be included on the customer receipt so guests can register with Greek To Go Taverna.</div>
+          <div style="font-size:12px;font-weight:700;color:var(--blue);word-break:break-all;">https://salvationsolutions.github.io/GreekToGoTaverna-RegistrationForm/</div>
+          <div class="flex gap-8" style="margin-top:12px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="printCSATReceiptQR()">🖨 Print Receipt QR</button>
+            <button class="btn btn-secondary" onclick="downloadReceiptQR()">⬇ Download QR</button>
+          </div>
+        </div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:10px;display:flex;align-items:center;justify-content:center;">
+          <img id="csat-receipt-qr" alt="Greek To Go Taverna registration QR code" style="display:block;width:150px;height:150px;image-rendering:auto;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAcIAAAHCAQAAAABUY/ToAAADo0lEQVR4nO2cS27jOhBFTz0JyJACegFeirSzIEt6OxCX4gUEkIYGKNwekNTHziiddGx31UCWLB1QAgrFqsuPic9Z/O+TIDjppJNOOumkk07eH2nFWmBuARYjWosN29lcnxp++G2dvEuylyRNQDwlbAAgXEzj/CIbWAxoJEk6kp9v08knIdvyO3fQ/w8GVv7qzy1GuJiYO8QMBk36wbd18iHIfmqkkUbEU0I6v8isa24lgLt4WyfvkYzdkjMeez2XzEjS2r99S5tOPgUZJI31rN5slA+xW3IHJyldk59v08mnIqOZmXXkLKgWZ2ADYK/nFwFLLsu+qk0nn4TMvnLIdhbLJRlcTLHDxLyYrp56sO908vtIcrneT8BavRebmsON4yPjY32nk3+JDAmzbrGcWNspobeuyYmSDSEh6eJ9mZNXVqIKtXrvJ5CmpsahVVTs17DUexxycmdVYwwTEN5bxZMwQsL6MaFoJQ+yeEoIVDXIx/pOJ7+PPMahNfpMjTQGaSvmS+UPHoecPFqNQyyW+6w4NBC7po56hHfE/CtZr6XNEenn3tbJeySzD1k5NGnt1QzChPUjWRpS7N4xwnv1usf6Tie/j1z7Mjjkz0DWqYNEr8R28NreyQ/JIBV1OqQ8AaT4y9ny/CG92V7AftTvdPLryaox1viSS3hCIufZ+ca0neFxyMkrO+jUh/KLUNxHY0ircITXZU5eWR3XgM1pir8orf/tH3YfcvJou75spHiOxlAutwAFFNna+zInj7ary7apQ/txjXSIPsF9yMlrqz5RE+asWOcEqM6KpeZD5cx9yMkb0gYgOwisifV6qQn01lEC1Ne06eSzkGUOWtyt5wDrpwXltR6qN/rpVzLm7s/bdPK5yJ0qlJOdcSvE1ssx7CUkz4ecPNqmD9VZQ6yq0OpcUBzJ8yEnb+2gU5eyvtRl66SQfnMuHy9z8sY2H9opi9lpqvi4167B45CTV6ajsa0qA9gCVBnV977MyY/Jbd8PjevaoJxizy/Vpea2rj774bd18r7IvQi9H55f5cVtfmyNQ54POfkhOa/7CgHE08XstabYZb2QmdHnFa9f06aTz0G2t381MmjrLOppaRWHfCNZPCWsH/+sTSefnZzbnEmbnS6mt66RvdZJRNK0+BpFJ4+2ri8TMIPi6ZJXeAgWDNokKCNn1o+NfF2Hkx+R674fNtDIBqBsAzIBcZtKPfu+H05emfke50466aSTTjrp5D9O/gZZ7QGurDU4UwAAAABJRU5ErkJggg==">
+        </div>
+      </div>
       <div class="sec-header">
         <div><div class="sec-title">CSAT — Guest Satisfaction</div><div class="sec-sub">Customer satisfaction scores and feedback analytics</div></div>
         <div class="flex gap-8">
@@ -1487,9 +1502,9 @@ function setCSATStar(field,val){
   $$("sv-"+field).textContent=val+"/5";
 }
 async function submitCSAT(){
-  const ordId=parseInt(v("cs-order-id")),custId=parseInt(v("cs-cust-id"));
-  const o=orders.find(x=>x.id===ordId);
-  const review={id:Math.max(0,...csatData.map(r=>r.id))+1,customerId:custId,orderId:ordId,date:o?.date||new Date().toISOString().slice(0,10),...Object.fromEntries(csatFields.map(f=>[f,csatRatings[f]])),comment:v("cs-comment"),recommend:$$("cs-rec").checked};
+  const ordId=String(v("cs-order-id")||'').trim(),custId=String(v("cs-cust-id")||'').trim();
+  const o=orders.find(x=>String(x.id)===ordId);
+  const review={id:'CSAT-'+Date.now(),customerId:custId,orderId:ordId,date:o?.date||new Date().toISOString(),...Object.fromEntries(csatFields.map(f=>[f,csatRatings[f]])),comment:v("cs-comment"),recommend:$$("cs-rec").checked};
   csatData.unshift(review);
   closeModal("modal-add-csat");renderCSAT();renderDashboard();showToast("⭐ Review submitted — syncing…","ok");
   await syncCSATRecordToSheet(review);
@@ -1518,6 +1533,44 @@ function renderLoyalty(){
   }).join("");
 }
 
+
+function downloadReceiptQR(){
+  const img=document.getElementById("csat-receipt-qr");
+  if(!img) return;
+  const a=document.createElement("a");
+  a.download="greektogo-registration-qr.png";
+  a.href=img.src;
+  a.click();
+  showToast("Receipt QR downloaded!","ok");
+}
+
+function printCSATReceiptQR(){
+  const img=document.getElementById("csat-receipt-qr");
+  const src=img?img.src:"";
+  const w=window.open("","_blank");
+  if(!w){ showToast("Pop-up blocked — allow pop-ups to print the receipt QR","err"); return; }
+  w.document.write(`<!DOCTYPE html><html><head><title>Greek To Go Taverna — Receipt QR</title>
+  <style>
+    body{font-family:Arial,sans-serif;background:#fff;margin:0;padding:24px;text-align:center;color:#222;}
+    .receipt{width:320px;margin:0 auto;border:1px solid #ddd;padding:20px 18px;border-radius:10px;}
+    .brand{font-size:20px;font-weight:800;color:#1B4F8A;}
+    .sub{font-size:11px;letter-spacing:.12em;color:#C4972A;text-transform:uppercase;margin-top:3px;}
+    .rule{border-top:1px dashed #aaa;margin:14px 0;}
+    .title{font-size:14px;font-weight:700;margin-bottom:6px;}
+    .msg{font-size:11px;line-height:1.5;color:#555;margin-bottom:12px;}
+    img{width:170px;height:170px;margin:4px auto 12px;display:block;}
+    .url{font-size:9px;color:#555;word-break:break-all;}
+    @media print{body{padding:0}.receipt{border:none;width:100%;}}
+  </style></head><body><div class="receipt">
+    <div class="brand">Greek To Go</div><div class="sub">Taverna · Filoxenia Club</div>
+    <div class="rule"></div><div class="title">📱 Scan to Register</div>
+    <div class="msg">Thank you for visiting Greek To Go Taverna.<br>Scan this QR code to register and stay connected.</div>
+    <img src="${src}" alt="Registration QR">
+    <div class="url">${G2G_REGISTRATION_URL}</div>
+    <div class="rule"></div><div style="font-size:10px;color:#777;">Please keep this QR code with your receipt.</div>
+  </div><script>window.onload=function(){window.print();}<\/script></body></html>`);
+  w.document.close();
+}
 
 // ─── QR CODE ENGINE ──────────────────────────────────────────
 // Minimal QR Code generator (no external libs needed)
@@ -1579,18 +1632,19 @@ const QRCode = (function(){
   return { draw };
 })();
 
-let currentQRUrl = "greektogo-register.html";
+const G2G_REGISTRATION_URL = "https://salvationsolutions.github.io/GreekToGoTaverna-RegistrationForm/";
+let currentQRUrl = G2G_REGISTRATION_URL;
 
 function initQR(){
   const url = currentQRUrl;
   document.getElementById("qr-url-display").textContent = url;
-  document.getElementById("qr-custom-url").value = url.startsWith("greektogo") ? "" : url;
+  document.getElementById("qr-custom-url").value = url === G2G_REGISTRATION_URL ? "" : url;
   QRCode.draw("qr-canvas", url, 220);
 }
 
 function regenerateQR(){
   const custom = document.getElementById("qr-custom-url").value.trim();
-  currentQRUrl = custom || "greektogo-register.html";
+  currentQRUrl = custom || G2G_REGISTRATION_URL;
   document.getElementById("qr-url-display").textContent = currentQRUrl;
   QRCode.draw("qr-canvas", currentQRUrl, 220);
   showToast("QR code updated!","ok");
@@ -1699,7 +1753,7 @@ async function pushGuestsToSheet(){
 async function pullGuestsFromSheet(){
   try{showToast('Loading guests from Google Sheets…','ok');const data=await _sheetCall('getGuests',{},'GET');
     if(!Array.isArray(data.guests)) throw new Error('Invalid guest data returned.');
-    customers=data.guests.map(g=>({...g,id:parseInt(g.id)||0,visits:parseInt(g.visits)||0,totalSpent:parseFloat(g.totalSpent)||0,tags:Array.isArray(g.tags)?g.tags:(g.tags?String(g.tags).split(',').map(t=>t.trim()).filter(Boolean):[])}));
+    customers=data.guests.map(g=>({...g,id:String(g.id||''),visits:parseInt(g.visits)||0,totalSpent:parseFloat(g.totalSpent)||0,tags:Array.isArray(g.tags)?g.tags:(g.tags?String(g.tags).split(',').map(t=>t.trim()).filter(Boolean):[])}));
     renderDatabase();renderDashboard();showToast('✅ Loaded '+customers.length+' guests from Google Sheets','ok');
   }catch(e){console.error(e);showToast('Guest load failed — '+e.message,'err');}
 }
@@ -1710,7 +1764,7 @@ async function pushOrdersToSheet(){
 async function pullOrdersFromSheet(){
   try{showToast('Loading orders from Google Sheets…','ok');const data=await _sheetCall('getOrders',{},'GET');
     if(!Array.isArray(data.orders)) throw new Error('Invalid order data returned.');
-    orders=data.orders.map(o=>({...o,id:parseInt(o.id)||0,customerId:parseInt(o.customerId)||0,total:parseFloat(o.total)||0,tableNo:parseInt(o.tableNo)||0,items:Array.isArray(o.items)?o.items:(o.items?String(o.items).split(',').map(t=>t.trim()).filter(Boolean):[])}));
+    orders=data.orders.map(o=>({...o,id:String(o.id||''),customerId:String(o.customerId||''),total:parseFloat(o.total)||0,tableNo:parseInt(o.tableNo)||0,items:Array.isArray(o.items)?o.items:(o.items?String(o.items).split(',').map(t=>t.trim()).filter(Boolean):[])}));
     renderOrders();renderDashboard();showToast('✅ Loaded '+orders.length+' orders from Google Sheets','ok');
   }catch(e){console.error(e);showToast('Order load failed — '+e.message,'err');}
 }
@@ -1721,7 +1775,7 @@ async function pushCSATToSheet(){
 async function pullCSATFromSheet(){
   try{showToast('Loading CSAT from Google Sheets…','ok');const data=await _sheetCall('getCSAT',{},'GET');
     if(!Array.isArray(data.csat)) throw new Error('Invalid CSAT data returned.');
-    csatData=data.csat.map(r=>({...r,id:parseInt(r.id)||0,customerId:parseInt(r.customerId)||0,orderId:parseInt(r.orderId)||0,overall:parseFloat(r.overall)||0,food:parseFloat(r.food)||0,service:parseFloat(r.service)||0,ambiance:parseFloat(r.ambiance)||0,value:parseFloat(r.value)||0,recommend:r.recommend===true||r.recommend==='true'||r.recommend===1||r.recommend==='1'||r.recommend==='TRUE'}));
+    csatData=data.csat.map(r=>({...r,id:String(r.id||''),customerId:String(r.customerId||''),orderId:String(r.orderId||''),overall:parseFloat(r.overall)||0,food:parseFloat(r.food)||0,service:parseFloat(r.service)||0,ambiance:parseFloat(r.ambiance)||0,value:parseFloat(r.value)||0,recommend:r.recommend===true||r.recommend==='true'||r.recommend===1||r.recommend==='1'||r.recommend==='TRUE'}));
     renderCSAT();renderDashboard();showToast('✅ Loaded '+csatData.length+' reviews from Google Sheets','ok');
   }catch(e){console.error(e);showToast('CSAT load failed — '+e.message,'err');}
 }
@@ -1746,9 +1800,9 @@ async function loadAllFromSheetOnLaunch(){
   try{
     showToast('Loading CRM data from Google Sheets…','ok');
     const data=await _sheetCall('getAll',{},'GET');
-    if(Array.isArray(data.guests)) customers=data.guests.map(g=>({...g,id:parseInt(g.id)||0,visits:parseInt(g.visits)||0,totalSpent:parseFloat(g.totalSpent)||0,tags:Array.isArray(g.tags)?g.tags:(g.tags?String(g.tags).split(',').map(t=>t.trim()).filter(Boolean):[])}));
-    if(Array.isArray(data.orders)) orders=data.orders.map(o=>({...o,id:parseInt(o.id)||0,customerId:parseInt(o.customerId)||0,total:parseFloat(o.total)||0,tableNo:parseInt(o.tableNo)||0,items:Array.isArray(o.items)?o.items:(o.items?String(o.items).split(',').map(t=>t.trim()).filter(Boolean):[])}));
-    if(Array.isArray(data.csat)) csatData=data.csat.map(r=>({...r,id:parseInt(r.id)||0,customerId:parseInt(r.customerId)||0,orderId:parseInt(r.orderId)||0,overall:parseFloat(r.overall)||0,food:parseFloat(r.food)||0,service:parseFloat(r.service)||0,ambiance:parseFloat(r.ambiance)||0,value:parseFloat(r.value)||0,recommend:r.recommend===true||r.recommend==='true'||r.recommend===1||r.recommend==='1'||r.recommend==='TRUE'}));
+    if(Array.isArray(data.guests)) customers=data.guests.map(g=>({...g,id:String(g.id||''),visits:parseInt(g.visits)||0,totalSpent:parseFloat(g.totalSpent)||0,tags:Array.isArray(g.tags)?g.tags:(g.tags?String(g.tags).split(',').map(t=>t.trim()).filter(Boolean):[])}));
+    if(Array.isArray(data.orders)) orders=data.orders.map(o=>({...o,id:String(o.id||''),customerId:String(o.customerId||''),total:parseFloat(o.total)||0,tableNo:parseInt(o.tableNo)||0,items:Array.isArray(o.items)?o.items:(o.items?String(o.items).split(',').map(t=>t.trim()).filter(Boolean):[])}));
+    if(Array.isArray(data.csat)) csatData=data.csat.map(r=>({...r,id:String(r.id||''),customerId:String(r.customerId||''),orderId:String(r.orderId||''),overall:parseFloat(r.overall)||0,food:parseFloat(r.food)||0,service:parseFloat(r.service)||0,ambiance:parseFloat(r.ambiance)||0,value:parseFloat(r.value)||0,recommend:r.recommend===true||r.recommend==='true'||r.recommend===1||r.recommend==='1'||r.recommend==='TRUE'}));
     renderDatabase();renderOrders();renderCSAT();renderDashboard();
     showToast('✅ CRM connected — Guests, Orders and CSAT loaded','ok');
   }catch(e){console.error('CRM Sheet launch load failed:',e);renderDatabase();renderOrders();renderCSAT();renderDashboard();showToast('⚠ CRM loaded, but Google Sheets could not be reached — '+e.message,'err');}
