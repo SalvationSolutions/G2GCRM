@@ -1058,7 +1058,7 @@ function launchCRM(){
   document.getElementById("u-role").textContent = "· "+currentUser.role;
   var dd = document.getElementById("dash-date");
   if(dd) dd.textContent = new Date().toLocaleDateString("en-GB",{weekday:"long",year:"numeric",month:"long",day:"numeric"});
-  try{ if(typeof renderDashboard==="function") renderDashboard(); }catch(e){ console.error("Dashboard error:",e); }
+  try{ if(typeof loadAllFromSheetOnLaunch==="function") loadAllFromSheetOnLaunch(); else if(typeof renderDashboard==="function") renderDashboard(); }catch(e){ console.error("Dashboard error:",e); }
 }
 
 // Enter key support
@@ -1092,37 +1092,18 @@ const MENU=[
   {name:"Greek Coffee",cat:"Drinks",price:3.50}
 ];
 
-let customers=[
-  {id:1,name:"Maria Papadopoulos",phone:"555-0101",email:"maria@email.com",visits:14,lastVisit:"2026-08-20",totalSpent:892.50,favorite:"Moussaka",notes:"Allergic to nuts",birthday:"1985-03-12",segment:"Regular",tags:["Allergen Alert","Window Seat"],city:"Athens",joinDate:"2024-03-15"},
-  {id:2,name:"Nikos Stavros",phone:"555-0102",email:"nikos@email.com",visits:8,lastVisit:"2026-08-18",totalSpent:445.00,favorite:"Souvlaki",notes:"Prefers window seat",birthday:"1990-07-22",segment:"Occasional",tags:["Window Seat"],city:"Piraeus",joinDate:"2024-07-08"},
-  {id:3,name:"Elena Vasiliou",phone:"555-0103",email:"elena@email.com",visits:23,lastVisit:"2026-08-22",totalSpent:1560.75,favorite:"Spanakopita",notes:"VIP regular",birthday:"1978-11-05",segment:"VIP",tags:["VIP","Early Adopter"],city:"Athens",joinDate:"2023-11-22"},
-  {id:4,name:"Dmitri Alexopoulos",phone:"555-0104",email:"dmitri@email.com",visits:3,lastVisit:"2026-07-30",totalSpent:148.25,favorite:"Gyros",notes:"",birthday:"1995-09-14",segment:"New",tags:[],city:"Thessaloniki",joinDate:"2026-06-01"},
-  {id:5,name:"Sofia Konstantinou",phone:"555-0105",email:"sofia@email.com",visits:17,lastVisit:"2026-08-15",totalSpent:1102.00,favorite:"Dolmades",notes:"Vegetarian",birthday:"1988-06-30",segment:"Regular",tags:["Vegetarian","Loyal"],city:"Athens",joinDate:"2024-01-10"},
-  {id:6,name:"Andreas Georgiadis",phone:"555-0106",email:"andreas@email.com",visits:5,lastVisit:"2026-08-01",totalSpent:287.50,favorite:"Pastitsio",notes:"Business lunches",birthday:"1972-02-18",segment:"Occasional",tags:["Corporate"],city:"Athens",joinDate:"2025-02-20"},
-  {id:7,name:"Despina Katsaros",phone:"555-0107",email:"despina@email.com",visits:11,lastVisit:"2026-08-10",totalSpent:634.00,favorite:"Baklava",notes:"Loves desserts",birthday:"2001-04-03",segment:"Regular",tags:["Sweet Tooth"],city:"Athens",joinDate:"2024-09-05"},
-  {id:8,name:"Yannis Tsolakis",phone:"555-0108",email:"yannis@email.com",visits:2,lastVisit:"2026-08-05",totalSpent:89.50,favorite:"Gyros",notes:"",birthday:"1999-12-25",segment:"New",tags:[],city:"Corfu",joinDate:"2026-07-20"}
-];
-let orders=[
-  {id:1,customerId:3,date:"2026-08-22",items:["Spanakopita x2","House Wine x1","Baklava x1"],total:78.50,status:"Completed",tableNo:4},
-  {id:2,customerId:1,date:"2026-08-20",items:["Moussaka x1","Greek Salad x2","Retsina x1"],total:65.25,status:"Completed",tableNo:7},
-  {id:3,customerId:5,date:"2026-08-15",items:["Dolmades x3","Tzatziki x1","Sparkling Water x2"],total:52.00,status:"Completed",tableNo:2},
-  {id:4,customerId:2,date:"2026-08-18",items:["Souvlaki Platter x2","Pita Bread x4","Beer x2"],total:89.75,status:"Completed",tableNo:5},
-  {id:5,customerId:6,date:"2026-08-01",items:["Pastitsio x2","Greek Coffee x2"],total:48.50,status:"Completed",tableNo:1},
-  {id:6,customerId:4,date:"2026-07-30",items:["Gyros x2","Fries x1"],total:35.00,status:"Completed",tableNo:3},
-  {id:7,customerId:7,date:"2026-08-10",items:["Baklava x3","Loukoumades x1","Greek Coffee x2"],total:54.50,status:"Completed",tableNo:6},
-  {id:8,customerId:8,date:"2026-08-05",items:["Gyros x2","Beer x1"],total:38.50,status:"Completed",tableNo:8}
-];
-let csatData=[
-  {id:1,customerId:3,orderId:1,date:"2026-08-22",overall:5,food:5,service:5,ambiance:4,value:5,comment:"Absolutely wonderful as always. The spanakopita was perfect!",recommend:true},
-  {id:2,customerId:1,orderId:2,date:"2026-08-20",overall:4,food:5,service:4,ambiance:4,value:4,comment:"Moussaka was divine but service was a little slow tonight.",recommend:true},
-  {id:3,customerId:5,orderId:3,date:"2026-08-15",overall:5,food:5,service:5,ambiance:5,value:4,comment:"Best vegetarian options in Athens. Dolmades were exceptional!",recommend:true},
-  {id:4,customerId:2,orderId:4,date:"2026-08-18",overall:3,food:4,service:3,ambiance:4,value:3,comment:"Food was great but waited 30 mins for seating. Could be better.",recommend:false},
-  {id:5,customerId:6,orderId:5,date:"2026-08-01",overall:4,food:4,service:5,ambiance:3,value:4,comment:"Great for business lunches. Professional service.",recommend:true},
-  {id:6,customerId:7,orderId:7,date:"2026-08-10",overall:5,food:5,service:5,ambiance:5,value:5,comment:"The loukoumades are INCREDIBLE. I'll be back every week!",recommend:true}
-];
+// ── Data lives ONLY in the connected Google Sheet — no offline/demo data ──
+let customers=[];
+let orders=[];
+let csatData=[];
 let sentLog=[];
 
 // ─── HELPERS ─────────────────────────────────────────────────
+function connectPrompt(label){
+  return sheetsUrl
+    ? `No ${label} yet. Try <a href="#" onclick="openSheetsModal();return false;" style="color:var(--blue);font-weight:600;">pulling from your Sheet</a> or add one manually.`
+    : `No ${label} yet — <a href="#" onclick="openSheetsModal();return false;" style="color:var(--blue);font-weight:600;">connect a Google Sheet</a> to load your database.`;
+}
 function getTier(v){return v>=20?"Platinum":v>=12?"Gold":v>=6?"Silver":"Bronze";}
 function avg(a){return a.length?a.reduce((s,b)=>s+b,0)/a.length:0;}
 function $$(n){return document.getElementById(n);}
@@ -1175,7 +1156,7 @@ function polarPoint(cx,cy,r,angleDeg){
 
 function svgLineChart(values,labels,opts={}){
   const w=opts.width||480,h=opts.height||190,pad=36;
-  if(!values.length) return `<div class="empty" style="padding:30px 0;">No order data yet</div>`;
+  if(!values.length) return `<div class="empty" style="padding:30px 0;">${connectPrompt("orders")}</div>`;
   const max=Math.max(...values,1);
   const stepX=values.length>1?(w-pad-14)/(values.length-1):0;
   const yFor=v=>h-pad-(v/max)*(h-pad-16);
@@ -1240,20 +1221,20 @@ function renderDashboardCharts(){
   const {values,labels}=revenueByDate();
   $$("dash-revenue-chart").innerHTML = values.length
     ? svgLineChart(values,labels)
-    : `<div class="empty" style="padding:30px 0;">No order data yet</div>`;
+    : `<div class="empty" style="padding:30px 0;">${connectPrompt("orders")}</div>`;
 
   const segCounts={VIP:0,Regular:0,Occasional:0,New:0};
   customers.forEach(c=>{segCounts[c.segment]=(segCounts[c.segment]||0)+1;});
   const legend=Object.entries(segCounts).filter(([,v])=>v>0).map(([label,val])=>
     `<div style="display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:6px;"><span style="width:10px;height:10px;border-radius:3px;background:${SEG_COLORS[label]};display:inline-block;"></span>${label} · ${val}</div>`
-  ).join("")||`<div class="empty" style="padding:10px 0;">No guests yet</div>`;
+  ).join("")||`<div class="empty" style="padding:10px 0;">${connectPrompt("guests")}</div>`;
   $$("dash-segments-chart").innerHTML = `${svgDonutChart(segCounts)}<div>${legend}</div>`;
 
   const items=topMenuItems();
   const maxQty=items.length?items[0][1]:1;
   $$("dash-top-items").innerHTML = items.length ? items.map(([name,qty])=>
     `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><span style="font-size:12px;color:var(--char);min-width:130px;">${name}</span><div style="flex:1;height:8px;border-radius:4px;background:var(--surface);"><div style="height:8px;border-radius:4px;background:var(--gold);width:${(qty/maxQty*100).toFixed(0)}%;"></div></div><span style="font-size:12px;font-weight:700;color:var(--gold);min-width:26px;text-align:right;">${qty}</span></div>`
-  ).join("") : `<div class="empty" style="padding:20px 0;">No order data yet</div>`;
+  ).join("") : `<div class="empty" style="padding:20px 0;">${connectPrompt("orders")}</div>`;
 }
 
 function renderDashboard(){
@@ -1261,28 +1242,34 @@ function renderDashboard(){
   const cs=csatData.map(r=>r.overall),avgC=avg(cs),rec=csatData.length?Math.round(csatData.filter(r=>r.recommend).length/csatData.length*100):0;
   const tc={Platinum:0,Gold:0,Silver:0,Bronze:0};
   customers.forEach(c=>tc[getTier(c.visits)]++);
+  const now=new Date();
+  const newThisMonth=customers.filter(c=>{
+    if(!c.joinDate) return false;
+    const d=new Date(c.joinDate);
+    return !isNaN(d) && d.getFullYear()===now.getFullYear() && d.getMonth()===now.getMonth();
+  }).length;
   $$("dash-stats").innerHTML=`
-    <div class="stat blue-s"><div class="stat-label">Total Guests</div><div class="stat-value">${customers.length}</div><div class="stat-sub">+2 this month</div></div>
+    <div class="stat blue-s"><div class="stat-label">Total Guests</div><div class="stat-value">${customers.length}</div><div class="stat-sub">${newThisMonth} this month</div></div>
     <div class="stat olive-s"><div class="stat-label">Revenue</div><div class="stat-value">${dollar(rev)}</div><div class="stat-sub">all time</div></div>
     <div class="stat"><div class="stat-label">Avg Order</div><div class="stat-value">${dollar(avgOrd)}</div></div>
     <div class="stat gold-s"><div class="stat-label">CSAT Score</div><div class="stat-value">${avgC.toFixed(1)}/5</div><div class="stat-sub">${csatData.length} reviews</div></div>
     <div class="stat green-s"><div class="stat-label">Recommend %</div><div class="stat-value">${rec}%</div></div>
   `;
-  $$("dash-tiers").innerHTML=["Platinum","Gold","Silver","Bronze"].map(t=>{
+  $$("dash-tiers").innerHTML=customers.length ? ["Platinum","Gold","Silver","Bronze"].map(t=>{
     const lc=LC[t],cnt=tc[t],pct=Math.round(cnt/customers.length*100)||0;
     return`<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;"><span style="color:${lc.text};font-weight:600;">${t}</span><span style="color:var(--muted);">${cnt} · ${pct}%</span></div><div style="height:6px;border-radius:4px;background:${lc.bg};"><div style="height:6px;border-radius:4px;background:${lc.dot};width:${pct}%;"></div></div></div>`;
-  }).join("");
-  $$("dash-csat-cats").innerHTML=[["Overall","overall"],["Food","food"],["Service","service"],["Ambiance","ambiance"],["Value","value"]].map(([label,key])=>{
+  }).join("") : `<div class="empty">${connectPrompt("guests")}</div>`;
+  $$("dash-csat-cats").innerHTML=csatData.length ? [["Overall","overall"],["Food","food"],["Service","service"],["Ambiance","ambiance"],["Value","value"]].map(([label,key])=>{
     const val=avg(csatData.map(r=>r[key])),color=sColor(val);
     return`<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;"><span style="font-size:13px;color:var(--muted);min-width:80px;">${label}</span><div class="score-bar-wrap"><div class="score-bar-fill" style="background:${color};width:${val/5*100}%;"></div></div><span style="font-size:13px;font-weight:700;color:${color};min-width:28px;">${val.toFixed(1)}</span></div>`;
-  }).join("");
-  $$("dash-top").innerHTML=[...customers].sort((a,b)=>b.totalSpent-a.totalSpent).slice(0,5).map((c,i)=>
+  }).join("") : `<div class="empty">${connectPrompt("reviews")}</div>`;
+  $$("dash-top").innerHTML=customers.length ? [...customers].sort((a,b)=>b.totalSpent-a.totalSpent).slice(0,5).map((c,i)=>
     `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;"><span style="font-size:12px;color:var(--muted);min-width:18px;">#${i+1}</span>${av(c.name,getTier(c.visits),30)}<div style="flex:1;"><div style="font-size:13px;font-weight:600;">${c.name}</div><div style="font-size:11px;color:var(--muted);">${c.visits} visits</div></div><span style="font-size:13px;font-weight:700;color:var(--blue);">${dollar(c.totalSpent)}</span></div>`
-  ).join("");
-  $$("dash-reviews").innerHTML=[...csatData].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4).map(r=>{
+  ).join("") : `<div class="empty">${connectPrompt("guests")}</div>`;
+  $$("dash-reviews").innerHTML=csatData.length ? [...csatData].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4).map(r=>{
     const c=customers.find(x=>x.id===r.customerId);
     return`<div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);"><div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span style="font-size:13px;font-weight:600;">${c?.name||"Guest"}</span>${stars(r.overall,13)}</div>${r.comment?`<div style="font-size:12px;color:var(--muted);font-style:italic;">"${r.comment.slice(0,72)}${r.comment.length>72?"…":""}"</div>`:""}</div>`;
-  }).join("");
+  }).join("") : `<div class="empty">${connectPrompt("reviews")}</div>`;
   renderDashboardCharts();
 }
 
@@ -1352,7 +1339,12 @@ function renderDatabase(){
       tb.appendChild(dr);
     }
   });
-  if(list.length===0){const e=document.createElement("tr");e.innerHTML=`<td colspan="8" class="empty">No guests match your filters</td>`;tb.appendChild(e);}
+  if(list.length===0){
+    const e=document.createElement("tr");
+    const msg = customers.length===0 ? connectPrompt("guests") : "No guests match your filters";
+    e.innerHTML=`<td colspan="8" class="empty">${msg}</td>`;
+    tb.appendChild(e);
+  }
 }
 function addGuest(){
   const name=v("ag-name").trim();if(!name){showToast("Name is required","err");return;}
@@ -1387,7 +1379,7 @@ function deleteGuest(id){
 function renderOrders(){
   const q=($$("ord-search")?.value||"").toLowerCase();
   const list=[...orders].sort((a,b)=>b.date.localeCompare(a.date)).filter(o=>{const c=customers.find(x=>x.id===o.customerId);return!q||(c?.name||"").toLowerCase().includes(q);});
-  $$("orders-list").innerHTML=list.length===0?`<div class="empty">No orders found</div>`:list.map(o=>{
+  $$("orders-list").innerHTML=list.length===0?`<div class="empty">${orders.length===0?connectPrompt("orders"):"No orders found"}</div>`:list.map(o=>{
     const c=customers.find(x=>x.id===o.customerId),tier=c?getTier(c.visits):"Bronze";
     return`<div class="card"><div class="card-row">${av(c?.name||"G",tier,38)}<div style="flex:1;"><div style="font-size:14px;font-weight:700;">${c?.name||"Guest"}</div><div style="font-size:12px;color:var(--muted);">${o.date} · Table ${o.tableNo}</div></div><div style="text-align:right;margin-right:10px;"><div style="font-size:16px;font-weight:700;color:var(--olive);">${dollar(o.total)}</div><div style="font-size:11px;background:var(--green-l);color:var(--green);padding:1px 7px;border-radius:8px;display:inline-block;">${o.status}</div></div><button class="btn btn-ghost btn-sm" onclick="openCSATModal(${o.id})">+ Review</button></div><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">${o.items.map(i=>`<span class="item-chip">${i}</span>`).join("")}</div></div>`;
   }).join("");
@@ -1465,7 +1457,7 @@ function renderCSAT(){
   $$("csat-filters").innerHTML=["All","5","4","3","2","1"].map(f=>`<button class="filter-pill${csatFilter===f?" active":""}" onclick="csatFilter='${f}';renderCSAT()">${f==="All"?f:f+"★"}</button>`).join("");
   const filtered=csatData.filter(r=>csatFilter==="All"||String(r.overall)===csatFilter);
   $$("csat-list-title").textContent=`All Reviews (${filtered.length})`;
-  $$("csat-reviews-list").innerHTML=filtered.length===0?`<div class="empty">No reviews yet</div>`:filtered.map(r=>{
+  $$("csat-reviews-list").innerHTML=filtered.length===0?`<div class="empty">${csatData.length===0?connectPrompt("reviews"):"No reviews match this filter"}</div>`:filtered.map(r=>{
     const c=customers.find(x=>x.id===r.customerId),tier=c?getTier(c.visits):"Bronze";
     const cls=r.overall>=4?"great":r.overall===3?"ok":"poor";
     return`<div class="review-card ${cls}"><div style="display:flex;align-items:flex-start;gap:12px;">${av(c?.name||"G",tier,36)}<div style="flex:1;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><div><span style="font-size:14px;font-weight:700;">${c?.name||"Guest"}</span><span style="font-size:12px;color:var(--muted);margin-left:8px;">${r.date}</span></div><div style="display:flex;align-items:center;gap:6px;">${stars(r.overall,14)}<span style="font-size:13px;font-weight:700;color:${sColor(r.overall)};">${r.overall}/5</span></div></div><div class="review-chips"><span class="review-chip">🍽 Food <strong style="color:${sColor(r.food)};">${r.food}/5</strong></span><span class="review-chip">👨‍💼 Service <strong style="color:${sColor(r.service)};">${r.service}/5</strong></span><span class="review-chip">🏛 Ambiance <strong style="color:${sColor(r.ambiance)};">${r.ambiance}/5</strong></span><span class="review-chip">💰 Value <strong style="color:${sColor(r.value)};">${r.value}/5</strong></span><span class="review-chip" style="${r.recommend?"background:var(--green-l);border-color:var(--green);color:var(--green);":"color:var(--muted);"}">${r.recommend?"✓ Would recommend":"✗ Wouldn't recommend"}</span></div>${r.comment?`<div style="font-size:13px;font-style:italic;line-height:1.5;">"${r.comment}"</div>`:""}</div><button onclick="csatData=csatData.filter(x=>x.id!==${r.id});renderCSAT();renderDashboard();" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--muted);">×</button></div></div>`;
@@ -1812,6 +1804,57 @@ async function pullCSATFromSheet(){
     console.error("Sheet pull error:",e);
     showToast("Load failed — check the Web App URL and deployment access","err");
   }
+}
+
+// Silently loads all three datasets from the connected Sheet right after
+// login — the app holds no data of its own, so without this the CRM would
+// open completely empty even when a Sheet is already connected.
+async function loadAllFromSheetOnLaunch(){
+  if(!sheetsUrl) { renderDashboard(); return; }
+  showToast("Loading data from Google Sheet…","ok");
+  const results = await Promise.allSettled([
+    fetch(sheetsUrl+(sheetsUrl.includes("?")?"&":"?")+"type=guests").then(r=>r.json()),
+    fetch(sheetsUrl+(sheetsUrl.includes("?")?"&":"?")+"type=orders").then(r=>r.json()),
+    fetch(sheetsUrl+(sheetsUrl.includes("?")?"&":"?")+"type=csat").then(r=>r.json())
+  ]);
+  const [gRes,oRes,cRes] = results;
+  if(gRes.status==="fulfilled" && gRes.value.guests){
+    customers = gRes.value.guests.map(g=>({
+      ...g,
+      id: parseInt(g.id)||0,
+      visits: parseInt(g.visits)||0,
+      totalSpent: parseFloat(g.totalSpent)||0,
+      tags: Array.isArray(g.tags) ? g.tags : (g.tags ? String(g.tags).split(",").map(t=>t.trim()).filter(Boolean) : [])
+    }));
+  }
+  if(oRes.status==="fulfilled" && oRes.value.orders){
+    orders = oRes.value.orders.map(o=>({
+      ...o,
+      id: parseInt(o.id)||0,
+      customerId: parseInt(o.customerId)||0,
+      total: parseFloat(o.total)||0,
+      tableNo: parseInt(o.tableNo)||0,
+      items: Array.isArray(o.items) ? o.items : (o.items ? String(o.items).split(",").map(t=>t.trim()).filter(Boolean) : [])
+    }));
+  }
+  if(cRes.status==="fulfilled" && cRes.value.csat){
+    csatData = cRes.value.csat.map(r=>({
+      ...r,
+      id: parseInt(r.id)||0,
+      customerId: parseInt(r.customerId)||0,
+      orderId: parseInt(r.orderId)||0,
+      overall: parseFloat(r.overall)||0,
+      food: parseFloat(r.food)||0,
+      service: parseFloat(r.service)||0,
+      ambiance: parseFloat(r.ambiance)||0,
+      value: parseFloat(r.value)||0,
+      recommend: r.recommend===true||r.recommend==="true"||r.recommend===1||r.recommend==="1"||r.recommend==="TRUE"
+    }));
+  }
+  const anyFailed = results.some(r=>r.status==="rejected");
+  renderDatabase();renderOrders();renderCSAT();renderDashboard();
+  if(anyFailed) showToast("Some data failed to load — check your Sheet connection","err");
+  else showToast("✅ Loaded data from Google Sheet","ok");
 }
 
 // ── Pending registrations (from localStorage) ─────────────────
