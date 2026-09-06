@@ -916,12 +916,11 @@ table{border-collapse:collapse;width:100%;}
     <div class="modal-head"><span class="modal-title">🔗 Connect Google Sheet</span><button class="modal-close" onclick="closeModal('modal-sheets')">×</button></div>
     <div class="modal-body">
       <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:14px;">
-        Paste the Web App URL from your deployed Google Apps Script below. Once connected you can push or pull
-        each dataset to and from your Google Sheet.
+        This CRM is permanently linked to the shared Google Apps Script Web App. Guests, Orders and CSAT sync to the existing G2G TAVERNA CRM DATABASE Google Sheet.
       </p>
       <div class="field">
         <label>Apps Script Web App URL</label>
-        <input id="sheets-url" placeholder="https://script.google.com/macros/s/XXXXXXXX/exec"/>
+        <input id="sheets-url" readonly style="background:var(--surface);color:var(--muted);"/>
       </div>
       <div style="font-size:12px;margin:10px 0 2px;">Status: <span id="sheets-status">Not connected</span></div>
       <div class="flex gap-8" style="justify-content:flex-end;margin-top:10px;">
@@ -1346,13 +1345,15 @@ function renderDatabase(){
     tb.appendChild(e);
   }
 }
-function addGuest(){
+async function addGuest(){
   const name=v("ag-name").trim();if(!name){showToast("Name is required","err");return;}
   const tags=v("ag-tags").split(",").map(t=>t.trim()).filter(Boolean);
   const id=Math.max(0,...customers.map(c=>c.id))+1;
-  customers.push({id,name,phone:v("ag-phone"),email:v("ag-email"),birthday:v("ag-birthday"),city:v("ag-city"),favorite:v("ag-favorite"),segment:v("ag-segment"),tags,notes:v("ag-notes"),visits:0,lastVisit:"—",totalSpent:0,joinDate:new Date().toISOString().slice(0,10)});
+  const guest={id,name,phone:v("ag-phone"),email:v("ag-email"),birthday:v("ag-birthday"),city:v("ag-city"),favorite:v("ag-favorite"),segment:v("ag-segment"),tags,notes:v("ag-notes"),visits:0,lastVisit:"—",totalSpent:0,joinDate:new Date().toISOString().slice(0,10)};
+  customers.push(guest);
   ["ag-name","ag-phone","ag-email","ag-birthday","ag-city","ag-favorite","ag-tags","ag-notes"].forEach(i=>{const el=$$(i);if(el)el.value="";});
-  closeModal("modal-add-guest");renderDatabase();renderDashboard();showToast("✅ Guest added!");
+  closeModal("modal-add-guest");renderDatabase();renderDashboard();showToast("✅ Guest added — syncing…","ok");
+  await syncGuestRecordToSheet(guest);
 }
 function editGuest(id){
   const c=customers.find(x=>x.id===id);if(!c)return;
@@ -1363,16 +1364,19 @@ function editGuest(id){
   $$("eg-tags").value=(c.tags||[]).join(", ");$$("eg-notes").value=c.notes||"";
   openModal("modal-edit-guest");
 }
-function saveEditGuest(){
+async function saveEditGuest(){
   const id=parseInt(v("eg-id")),idx=customers.findIndex(c=>c.id===id);if(idx<0)return;
   const tags=v("eg-tags").split(",").map(t=>t.trim()).filter(Boolean);
   customers[idx]={...customers[idx],name:v("eg-name"),phone:v("eg-phone"),email:v("eg-email"),city:v("eg-city"),birthday:v("eg-birthday"),segment:v("eg-segment"),favorite:v("eg-favorite"),tags,notes:v("eg-notes")};
-  closeModal("modal-edit-guest");renderDatabase();renderDashboard();showToast("✅ Guest updated!");
+  const guest=customers[idx];
+  closeModal("modal-edit-guest");renderDatabase();renderDashboard();showToast("✅ Guest updated — syncing…","ok");
+  await syncGuestRecordToSheet(guest);
 }
-function deleteGuest(id){
+async function deleteGuest(id){
   if(!confirm("Remove this guest?"))return;
   customers=customers.filter(c=>c.id!==id);if(dbExpId===id)dbExpId=null;
-  renderDatabase();renderDashboard();showToast("Guest removed","err");
+  renderDatabase();renderDashboard();showToast("Guest removed — syncing…","err");
+  await deleteGuestFromSheet(id);
 }
 
 // ─── ORDERS ──────────────────────────────────────────────────
@@ -1411,15 +1415,17 @@ function toggleMenuItem(btn){
   let total=0;sel.forEach(c=>total+=parseFloat(c.dataset.price)||0);
   $$("ao-count").textContent=sel.length;$$("ao-total").textContent=total.toFixed(2);
 }
-function addOrder(){
+async function addOrder(){
   const gid=parseInt(v("ao-guest"));if(!gid){showToast("Select a guest","err");return;}
   const chips=[...document.querySelectorAll(".menu-chip.selected")];if(!chips.length){showToast("Select menu items","err");return;}
   const total=chips.reduce((s,c)=>s+parseFloat(c.dataset.price),0);
   const id=Math.max(0,...orders.map(o=>o.id))+1,today=new Date().toISOString().slice(0,10);
-  orders.unshift({id,customerId:gid,date:today,items:chips.map(c=>c.dataset.name+" x1"),total,status:"Completed",tableNo:parseInt(v("ao-table"))||1});
+  const order={id,customerId:gid,date:today,items:chips.map(c=>c.dataset.name+" x1"),total,status:"Completed",tableNo:parseInt(v("ao-table"))||1};
+  orders.unshift(order);
   const idx=customers.findIndex(c=>c.id===gid);
-  if(idx>=0){customers[idx].visits=(customers[idx].visits||0)+1;customers[idx].totalSpent=(customers[idx].totalSpent||0)+total;customers[idx].lastVisit=today;}
-  closeModal("modal-add-order");renderOrders();renderDashboard();showToast("✅ Order recorded!");
+  if(idx>=0){customers[idx].visits=(customers[idx].visits||0)+1;customers[idx].totalSpent=(customers[idx].totalSpent||0)+total;customers[idx].lastVisit=today;await syncGuestRecordToSheet(customers[idx]);}
+  closeModal("modal-add-order");renderOrders();renderDashboard();showToast("✅ Order recorded — syncing…","ok");
+  await syncOrderRecordToSheet(order);
 }
 
 // ─── CSAT ────────────────────────────────────────────────────
@@ -1480,11 +1486,13 @@ function setCSATStar(field,val){
   $$("sp-"+field).querySelectorAll("span").forEach((s,i)=>s.classList.toggle("on",i<val));
   $$("sv-"+field).textContent=val+"/5";
 }
-function submitCSAT(){
+async function submitCSAT(){
   const ordId=parseInt(v("cs-order-id")),custId=parseInt(v("cs-cust-id"));
   const o=orders.find(x=>x.id===ordId);
-  csatData.unshift({id:Math.max(0,...csatData.map(r=>r.id))+1,customerId:custId,orderId:ordId,date:o?.date||new Date().toISOString().slice(0,10),...Object.fromEntries(csatFields.map(f=>[f,csatRatings[f]])),comment:v("cs-comment"),recommend:$$("cs-rec").checked});
-  closeModal("modal-add-csat");renderCSAT();renderDashboard();showToast("⭐ Review submitted!");
+  const review={id:Math.max(0,...csatData.map(r=>r.id))+1,customerId:custId,orderId:ordId,date:o?.date||new Date().toISOString().slice(0,10),...Object.fromEntries(csatFields.map(f=>[f,csatRatings[f]])),comment:v("cs-comment"),recommend:$$("cs-rec").checked};
+  csatData.unshift(review);
+  closeModal("modal-add-csat");renderCSAT();renderDashboard();showToast("⭐ Review submitted — syncing…","ok");
+  await syncCSATRecordToSheet(review);
 }
 
 // ─── LOYALTY ─────────────────────────────────────────────────
@@ -1641,220 +1649,109 @@ function printQR(){
 }
 
 // ── Google Sheets connection ──────────────────────────────────
-let sheetsUrl = localStorage.getItem("gtg_sheets_url") || "";
+const SHEETS_URL_PERMANENT = "https://script.google.com/macros/s/AKfycbxekBOUqNmRgmPuLj96dtbI5tCJ4aGo6QV0dZ265nAGrhWgWG5-3BmGybb0_bzc6SvtwQ/exec";
+let sheetsUrl = SHEETS_URL_PERMANENT;
+try{ localStorage.setItem("gtg_sheets_url", sheetsUrl); }catch(e){}
 
 function openSheetsModal(){
-  $$("sheets-url").value = sheetsUrl;
+  $$('sheets-url').value = sheetsUrl;
   updateSheetsStatus();
-  openModal("modal-sheets");
+  openModal('modal-sheets');
 }
-
 function updateSheetsStatus(){
-  const el = $$("sheets-status");
-  if(sheetsUrl){
-    el.textContent = "✅ Connected";
-    el.style.color = "var(--green)";
-  } else {
-    el.textContent = "Not connected";
-    el.style.color = "var(--muted)";
-  }
+  const el=$$('sheets-status');
+  if(sheetsUrl){el.textContent='✅ Connected to Greek To Go CRM Sheets';el.style.color='var(--green)';}
+  else{el.textContent='Not connected';el.style.color='var(--muted)';}
 }
-
 function connectSheet(){
-  const url = v("sheets-url").trim();
-  if(!url){ showToast("Paste your Apps Script Web App URL first","err"); return; }
-  if(!/^https:\/\/script\.google\.com\/macros\//.test(url)){
-    showToast("That doesn't look like an Apps Script Web App URL","err"); return;
-  }
-  sheetsUrl = url;
-  localStorage.setItem("gtg_sheets_url", url);
+  sheetsUrl = SHEETS_URL_PERMANENT;
+  try{ localStorage.setItem('gtg_sheets_url', sheetsUrl); }catch(e){}
   updateSheetsStatus();
-  showToast("✅ Google Sheet connected!","ok");
+  showToast('✅ Google Sheets CRM connected','ok');
+}
+function disconnectSheet(){
+  // This CRM uses one permanent shared deployment; disconnecting locally is not allowed.
+  sheetsUrl = SHEETS_URL_PERMANENT;
+  try{ localStorage.setItem('gtg_sheets_url', sheetsUrl); }catch(e){}
+  updateSheetsStatus();
+  showToast('Google Sheets connection is fixed for this CRM','err');
 }
 
-function disconnectSheet(){
-  sheetsUrl = "";
-  localStorage.removeItem("gtg_sheets_url");
-  $$("sheets-url").value = "";
-  updateSheetsStatus();
-  showToast("Disconnected from Google Sheet","err");
+async function _sheetCall(action,payload={},method='POST'){
+  const url=sheetsUrl||SHEETS_URL_PERMANENT;
+  let res;
+  if(method==='GET'){
+    const qs=new URLSearchParams({action,ts:String(Date.now())});
+    res=await fetch(url+'?'+qs.toString(),{method:'GET',cache:'no-store',redirect:'follow'});
+  }else{
+    res=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action,...payload}),redirect:'follow'});
+  }
+  if(!res.ok) throw new Error('Google Sheets returned HTTP '+res.status+'.');
+  const data=await res.json();
+  if(!data || data.status==='error') throw new Error(data?.message||'Google Sheets did not confirm the operation.');
+  return data;
 }
 
 async function pushGuestsToSheet(){
-  if(!sheetsUrl){ showToast("Connect a Google Sheet first","err"); return; }
-  try{
-    showToast("Syncing guests to Sheet…","ok");
-    const res = await fetch(sheetsUrl,{
-      method:"POST",
-      headers:{"Content-Type":"text/plain;charset=utf-8"}, // avoids CORS preflight
-      body: JSON.stringify({type:"guests", guests: customers})
-    });
-    const data = await res.json();
-    showToast(`✅ Synced ${data.count!=null?data.count:customers.length} guests to Sheet!`,"ok");
-  }catch(e){
-    console.error("Sheet push error:",e);
-    showToast("Sync failed — check the Web App URL and deployment access","err");
-  }
+  try{showToast('Syncing guests to Google Sheets…','ok');const data=await _sheetCall('syncGuests',{guests:customers});showToast('✅ Guests synced: '+(data.count??customers.length),'ok');}
+  catch(e){console.error(e);showToast('Guest sync failed — '+e.message,'err');}
 }
-
 async function pullGuestsFromSheet(){
-  if(!sheetsUrl){ showToast("Connect a Google Sheet first","err"); return; }
-  try{
-    showToast("Loading guests from Sheet…","ok");
-    const res = await fetch(sheetsUrl+(sheetsUrl.includes("?")?"&":"?")+"type=guests");
-    const data = await res.json();
-    if(!data.guests){ showToast("Sheet returned no guest data","err"); return; }
-    customers = data.guests.map(g=>({
-      ...g,
-      id: parseInt(g.id)||0,
-      visits: parseInt(g.visits)||0,
-      totalSpent: parseFloat(g.totalSpent)||0,
-      tags: Array.isArray(g.tags) ? g.tags : (g.tags ? String(g.tags).split(",").map(t=>t.trim()).filter(Boolean) : [])
-    }));
-    closeModal("modal-sheets");
-    renderDatabase();renderDashboard();
-    showToast(`✅ Loaded ${customers.length} guests from Sheet!`,"ok");
-  }catch(e){
-    console.error("Sheet pull error:",e);
-    showToast("Load failed — check the Web App URL and deployment access","err");
-  }
+  try{showToast('Loading guests from Google Sheets…','ok');const data=await _sheetCall('getGuests',{},'GET');
+    if(!Array.isArray(data.guests)) throw new Error('Invalid guest data returned.');
+    customers=data.guests.map(g=>({...g,id:parseInt(g.id)||0,visits:parseInt(g.visits)||0,totalSpent:parseFloat(g.totalSpent)||0,tags:Array.isArray(g.tags)?g.tags:(g.tags?String(g.tags).split(',').map(t=>t.trim()).filter(Boolean):[])}));
+    renderDatabase();renderDashboard();showToast('✅ Loaded '+customers.length+' guests from Google Sheets','ok');
+  }catch(e){console.error(e);showToast('Guest load failed — '+e.message,'err');}
 }
-
 async function pushOrdersToSheet(){
-  if(!sheetsUrl){ showToast("Connect a Google Sheet first","err"); return; }
-  try{
-    showToast("Syncing orders to Sheet…","ok");
-    const res = await fetch(sheetsUrl,{
-      method:"POST",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body: JSON.stringify({type:"orders", orders: orders.map(o=>({...o, items:(o.items||[]).join(", ")}))})
-    });
-    const data = await res.json();
-    showToast(`✅ Synced ${data.count!=null?data.count:orders.length} orders to Sheet!`,"ok");
-  }catch(e){
-    console.error("Sheet push error:",e);
-    showToast("Sync failed — check the Web App URL and deployment access","err");
-  }
+  try{showToast('Syncing orders to Google Sheets…','ok');const data=await _sheetCall('syncOrders',{orders});showToast('✅ Orders synced: '+(data.count??orders.length),'ok');}
+  catch(e){console.error(e);showToast('Order sync failed — '+e.message,'err');}
 }
-
 async function pullOrdersFromSheet(){
-  if(!sheetsUrl){ showToast("Connect a Google Sheet first","err"); return; }
-  try{
-    showToast("Loading orders from Sheet…","ok");
-    const res = await fetch(sheetsUrl+(sheetsUrl.includes("?")?"&":"?")+"type=orders");
-    const data = await res.json();
-    if(!data.orders){ showToast("Sheet returned no order data","err"); return; }
-    orders = data.orders.map(o=>({
-      ...o,
-      id: parseInt(o.id)||0,
-      customerId: parseInt(o.customerId)||0,
-      total: parseFloat(o.total)||0,
-      tableNo: parseInt(o.tableNo)||0,
-      items: Array.isArray(o.items) ? o.items : (o.items ? String(o.items).split(",").map(t=>t.trim()).filter(Boolean) : [])
-    }));
-    closeModal("modal-sheets");
-    renderOrders();renderDashboard();
-    showToast(`✅ Loaded ${orders.length} orders from Sheet!`,"ok");
-  }catch(e){
-    console.error("Sheet pull error:",e);
-    showToast("Load failed — check the Web App URL and deployment access","err");
-  }
+  try{showToast('Loading orders from Google Sheets…','ok');const data=await _sheetCall('getOrders',{},'GET');
+    if(!Array.isArray(data.orders)) throw new Error('Invalid order data returned.');
+    orders=data.orders.map(o=>({...o,id:parseInt(o.id)||0,customerId:parseInt(o.customerId)||0,total:parseFloat(o.total)||0,tableNo:parseInt(o.tableNo)||0,items:Array.isArray(o.items)?o.items:(o.items?String(o.items).split(',').map(t=>t.trim()).filter(Boolean):[])}));
+    renderOrders();renderDashboard();showToast('✅ Loaded '+orders.length+' orders from Google Sheets','ok');
+  }catch(e){console.error(e);showToast('Order load failed — '+e.message,'err');}
 }
-
 async function pushCSATToSheet(){
-  if(!sheetsUrl){ showToast("Connect a Google Sheet first","err"); return; }
-  try{
-    showToast("Syncing CSAT to Sheet…","ok");
-    const res = await fetch(sheetsUrl,{
-      method:"POST",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body: JSON.stringify({type:"csat", csat: csatData})
-    });
-    const data = await res.json();
-    showToast(`✅ Synced ${data.count!=null?data.count:csatData.length} reviews to Sheet!`,"ok");
-  }catch(e){
-    console.error("Sheet push error:",e);
-    showToast("Sync failed — check the Web App URL and deployment access","err");
-  }
+  try{showToast('Syncing CSAT to Google Sheets…','ok');const data=await _sheetCall('syncCSAT',{csat:csatData});showToast('✅ CSAT synced: '+(data.count??csatData.length),'ok');}
+  catch(e){console.error(e);showToast('CSAT sync failed — '+e.message,'err');}
 }
-
 async function pullCSATFromSheet(){
-  if(!sheetsUrl){ showToast("Connect a Google Sheet first","err"); return; }
-  try{
-    showToast("Loading CSAT from Sheet…","ok");
-    const res = await fetch(sheetsUrl+(sheetsUrl.includes("?")?"&":"?")+"type=csat");
-    const data = await res.json();
-    if(!data.csat){ showToast("Sheet returned no CSAT data","err"); return; }
-    csatData = data.csat.map(r=>({
-      ...r,
-      id: parseInt(r.id)||0,
-      customerId: parseInt(r.customerId)||0,
-      orderId: parseInt(r.orderId)||0,
-      overall: parseFloat(r.overall)||0,
-      food: parseFloat(r.food)||0,
-      service: parseFloat(r.service)||0,
-      ambiance: parseFloat(r.ambiance)||0,
-      value: parseFloat(r.value)||0,
-      recommend: r.recommend===true||r.recommend==="true"||r.recommend===1||r.recommend==="1"||r.recommend==="TRUE"
-    }));
-    closeModal("modal-sheets");
-    renderCSAT();renderDashboard();
-    showToast(`✅ Loaded ${csatData.length} reviews from Sheet!`,"ok");
-  }catch(e){
-    console.error("Sheet pull error:",e);
-    showToast("Load failed — check the Web App URL and deployment access","err");
-  }
+  try{showToast('Loading CSAT from Google Sheets…','ok');const data=await _sheetCall('getCSAT',{},'GET');
+    if(!Array.isArray(data.csat)) throw new Error('Invalid CSAT data returned.');
+    csatData=data.csat.map(r=>({...r,id:parseInt(r.id)||0,customerId:parseInt(r.customerId)||0,orderId:parseInt(r.orderId)||0,overall:parseFloat(r.overall)||0,food:parseFloat(r.food)||0,service:parseFloat(r.service)||0,ambiance:parseFloat(r.ambiance)||0,value:parseFloat(r.value)||0,recommend:r.recommend===true||r.recommend==='true'||r.recommend===1||r.recommend==='1'||r.recommend==='TRUE'}));
+    renderCSAT();renderDashboard();showToast('✅ Loaded '+csatData.length+' reviews from Google Sheets','ok');
+  }catch(e){console.error(e);showToast('CSAT load failed — '+e.message,'err');}
+}
+async function syncGuestRecordToSheet(guest){
+  try{ await _sheetCall('upsertGuest',{guest}); return true; }
+  catch(e){ console.error('Guest autosync error:',e); showToast('Guest saved on screen, but Sheet sync failed — '+e.message,'err'); return false; }
+}
+async function deleteGuestFromSheet(id){
+  try{ await _sheetCall('deleteGuest',{id}); return true; }
+  catch(e){ console.error('Guest delete sync error:',e); showToast('Guest removed on screen, but Sheet sync failed — '+e.message,'err'); return false; }
+}
+async function syncOrderRecordToSheet(order){
+  try{ await _sheetCall('upsertOrder',{order}); return true; }
+  catch(e){ console.error('Order autosync error:',e); showToast('Order saved on screen, but Sheet sync failed — '+e.message,'err'); return false; }
+}
+async function syncCSATRecordToSheet(review){
+  try{ await _sheetCall('upsertCSAT',{review}); return true; }
+  catch(e){ console.error('CSAT autosync error:',e); showToast('Review saved on screen, but Sheet sync failed — '+e.message,'err'); return false; }
 }
 
-// Silently loads all three datasets from the connected Sheet right after
-// login — the app holds no data of its own, so without this the CRM would
-// open completely empty even when a Sheet is already connected.
 async function loadAllFromSheetOnLaunch(){
-  if(!sheetsUrl) { renderDashboard(); return; }
-  showToast("Loading data from Google Sheet…","ok");
-  const results = await Promise.allSettled([
-    fetch(sheetsUrl+(sheetsUrl.includes("?")?"&":"?")+"type=guests").then(r=>r.json()),
-    fetch(sheetsUrl+(sheetsUrl.includes("?")?"&":"?")+"type=orders").then(r=>r.json()),
-    fetch(sheetsUrl+(sheetsUrl.includes("?")?"&":"?")+"type=csat").then(r=>r.json())
-  ]);
-  const [gRes,oRes,cRes] = results;
-  if(gRes.status==="fulfilled" && gRes.value.guests){
-    customers = gRes.value.guests.map(g=>({
-      ...g,
-      id: parseInt(g.id)||0,
-      visits: parseInt(g.visits)||0,
-      totalSpent: parseFloat(g.totalSpent)||0,
-      tags: Array.isArray(g.tags) ? g.tags : (g.tags ? String(g.tags).split(",").map(t=>t.trim()).filter(Boolean) : [])
-    }));
-  }
-  if(oRes.status==="fulfilled" && oRes.value.orders){
-    orders = oRes.value.orders.map(o=>({
-      ...o,
-      id: parseInt(o.id)||0,
-      customerId: parseInt(o.customerId)||0,
-      total: parseFloat(o.total)||0,
-      tableNo: parseInt(o.tableNo)||0,
-      items: Array.isArray(o.items) ? o.items : (o.items ? String(o.items).split(",").map(t=>t.trim()).filter(Boolean) : [])
-    }));
-  }
-  if(cRes.status==="fulfilled" && cRes.value.csat){
-    csatData = cRes.value.csat.map(r=>({
-      ...r,
-      id: parseInt(r.id)||0,
-      customerId: parseInt(r.customerId)||0,
-      orderId: parseInt(r.orderId)||0,
-      overall: parseFloat(r.overall)||0,
-      food: parseFloat(r.food)||0,
-      service: parseFloat(r.service)||0,
-      ambiance: parseFloat(r.ambiance)||0,
-      value: parseFloat(r.value)||0,
-      recommend: r.recommend===true||r.recommend==="true"||r.recommend===1||r.recommend==="1"||r.recommend==="TRUE"
-    }));
-  }
-  const anyFailed = results.some(r=>r.status==="rejected");
-  renderDatabase();renderOrders();renderCSAT();renderDashboard();
-  if(anyFailed) showToast("Some data failed to load — check your Sheet connection","err");
-  else showToast("✅ Loaded data from Google Sheet","ok");
+  try{
+    showToast('Loading CRM data from Google Sheets…','ok');
+    const data=await _sheetCall('getAll',{},'GET');
+    if(Array.isArray(data.guests)) customers=data.guests.map(g=>({...g,id:parseInt(g.id)||0,visits:parseInt(g.visits)||0,totalSpent:parseFloat(g.totalSpent)||0,tags:Array.isArray(g.tags)?g.tags:(g.tags?String(g.tags).split(',').map(t=>t.trim()).filter(Boolean):[])}));
+    if(Array.isArray(data.orders)) orders=data.orders.map(o=>({...o,id:parseInt(o.id)||0,customerId:parseInt(o.customerId)||0,total:parseFloat(o.total)||0,tableNo:parseInt(o.tableNo)||0,items:Array.isArray(o.items)?o.items:(o.items?String(o.items).split(',').map(t=>t.trim()).filter(Boolean):[])}));
+    if(Array.isArray(data.csat)) csatData=data.csat.map(r=>({...r,id:parseInt(r.id)||0,customerId:parseInt(r.customerId)||0,orderId:parseInt(r.orderId)||0,overall:parseFloat(r.overall)||0,food:parseFloat(r.food)||0,service:parseFloat(r.service)||0,ambiance:parseFloat(r.ambiance)||0,value:parseFloat(r.value)||0,recommend:r.recommend===true||r.recommend==='true'||r.recommend===1||r.recommend==='1'||r.recommend==='TRUE'}));
+    renderDatabase();renderOrders();renderCSAT();renderDashboard();
+    showToast('✅ CRM connected — Guests, Orders and CSAT loaded','ok');
+  }catch(e){console.error('CRM Sheet launch load failed:',e);renderDatabase();renderOrders();renderCSAT();renderDashboard();showToast('⚠ CRM loaded, but Google Sheets could not be reached — '+e.message,'err');}
 }
 
 // ── Pending registrations (from localStorage) ─────────────────
@@ -1910,7 +1807,11 @@ function approvePending(idx){
   renderPending();
   renderDatabase();
   renderDashboard();
-  showToast(`✅ ${g.name} added to the database!`,"ok");
+  // Persist QR-approved guests to the same Google Sheets backend as manual guests.
+  syncGuestRecordToSheet(g).then(function(ok){
+    if(ok) showToast(`✅ ${g.name} added to Google Sheets!`,"ok");
+  });
+  showToast(`✅ ${g.name} added to the database! Syncing…`,"ok");
 }
 
 function rejectPending(idx){
