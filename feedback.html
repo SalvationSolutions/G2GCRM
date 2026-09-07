@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Prepare feedback about your GreekToGo Taverna visit.">
+  <meta name="description" content="Send feedback about your GreekToGo Taverna visit.">
   <title>Share Your Feedback — GreekToGo Taverna</title>
   <link rel="stylesheet" href="guest-pages.css">
 </head>
@@ -18,32 +18,31 @@
         <ul class="detail-list">
           <li><span class="list-icon">1</span><span><strong>Rate your visit</strong>Choose a score from one to five.</span></li>
           <li><span class="list-icon">2</span><span><strong>Add a short note</strong>Mention the food, service, or atmosphere.</span></li>
-          <li><span class="list-icon">3</span><span><strong>Reply to your email</strong>Copy the feedback and paste it into your reply.</span></li>
         </ul>
       </div>
       <aside class="action-panel" aria-label="Feedback form">
-        <form class="action-inner" data-copy-form data-copy-heading="GreekToGo visit feedback">
+        <form class="action-inner" data-csat-form>
           <p class="action-kicker">Your experience</p>
-          <h2>Prepare your feedback</h2>
-          <p class="helper">Nothing is sent automatically. The button copies your response for your email reply.</p>
+          <h2>Share your feedback</h2>
+          <p class="helper">Your response will be saved directly to GreekToGo’s CSAT records.</p>
           <div class="field">
             <fieldset class="rating">
               <legend>Overall rating</legend>
-              <label><input type="radio" name="rating" value="1 out of 5" data-copy-label="Rating" required><span>1</span></label>
-              <label><input type="radio" name="rating" value="2 out of 5" data-copy-label="Rating"><span>2</span></label>
-              <label><input type="radio" name="rating" value="3 out of 5" data-copy-label="Rating"><span>3</span></label>
-              <label><input type="radio" name="rating" value="4 out of 5" data-copy-label="Rating"><span>4</span></label>
-              <label><input type="radio" name="rating" value="5 out of 5" data-copy-label="Rating"><span>5</span></label>
+              <label><input type="radio" name="rating" value="1" required><span>1</span></label>
+              <label><input type="radio" name="rating" value="2"><span>2</span></label>
+              <label><input type="radio" name="rating" value="3"><span>3</span></label>
+              <label><input type="radio" name="rating" value="4"><span>4</span></label>
+              <label><input type="radio" name="rating" value="5"><span>5</span></label>
             </fieldset>
           </div>
-          <div class="field"><label for="visit-date">Visit date <span aria-hidden="true">(optional)</span></label><input id="visit-date" name="date" data-copy-label="Visit date" type="date"></div>
-          <div class="field"><label for="feedback-note">Your feedback</label><textarea id="feedback-note" name="feedback" data-copy-label="Feedback" placeholder="What did you enjoy? What could we improve?" required></textarea></div>
-          <button class="primary-button" type="submit">Copy feedback to reply</button>
+          <div class="field"><label for="visit-date">Visit date <span aria-hidden="true">(optional)</span></label><input id="visit-date" name="date" type="date"></div>
+          <div class="field"><label for="feedback-note">Your feedback</label><textarea id="feedback-note" name="feedback" placeholder="What did you enjoy? What could we improve?" required></textarea></div>
+          <button class="primary-button" type="submit">Submit feedback</button>
           <p class="status" data-status role="status" aria-live="polite"></p>
         </form>
       </aside>
     </section>
-    <p class="fine-print">This page does not send or store your response. Paste the copied feedback into your reply to the GreekToGo email.</p>
+    <p class="fine-print">Your rating and comments are recorded in GreekToGo’s private CSAT records.</p>
   </main>
   <script src="guest-pages.js"></script>
 </body>

@@ -87,8 +87,10 @@ h1 { max-width: 620px; margin: 0; color: var(--navy); font-family: Georgia, "Tim
 .primary-button { width: 100%; min-height: 50px; margin-top: 18px; padding: 13px 20px; border: 0; border-radius: 10px; color: var(--navy); background: var(--gold); font: inherit; font-weight: 800; cursor: pointer; transition: transform .18s ease, background .18s ease; }
 .primary-button:hover { background: #e3b93e; transform: translateY(-1px); }
 .primary-button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+.primary-button:disabled { cursor: wait; opacity: .7; transform: none; }
 .primary-button[hidden] { display: none; }
 .status { min-height: 24px; margin: 10px 0 0; color: var(--gold-soft); font-size: .84rem; line-height: 1.45; }
+.status.is-error { color: #ffd3d3; }
 
 .offer-code { display: block; width: 100%; padding: 16px 12px; overflow-wrap: anywhere; border: 1px dashed rgba(255, 255, 255, .55); border-radius: 10px; color: #fff; background: rgba(255, 255, 255, .09); text-align: center; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 1.12rem; font-weight: 800; letter-spacing: .06em; }
 .member-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
