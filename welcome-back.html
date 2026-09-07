@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Use your personal GreekToGo welcome-back offer.">
+  <title>Welcome Back — GreekToGo Taverna</title>
+  <link rel="stylesheet" href="guest-pages.css">
+</head>
+<body data-theme="return">
+  <main class="shell">
+    <header class="brand"><img src="brand-logo.svg" alt="Greek To Go Taverna"><p>A personal welcome-back offer from GreekToGo Taverna.</p></header>
+    <section class="page-card" aria-labelledby="page-title">
+      <div class="page-copy">
+        <p class="eyebrow">Welcome-back offer</p>
+        <h1 id="page-title">Come back and dine with us.</h1>
+        <p class="lead">We have missed you. Enjoy 10% off your next GreekToGo visit with the personal code from your email.</p>
+        <ul class="detail-list">
+          <li><span class="list-icon">1</span><span><strong>Copy your personal code</strong>Keep it ready on your phone.</span></li>
+          <li><span class="list-icon">2</span><span><strong>Choose your next visit</strong>Return for an old favourite or discover something new.</span></li>
+          <li><span class="list-icon">3</span><span><strong>Show the code before payment</strong>The team will apply your welcome-back offer.</span></li>
+        </ul>
+      </div>
+      <aside class="action-panel" aria-label="Welcome-back offer code">
+        <div class="action-inner">
+          <p class="action-kicker">Personal offer</p>
+          <h2>10% off your next visit</h2>
+          <p class="helper">Use the code from your GreekToGo email. This offer is intended only for its recipient.</p>
+          <p class="action-kicker">Your offer code</p>
+          <output class="offer-code" data-offer-code>Use the code in your email</output>
+          <button class="primary-button" type="button" data-copy-code hidden>Copy offer code</button>
+          <p class="status" data-status role="status" aria-live="polite"></p>
+        </div>
+      </aside>
+    </section>
+    <p class="fine-print">Valid for one use by the email recipient. This offer cannot be combined with another promotion.</p>
+  </main>
+  <script src="guest-pages.js"></script>
+</body>
+</html>

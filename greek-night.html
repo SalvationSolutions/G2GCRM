@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Prepare your GreekToGo Greek Night seat request.">
+  <title>Greek Night Invitation — GreekToGo Taverna</title>
+  <link rel="stylesheet" href="guest-pages.css">
+</head>
+<body data-theme="event">
+  <main class="shell">
+    <header class="brand"><img src="brand-logo.svg" alt="Greek To Go Taverna"><p>Your Greek Night invitation from GreekToGo Taverna.</p></header>
+    <section class="page-card" aria-labelledby="page-title">
+      <div class="page-copy">
+        <p class="eyebrow">Special event</p>
+        <h1 id="page-title">An evening of Greek flavour and music.</h1>
+        <p class="lead">Your invitation includes a lively GreekToGo evening shaped around food, music, and warm hospitality. Check your invitation email for the event date and time.</p>
+        <ul class="detail-list">
+          <li><span class="list-icon">♪</span><span><strong>Live bouzouki music</strong>A soundtrack made for a memorable night.</span></li>
+          <li><span class="list-icon">◇</span><span><strong>Traditional meze</strong>Shareable Greek favourites for the table.</span></li>
+          <li><span class="list-icon">◉</span><span><strong>Curated wine menu</strong>Selections chosen to accompany the evening.</span></li>
+        </ul>
+      </div>
+      <aside class="action-panel" aria-label="Greek Night seat request">
+        <form class="action-inner" data-copy-form data-copy-heading="GreekToGo Greek Night seat request">
+          <p class="action-kicker">Limited seating</p>
+          <h2>Prepare your seat request</h2>
+          <p class="helper">Copy these details, reply to your invitation email, and wait for the team to confirm your seats.</p>
+          <div class="field"><label for="event-name">Guest name</label><input id="event-name" name="name" data-copy-label="Guest" autocomplete="name" required></div>
+          <div class="field"><label for="event-party">Number of seats</label><select id="event-party" name="seats" data-copy-label="Seats" required><option value="">Choose</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option value="7 or more">7 or more</option></select></div>
+          <div class="field"><label for="event-note">Note <span aria-hidden="true">(optional)</span></label><textarea id="event-note" name="note" data-copy-label="Note" placeholder="Dietary needs or another helpful note"></textarea></div>
+          <button class="primary-button" type="submit">Copy seat request</button>
+          <p class="status" data-status role="status" aria-live="polite"></p>
+        </form>
+      </aside>
+    </section>
+    <p class="fine-print">A copied request does not reserve a seat. Your booking is complete only after GreekToGo confirms it.</p>
+  </main>
+  <script src="guest-pages.js"></script>
+</body>
+</html>

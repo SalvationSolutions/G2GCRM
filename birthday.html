@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Prepare your GreekToGo birthday table request and enjoy your birthday treat.">
+  <title>Birthday Table — GreekToGo Taverna</title>
+  <link rel="stylesheet" href="guest-pages.css">
+</head>
+<body data-theme="birthday">
+  <main class="shell">
+    <header class="brand"><img src="brand-logo.svg" alt="Greek To Go Taverna"><p>A birthday invitation from GreekToGo Taverna.</p></header>
+    <section class="page-card" aria-labelledby="page-title">
+      <div class="page-copy">
+        <p class="eyebrow">Birthday celebration</p>
+        <h1 id="page-title">Your birthday table is waiting.</h1>
+        <p class="lead">Celebrate with GreekToGo and enjoy a complimentary dessert on the house. Bring your birthday email with you when you visit.</p>
+        <ul class="detail-list">
+          <li><span class="list-icon">1</span><span><strong>Choose your preferred date</strong>Select a date that works for your celebration.</span></li>
+          <li><span class="list-icon">2</span><span><strong>Copy your request</strong>Use the form to prepare your reservation details.</span></li>
+          <li><span class="list-icon">3</span><span><strong>Reply to your email</strong>Paste the details into your reply so the team can confirm availability.</span></li>
+        </ul>
+      </div>
+      <aside class="action-panel" aria-label="Birthday reservation request">
+        <form class="action-inner" data-copy-form data-copy-heading="GreekToGo birthday table request">
+          <p class="action-kicker">Your celebration</p>
+          <h2>Prepare your table request</h2>
+          <p class="helper">This prepares the details for your email reply; it does not confirm a reservation.</p>
+          <div class="field"><label for="birthday-name">Guest name</label><input id="birthday-name" name="name" data-copy-label="Guest" autocomplete="name" required></div>
+          <div class="field"><label for="birthday-date">Preferred date</label><input id="birthday-date" name="date" data-copy-label="Preferred date" type="date" required></div>
+          <div class="field"><label for="birthday-party">Party size</label><select id="birthday-party" name="party" data-copy-label="Party size" required><option value="">Choose</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option value="8 or more">8 or more</option></select></div>
+          <button class="primary-button" type="submit">Copy reservation request</button>
+          <p class="status" data-status role="status" aria-live="polite"></p>
+        </form>
+      </aside>
+    </section>
+    <p class="fine-print">A copied request is not a confirmed booking. Please reply to your invitation email and wait for confirmation from GreekToGo.</p>
+  </main>
+  <script src="guest-pages.js"></script>
+</body>
+</html>
