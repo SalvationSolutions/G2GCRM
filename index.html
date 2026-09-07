@@ -930,11 +930,11 @@ table{border-collapse:collapse;width:100%;}
     <div class="modal-head"><span class="modal-title">🔗 Connect Google Sheet</span><button class="modal-close" onclick="closeModal('modal-sheets')">×</button></div>
     <div class="modal-body">
       <p style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:14px;">
-        This CRM is permanently linked to the shared Google Apps Script Web App. Guests, Orders and CSAT sync to the existing G2G TAVERNA CRM DATABASE Google Sheet.
+        Enter the Google Apps Script Web App URL used by your CRM. The URL is saved only in this browser so you can change it without editing the HTML.
       </p>
       <div class="field">
         <label>Apps Script Web App URL</label>
-        <input id="sheets-url" readonly style="background:var(--surface);color:var(--muted);"/>
+        <input id="sheets-url" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off"/>
       </div>
       <div style="font-size:12px;margin:10px 0 2px;">Status: <span id="sheets-status">Not connected</span></div>
       <div class="flex gap-8" style="justify-content:flex-end;margin-top:10px;">
@@ -1055,6 +1055,7 @@ function togglePw(){
 }
 
 function doLogout(){
+  if(!confirm("Are you sure you want to sign out of Greek To Go Taverna CRM?")) return;
   currentUser = null;
   document.getElementById("crm-app").style.display = "none";
   document.getElementById("login-page").style.display = "";
@@ -1700,9 +1701,19 @@ function printQR(){
 }
 
 // ── Google Sheets connection ──────────────────────────────────
-const SHEETS_URL_PERMANENT = "https://script.google.com/macros/s/AKfycbxekBOUqNmRgmPuLj96dtbI5tCJ4aGo6QV0dZ265nAGrhWgWG5-3BmGybb0_bzc6SvtwQ/exec";
-let sheetsUrl = SHEETS_URL_PERMANENT;
-try{ localStorage.setItem("gtg_sheets_url", sheetsUrl); }catch(e){}
+// No Apps Script URL is hardcoded in this HTML.
+// The URL is configured in the Connect Google Sheet dialog and stored locally.
+let sheetsUrl = '';
+try{ sheetsUrl = localStorage.getItem('gtg_sheets_url') || ''; }catch(e){ sheetsUrl = ''; }
+
+function validSheetsUrl_(url){
+  try{
+    const u = new URL(String(url || '').trim());
+    return u.protocol === 'https:' && /\/exec\/?$/.test(u.pathname);
+  }catch(e){
+    return false;
+  }
+}
 
 function openSheetsModal(){
   $$('sheets-url').value = sheetsUrl;
@@ -1711,25 +1722,42 @@ function openSheetsModal(){
 }
 function updateSheetsStatus(){
   const el=$$('sheets-status');
-  if(sheetsUrl){el.textContent='✅ Connected to Greek To Go CRM Sheets';el.style.color='var(--green)';}
+  if(sheetsUrl){el.textContent='✅ Google Sheets URL saved in this browser';el.style.color='var(--green)';}
   else{el.textContent='Not connected';el.style.color='var(--muted)';}
 }
-function connectSheet(){
-  sheetsUrl = SHEETS_URL_PERMANENT;
+async function connectSheet(){
+  const input = $$('sheets-url');
+  const url = (input?.value || '').trim();
+  if(!validSheetsUrl_(url)){
+    showToast('Enter a valid Google Apps Script /exec URL.','err');
+    input?.focus();
+    return;
+  }
+  const oldUrl = sheetsUrl;
+  sheetsUrl = url.replace(/\/?$/, '');
   try{ localStorage.setItem('gtg_sheets_url', sheetsUrl); }catch(e){}
   updateSheetsStatus();
-  showToast('✅ Google Sheets CRM connected','ok');
+  try{
+    const data = await _sheetCall('ping',{},'GET');
+    if(!data || data.status === 'error') throw new Error(data?.message || 'Ping failed');
+    showToast('✅ Google Sheets connected','ok');
+  }catch(e){
+    sheetsUrl = oldUrl;
+    try{ if(oldUrl) localStorage.setItem('gtg_sheets_url', oldUrl); else localStorage.removeItem('gtg_sheets_url'); }catch(x){}
+    updateSheetsStatus();
+    showToast('❌ Connection failed — '+e.message,'err');
+  }
 }
 function disconnectSheet(){
-  // This CRM uses one permanent shared deployment; disconnecting locally is not allowed.
-  sheetsUrl = SHEETS_URL_PERMANENT;
-  try{ localStorage.setItem('gtg_sheets_url', sheetsUrl); }catch(e){}
+  sheetsUrl = '';
+  try{ localStorage.removeItem('gtg_sheets_url'); }catch(e){}
   updateSheetsStatus();
-  showToast('Google Sheets connection is fixed for this CRM','err');
+  showToast('Google Sheets disconnected on this browser','ok');
 }
 
 async function _sheetCall(action,payload={},method='POST'){
-  const url=sheetsUrl||SHEETS_URL_PERMANENT;
+  if(!sheetsUrl) throw new Error('Google Sheets is not connected.');
+  const url=sheetsUrl;
   let res;
   if(method==='GET'){
     const qs=new URLSearchParams({action,ts:String(Date.now())});
