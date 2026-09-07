@@ -170,7 +170,9 @@ table{border-collapse:collapse;width:100%;}
 .score-bar-fill{height:6px;border-radius:4px;transition:width .3s;}
 
 /* ══ TABLE ══════════════════════════════════════════════════ */
-.db-table-wrap{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px;}
+.db-table-wrap{background:#fff;border:1px solid var(--border);border-radius:12px;margin-bottom:16px;max-width:100%;}
+.db-table-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;scrollbar-gutter:stable;}
+.db-table{min-width:1080px;table-layout:auto;}
 .db-table th{text-align:left;padding:8px 10px;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;user-select:none;white-space:nowrap;text-transform:uppercase;letter-spacing:.05em;background:var(--surface);}
 .db-table th.sorted{color:var(--blue);}
 .db-table td{padding:10px 10px;vertical-align:middle;}
@@ -180,6 +182,14 @@ table{border-collapse:collapse;width:100%;}
 .guest-cell{display:flex;align-items:center;gap:9px;}
 .guest-name{font-size:13px;font-weight:600;}
 .guest-email{font-size:11px;color:var(--muted);}
+.db-table th:nth-child(1),.db-table td:nth-child(1){min-width:120px;}
+.db-table th:nth-child(2),.db-table td:nth-child(2){min-width:120px;}
+.db-table th:nth-child(3),.db-table td:nth-child(3){min-width:150px;}
+.db-table th:nth-child(4),.db-table td:nth-child(4){min-width:220px;}
+.db-table th:nth-child(5),.db-table td:nth-child(5){min-width:120px;}
+.db-table th:nth-child(6),.db-table td:nth-child(6){min-width:130px;}
+.db-table th:nth-child(7),.db-table td:nth-child(7){min-width:150px;}
+.db-table th:nth-child(8),.db-table td:nth-child(8){min-width:92px;}
 
 /* ══ CARDS ══════════════════════════════════════════════════ */
 .card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px;}
@@ -572,7 +582,7 @@ table{border-collapse:collapse;width:100%;}
         </select>
         <span class="text-muted fs-12" id="db-count" style="align-self:center;"></span>
       </div>
-      <div class="db-table-wrap"><div style="overflow-x:auto;">
+      <div class="db-table-wrap"><div class="db-table-scroll">
         <table class="db-table">
           <thead><tr>
             <th data-col="firstName" onclick="dbSort(this)">First Name</th>
@@ -873,20 +883,18 @@ table{border-collapse:collapse;width:100%;}
     <div class="modal-head"><span class="modal-title">➕ Add New Guest</span><button class="modal-close" onclick="closeModal('modal-add-guest')">×</button></div>
     <div class="modal-body">
       <div class="form-row">
-        <div class="field"><label>Full Name <span class="req">*</span></label><input id="ag-name" placeholder="Eleni Papadaki"/></div>
-        <div class="field"><label>Phone</label><input id="ag-phone" placeholder="555-0100"/></div>
+        <div class="field"><label>First Name <span class="req">*</span></label><input id="ag-first-name" placeholder="Eleni"/></div>
+        <div class="field"><label>Last Name <span class="req">*</span></label><input id="ag-last-name" placeholder="Papadaki"/></div>
       </div>
       <div class="form-row">
+        <div class="field"><label>Phone</label><input id="ag-phone" placeholder="555-0100"/></div>
         <div class="field"><label>Email</label><input id="ag-email" type="email" placeholder="eleni@email.com"/></div>
-        <div class="field"><label>City</label><input id="ag-city" placeholder="Athens"/></div>
       </div>
       <div class="form-row">
         <div class="field"><label>Birthday</label><input id="ag-birthday" type="date"/></div>
-        <div class="field"><label>Segment</label><select id="ag-segment"><option>New</option><option>Occasional</option><option>Regular</option><option>VIP</option></select></div>
+        <div class="field"><label>Location</label><input id="ag-location" placeholder="Athens"/></div>
       </div>
-      <div class="field"><label>Favourite Dish</label><input id="ag-favorite" placeholder="Moussaka"/></div>
-      <div class="field"><label>Tags (comma-separated)</label><input id="ag-tags" placeholder="VIP, Vegetarian, Window Seat"/></div>
-      <div class="field"><label>Notes</label><textarea id="ag-notes" rows="2" placeholder="Allergies, preferences…"></textarea></div>
+      <div class="field"><label>Favorite Dish</label><input id="ag-favorite" placeholder="Moussaka"/></div>
       <div class="flex gap-8" style="justify-content:flex-end;margin-top:4px;">
         <button class="btn btn-secondary" onclick="closeModal('modal-add-guest')">Cancel</button>
         <button class="btn btn-primary" onclick="addGuest()">Add Guest</button>
@@ -902,20 +910,18 @@ table{border-collapse:collapse;width:100%;}
     <div class="modal-body">
       <input type="hidden" id="eg-id"/>
       <div class="form-row">
-        <div class="field"><label>Full Name <span class="req">*</span></label><input id="eg-name"/></div>
-        <div class="field"><label>Phone</label><input id="eg-phone"/></div>
+        <div class="field"><label>First Name <span class="req">*</span></label><input id="eg-first-name"/></div>
+        <div class="field"><label>Last Name <span class="req">*</span></label><input id="eg-last-name"/></div>
       </div>
       <div class="form-row">
+        <div class="field"><label>Phone</label><input id="eg-phone"/></div>
         <div class="field"><label>Email</label><input id="eg-email" type="email"/></div>
-        <div class="field"><label>City</label><input id="eg-city"/></div>
       </div>
       <div class="form-row">
         <div class="field"><label>Birthday</label><input id="eg-birthday" type="date"/></div>
-        <div class="field"><label>Segment</label><select id="eg-segment"><option>New</option><option>Occasional</option><option>Regular</option><option>VIP</option></select></div>
+        <div class="field"><label>Location</label><input id="eg-location"/></div>
       </div>
-      <div class="field"><label>Favourite Dish</label><input id="eg-favorite"/></div>
-      <div class="field"><label>Tags (comma-separated)</label><input id="eg-tags"/></div>
-      <div class="field"><label>Notes</label><textarea id="eg-notes" rows="2"></textarea></div>
+      <div class="field"><label>Favorite Dish</label><input id="eg-favorite"/></div>
       <div class="flex gap-8" style="justify-content:flex-end;margin-top:4px;">
         <button class="btn btn-secondary" onclick="closeModal('modal-edit-guest')">Cancel</button>
         <button class="btn btn-primary" onclick="saveEditGuest()">Save Changes</button>
@@ -1289,6 +1295,35 @@ function renderDashboard(){
 
 // ─── DATABASE ────────────────────────────────────────────────
 let dbSortCol="firstName",dbSortDir="asc",dbExpId=null;
+function guestNameParts(c){
+  const full=String(c?.name||"").trim(),parts=full.split(/\s+/).filter(Boolean);
+  return{
+    firstName:String(c?.firstName||parts[0]||"").trim(),
+    lastName:String(c?.lastName||parts.slice(1).join(" ")||"").trim()
+  };
+}
+function guestDisplayName(c){
+  const p=guestNameParts(c);
+  return [p.firstName,p.lastName].filter(Boolean).join(" ")||String(c?.name||"Guest");
+}
+function formatGuestBirthday(value){
+  if(!value)return "—";
+  const raw=String(value).trim();
+  const dateOnly=raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  let d;
+  if(dateOnly)d=new Date(Number(dateOnly[1]),Number(dateOnly[2])-1,Number(dateOnly[3]));
+  else d=new Date(raw);
+  if(Number.isNaN(d.getTime()))return raw;
+  return d.toLocaleDateString("en-US",{month:"short",day:"2-digit",year:"numeric"});
+}
+function toDateInputValue(value){
+  if(!value)return "";
+  const raw=String(value).trim(),dateOnly=raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if(dateOnly)return `${dateOnly[1]}-${dateOnly[2]}-${dateOnly[3]}`;
+  const d=new Date(raw);if(Number.isNaN(d.getTime()))return "";
+  const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),day=String(d.getDate()).padStart(2,"0");
+  return `${y}-${m}-${day}`;
+}
 function dbSort(th){
   const col=th.dataset.col;
   if(dbSortCol===col)dbSortDir=dbSortDir==="asc"?"desc":"asc";
@@ -1307,13 +1342,16 @@ function renderDatabase(){
   list.sort((a,b)=>{
     let av2,bv;
     if(dbSortCol==="tier"){av2=["Bronze","Silver","Gold","Platinum"].indexOf(getTier(a.visits));bv=["Bronze","Silver","Gold","Platinum"].indexOf(getTier(b.visits));}
-    else{av2=a[dbSortCol]??0;bv=b[dbSortCol]??0;}
+    else if(dbSortCol==="firstName"||dbSortCol==="lastName"){
+      av2=guestNameParts(a)[dbSortCol];bv=guestNameParts(b)[dbSortCol];
+    }else{av2=a[dbSortCol]??0;bv=b[dbSortCol]??0;}
     if(typeof av2==="string")return dbSortDir==="asc"?av2.localeCompare(bv):bv.localeCompare(av2);
     return dbSortDir==="asc"?av2-bv:bv-av2;
   });
   $$("db-count").textContent=list.length+" of "+customers.length;
   const tb=$$("db-tbody");tb.innerHTML="";
   list.forEach(c=>{
+    const nameParts=guestNameParts(c);
     const tier=getTier(c.visits),isExp=dbExpId===c.id;
     const co=orders.filter(o=>o.customerId===c.id),cr=csatData.filter(r=>r.customerId===c.id);
     const avgR=cr.length?avg(cr.map(r=>r.overall)).toFixed(1):"—";
@@ -1321,11 +1359,11 @@ function renderDatabase(){
     row.className=isExp?"selected-row":"";row.style.cursor="pointer";
     row.onclick=()=>{dbExpId=isExp?null:c.id;renderDatabase();};
     row.innerHTML=`
-      <td style="font-size:13px;font-weight:600;">${c.firstName||"—"}</td>
-      <td style="font-size:13px;font-weight:600;">${c.lastName||"—"}</td>
+      <td style="font-size:13px;font-weight:600;">${nameParts.firstName||"—"}</td>
+      <td style="font-size:13px;font-weight:600;">${nameParts.lastName||"—"}</td>
       <td style="font-size:12px;white-space:nowrap;">${c.phone||"—"}</td>
       <td style="font-size:12px;">${c.email||"—"}</td>
-      <td style="font-size:12px;white-space:nowrap;">${c.birthday||"—"}</td>
+      <td style="font-size:12px;white-space:nowrap;">${formatGuestBirthday(c.birthday)}</td>
       <td style="font-size:12px;color:var(--muted);">${c.city||"—"}</td>
       <td style="font-size:12px;color:var(--muted);">${c.favorite||"—"}</td>
       <td><div style="display:flex;gap:4px;">
@@ -1362,28 +1400,32 @@ function renderDatabase(){
   }
 }
 async function addGuest(){
-  const name=v("ag-name").trim();if(!name){showToast("Name is required","err");return;}
-  const tags=v("ag-tags").split(",").map(t=>t.trim()).filter(Boolean);
+  const firstName=v("ag-first-name").trim(),lastName=v("ag-last-name").trim();
+  if(!firstName||!lastName){showToast("First Name and Last Name are required","err");return;}
+  const name=`${firstName} ${lastName}`.trim(),location=v("ag-location");
   const id=Math.max(0,...customers.map(c=>c.id))+1;
-  const guest={id,name,phone:v("ag-phone"),email:v("ag-email"),birthday:v("ag-birthday"),city:v("ag-city"),favorite:v("ag-favorite"),segment:v("ag-segment"),tags,notes:v("ag-notes"),visits:0,lastVisit:"—",totalSpent:0,joinDate:new Date().toISOString().slice(0,10)};
+  const guest={id,firstName,lastName,name,phone:v("ag-phone"),email:v("ag-email"),birthday:v("ag-birthday"),city:location,location,favorite:v("ag-favorite"),segment:"New",tags:[],notes:"",visits:0,lastVisit:"—",totalSpent:0,joinDate:new Date().toISOString().slice(0,10)};
   customers.push(guest);
-  ["ag-name","ag-phone","ag-email","ag-birthday","ag-city","ag-favorite","ag-tags","ag-notes"].forEach(i=>{const el=$$(i);if(el)el.value="";});
+  ["ag-first-name","ag-last-name","ag-phone","ag-email","ag-birthday","ag-location","ag-favorite"].forEach(i=>{const el=$$(i);if(el)el.value="";});
   closeModal("modal-add-guest");renderDatabase();renderDashboard();showToast("✅ Guest added — syncing…","ok");
   await syncGuestRecordToSheet(guest);
 }
 function editGuest(id){
   const c=customers.find(x=>x.id===id);if(!c)return;
-  $$("eg-id").value=id;$$("edit-guest-title").textContent="Edit — "+c.name;
-  $$("eg-name").value=c.name;$$("eg-phone").value=c.phone||"";$$("eg-email").value=c.email||"";
-  $$("eg-city").value=c.city||"";$$("eg-birthday").value=c.birthday||"";
-  $$("eg-segment").value=c.segment||"New";$$("eg-favorite").value=c.favorite||"";
-  $$("eg-tags").value=(c.tags||[]).join(", ");$$("eg-notes").value=c.notes||"";
+  const p=guestNameParts(c);
+  $$("eg-id").value=id;$$("edit-guest-title").textContent="Edit — "+guestDisplayName(c);
+  $$("eg-first-name").value=p.firstName;$$("eg-last-name").value=p.lastName;
+  $$("eg-phone").value=c.phone||"";$$("eg-email").value=c.email||"";
+  $$("eg-location").value=c.city||c.location||"";$$("eg-birthday").value=toDateInputValue(c.birthday);
+  $$("eg-favorite").value=c.favorite||"";
   openModal("modal-edit-guest");
 }
 async function saveEditGuest(){
   const id=parseInt(v("eg-id")),idx=customers.findIndex(c=>c.id===id);if(idx<0)return;
-  const tags=v("eg-tags").split(",").map(t=>t.trim()).filter(Boolean);
-  customers[idx]={...customers[idx],name:v("eg-name"),phone:v("eg-phone"),email:v("eg-email"),city:v("eg-city"),birthday:v("eg-birthday"),segment:v("eg-segment"),favorite:v("eg-favorite"),tags,notes:v("eg-notes")};
+  const firstName=v("eg-first-name").trim(),lastName=v("eg-last-name").trim();
+  if(!firstName||!lastName){showToast("First Name and Last Name are required","err");return;}
+  const name=`${firstName} ${lastName}`.trim(),location=v("eg-location");
+  customers[idx]={...customers[idx],firstName,lastName,name,phone:v("eg-phone"),email:v("eg-email"),city:location,location,birthday:v("eg-birthday"),favorite:v("eg-favorite")};
   const guest=customers[idx];
   closeModal("modal-edit-guest");renderDatabase();renderDashboard();showToast("✅ Guest updated — syncing…","ok");
   await syncGuestRecordToSheet(guest);
