@@ -40,6 +40,7 @@ body[data-theme="loyalty"] { --accent: #d4a62a; --accent-soft: #fff8e2; }
 body[data-theme="event"] { --accent: #e87542; --accent-soft: #fff2ea; }
 body[data-theme="feedback"] { --accent: #40a994; --accent-soft: #ecfbf7; }
 body[data-theme="return"] { --accent: #63a1e6; --accent-soft: #edf6ff; }
+body[data-theme="seasonal"] { --accent: #78ad62; --accent-soft: #eef8eb; }
 
 .shell { width: min(960px, calc(100% - 32px)); margin: 0 auto; padding: 42px 0 34px; }
 .brand { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 22px; color: #fff; }
