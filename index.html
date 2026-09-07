@@ -575,13 +575,13 @@ table{border-collapse:collapse;width:100%;}
       <div class="db-table-wrap"><div style="overflow-x:auto;">
         <table class="db-table">
           <thead><tr>
-            <th data-col="name" onclick="dbSort(this)">Guest</th>
-            <th data-col="tier" onclick="dbSort(this)">Tier</th>
-            <th data-col="segment" onclick="dbSort(this)">Segment</th>
-            <th data-col="visits" onclick="dbSort(this)">Visits</th>
-            <th data-col="totalSpent" onclick="dbSort(this)">Spent</th>
-            <th data-col="lastVisit" onclick="dbSort(this)">Last Visit</th>
-            <th data-col="city" onclick="dbSort(this)">City</th>
+            <th data-col="firstName" onclick="dbSort(this)">First Name</th>
+            <th data-col="lastName" onclick="dbSort(this)">Last Name</th>
+            <th data-col="phone" onclick="dbSort(this)">Phone</th>
+            <th data-col="email" onclick="dbSort(this)">Email</th>
+            <th data-col="birthday" onclick="dbSort(this)">Birthday</th>
+            <th data-col="city" onclick="dbSort(this)">Location</th>
+            <th data-col="favorite" onclick="dbSort(this)">Favorite Dish</th>
             <th></th>
           </tr></thead>
           <tbody id="db-tbody"></tbody>
@@ -1287,7 +1287,7 @@ function renderDashboard(){
 }
 
 // ─── DATABASE ────────────────────────────────────────────────
-let dbSortCol="name",dbSortDir="asc",dbExpId=null;
+let dbSortCol="firstName",dbSortDir="asc",dbExpId=null;
 function dbSort(th){
   const col=th.dataset.col;
   if(dbSortCol===col)dbSortDir=dbSortDir==="asc"?"desc":"asc";
@@ -1320,12 +1320,13 @@ function renderDatabase(){
     row.className=isExp?"selected-row":"";row.style.cursor="pointer";
     row.onclick=()=>{dbExpId=isExp?null:c.id;renderDatabase();};
     row.innerHTML=`
-      <td><div class="guest-cell">${av(c.name,tier,32)}<div><div class="guest-name">${c.name}</div><div class="guest-email">${c.email}</div></div></div></td>
-      <td>${badge(tier)}</td><td>${segBadge(c.segment)}</td>
-      <td style="text-align:center;font-size:13px;">${c.visits}</td>
-      <td style="font-size:13px;font-weight:700;color:var(--olive);">${dollar(c.totalSpent)}</td>
-      <td style="font-size:12px;color:var(--muted);">${c.lastVisit}</td>
+      <td style="font-size:13px;font-weight:600;">${c.firstName||"—"}</td>
+      <td style="font-size:13px;font-weight:600;">${c.lastName||"—"}</td>
+      <td style="font-size:12px;white-space:nowrap;">${c.phone||"—"}</td>
+      <td style="font-size:12px;">${c.email||"—"}</td>
+      <td style="font-size:12px;white-space:nowrap;">${c.birthday||"—"}</td>
       <td style="font-size:12px;color:var(--muted);">${c.city||"—"}</td>
+      <td style="font-size:12px;color:var(--muted);">${c.favorite||"—"}</td>
       <td><div style="display:flex;gap:4px;">
         <button class="btn-edit" onclick="event.stopPropagation();editGuest(${c.id})">Edit</button>
         <button class="btn-danger" onclick="event.stopPropagation();deleteGuest(${c.id})">✕</button>
