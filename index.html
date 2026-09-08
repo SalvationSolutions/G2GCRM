@@ -2009,7 +2009,7 @@ async function saveAndTestEmailSettings(){
   updateEmailStatus_('idle','Testing Gmail…');
   try{
     const data=await _emailCall('emailStatus');
-    if(String(data.account||'').toLowerCase()!==EMAIL_ACCOUNT){
+    if(data.account && String(data.account).toLowerCase()!==EMAIL_ACCOUNT){
       throw new Error('Apps Script is not configured for '+EMAIL_ACCOUNT+'.');
     }
     updateEmailStatus_('ready');
