@@ -374,11 +374,13 @@ table{border-collapse:collapse;width:100%;}
 .ob-right{display:flex;align-items:center;gap:6px;flex-shrink:0;}
 .ob-mark-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--blue);background:#fff;color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;}
 .ob-mark-btn:hover{background:var(--blue-l);}
+.ob-mark-btn:disabled,.btn-mark-all:disabled,.btn-mark-sent:disabled{opacity:.55;cursor:not-allowed;}
 .ob-del-btn{padding:5px 9px;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:12px;cursor:pointer;}
 .ob-del-btn:hover{border-color:var(--terra);color:var(--terra);}
 .btn-mark-all{padding:8px 16px;border-radius:8px;border:none;background:var(--green);color:#fff;font-size:13px;font-weight:600;cursor:pointer;}
 .btn-clear-outbox{padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--muted);font-size:13px;cursor:pointer;}
 .status-badge.queued{background:var(--blue-l);color:var(--blue);}
+.status-badge.sending{background:var(--gold-l);color:#7A5C0A;}
 /* Email reader */
 .reader-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:14px;border-bottom:1px solid var(--border);}
 .reader-back{background:none;border:1px solid var(--border);border-radius:7px;padding:7px 14px;font-size:13px;cursor:pointer;color:var(--blue);font-weight:600;}
@@ -468,14 +470,26 @@ table{border-collapse:collapse;width:100%;}
 .blast-hero-copy{position:relative;z-index:1;max-width:620px;}
 .blast-hero .sec-title{color:#fff;font-size:25px;}
 .blast-hero .sec-sub{color:rgba(255,255,255,.78);margin-top:5px;line-height:1.5;}
+.blast-hero-actions{position:relative;z-index:1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
 .blast-live-badge{
-  position:relative;z-index:1;align-self:flex-start;
   display:inline-flex;align-items:center;gap:6px;
   padding:5px 10px;border:1px solid rgba(255,255,255,.26);border-radius:20px;
   color:#fff;background:rgba(255,255,255,.12);backdrop-filter:blur(5px);
   font-size:11px;font-weight:700;white-space:nowrap;
 }
 .blast-live-badge::before{content:"";width:7px;height:7px;border-radius:50%;background:#55D58A;}
+.blast-live-badge.not-ready::before{background:#FFCA58;}
+.blast-live-badge.failed::before{background:#FF7777;}
+.blast-settings-btn{padding:7px 11px;border:1px solid rgba(255,255,255,.34);border-radius:8px;background:rgba(255,255,255,.14);color:#fff;font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(5px);}
+.blast-settings-btn:hover{background:rgba(255,255,255,.23);}
+.email-settings-note{padding:11px 13px;border-radius:9px;background:var(--blue-l);border:1px solid #CFD8EA;color:var(--char);font-size:12px;line-height:1.55;margin-bottom:14px;}
+.email-account-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 13px;border:1px solid var(--border);border-radius:9px;background:var(--surface);margin-bottom:13px;}
+.email-account-card strong{display:block;color:var(--blue);font-size:13px;}
+.email-account-card span{font-size:11px;color:var(--muted);}
+.email-secret-wrap{display:flex;gap:7px;}
+.email-secret-wrap input{flex:1;}
+.email-secret-wrap button{flex:0 0 auto;padding:7px 11px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;}
+.email-send-progress{font-size:12px;color:var(--muted);margin-top:8px;min-height:18px;}
 #tab-blast .blast-subnav{margin-bottom:18px;}
 #tab-blast .bsnav-btn{min-height:40px;padding:9px 17px;}
 #tab-blast .blast-grid{grid-template-columns:minmax(0,1.12fr) minmax(330px,.88fr);gap:20px;}
@@ -795,7 +809,10 @@ table{border-collapse:collapse;width:100%;}
           <div class="sec-title">📧 Email Blast</div>
           <div class="sec-sub">Compose and send personalised emails to your guests — all inside the CRM</div>
         </div>
-        <span class="blast-live-badge">Guest data connected</span>
+        <div class="blast-hero-actions">
+          <span class="blast-live-badge not-ready" id="email-status-badge">Gmail not connected</span>
+          <button class="blast-settings-btn" type="button" onclick="openEmailSettings()">⚙ Gmail Settings</button>
+        </div>
       </div>
 
       <!-- Sub-nav -->
@@ -830,7 +847,7 @@ table{border-collapse:collapse;width:100%;}
 
             <div class="bl-field">
               <label>From Name</label>
-              <input id="bl-from" value="GreekToGo Taverna" oninput="livePreview()"/>
+              <input id="bl-from" value="GreekToGo Taverna" readonly/>
             </div>
 
             <div class="bl-field">
@@ -915,7 +932,7 @@ table{border-collapse:collapse;width:100%;}
               <div style="margin-top:14px;">
                 <button class="btn-blast-send" id="bl-send-btn" onclick="queueBlast()"><span id="bl-send-label">Select Guests to Continue</span></button>
                 <div style="font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5;">
-                  Emails are queued in the Outbox where you can review each one before marking as sent.
+                  Emails are queued in the Outbox where you can review each one before sending through Gmail.
                 </div>
               </div>
             </div>
@@ -932,10 +949,11 @@ table{border-collapse:collapse;width:100%;}
             <div style="font-size:13px;color:var(--muted);margin-top:2px;">Review personalised emails before sending. Click any email to read it.</div>
           </div>
           <div style="display:flex;gap:8px;">
-            <button class="btn-mark-all" onclick="markAllSent()">✓ Mark All as Sent</button>
+            <button class="btn-mark-all" id="email-send-all-btn" onclick="sendAllQueued()">✉ Send All via Gmail</button>
             <button class="btn-clear-outbox" onclick="clearOutbox()">🗑 Clear</button>
           </div>
         </div>
+        <div class="email-send-progress" id="email-bulk-progress"></div>
         <div id="outbox-list"></div>
 
         <!-- Inline email reader -->
@@ -943,7 +961,7 @@ table{border-collapse:collapse;width:100%;}
           <div class="reader-header">
             <button onclick="closeReader()" class="reader-back">← Back to Outbox</button>
             <div style="flex:1;"></div>
-            <button class="btn-mark-sent" id="reader-mark-btn" onclick="markCurrentSent()">✓ Mark as Sent</button>
+            <button class="btn-mark-sent" id="reader-mark-btn" onclick="sendCurrentEmail()">✉ Send via Gmail</button>
             <button class="btn-delete-email" onclick="deleteCurrentEmail()">🗑 Delete</button>
           </div>
           <div class="reader-meta">
@@ -953,6 +971,7 @@ table{border-collapse:collapse;width:100%;}
             <div class="reader-meta-row"><span class="reader-lbl">Queued:</span><span id="reader-queued"></span></div>
           </div>
           <div class="reader-body" id="reader-body-wrap"></div>
+          <div class="email-send-progress" id="email-send-progress"></div>
         </div>
       </div>
 
@@ -963,7 +982,7 @@ table{border-collapse:collapse;width:100%;}
             <div class="sent-log-title">📬 Sent Email History</div>
             <div style="display:flex;align-items:center;gap:10px;">
               <span id="history-stats" style="font-size:12px;color:var(--muted);"></span>
-              <button onclick="clearSentLog()" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--muted);">Clear all</button>
+              <button onclick="refreshEmailHistory()" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--blue);font-weight:700;">↻ Refresh Gmail log</button>
             </div>
           </div>
           <div id="sent-log-list"></div>
@@ -1062,6 +1081,38 @@ table{border-collapse:collapse;width:100%;}
       <div class="flex gap-8">
         <button class="btn btn-secondary" style="flex:1;" onclick="pushCSATToSheet()">⬆ Push</button>
         <button class="btn btn-secondary" style="flex:1;" onclick="pullCSATFromSheet()">⬇ Pull</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Gmail Email Settings -->
+<div class="modal-overlay hidden" id="modal-email-settings" onclick="if(event.target===this)closeModal('modal-email-settings')">
+  <div class="modal">
+    <div class="modal-head"><span class="modal-title">✉ Gmail Email Settings</span><button class="modal-close" onclick="closeModal('modal-email-settings')">×</button></div>
+    <div class="modal-body">
+      <div class="email-account-card">
+        <div><strong>greektogo@gmail.com</strong><span>Authorised Gmail sending account</span></div>
+        <span id="email-quota-label">Quota not checked</span>
+      </div>
+      <div class="email-settings-note">
+        The Apps Script URL and private access key stay only in this browser. The access key is never added to the public GitHub page or guest links.
+      </div>
+      <div class="field">
+        <label>Apps Script Web App URL</label>
+        <input id="email-endpoint" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off"/>
+      </div>
+      <div class="field">
+        <label>Private Email Access Key</label>
+        <div class="email-secret-wrap">
+          <input id="email-access-key" type="password" placeholder="Paste the key from the private Apps Script file" autocomplete="new-password"/>
+          <button type="button" id="email-key-toggle" onclick="toggleEmailKey()">Show</button>
+        </div>
+      </div>
+      <div style="font-size:12px;margin:10px 0 2px;">Status: <span id="email-settings-status">Not connected</span></div>
+      <div class="flex gap-8" style="justify-content:flex-end;margin-top:14px;">
+        <button class="btn btn-secondary" onclick="disconnectEmailSettings()">Disconnect</button>
+        <button class="btn btn-primary" id="email-settings-save" onclick="saveAndTestEmailSettings()">Save &amp; Test</button>
       </div>
     </div>
   </div>
@@ -1843,10 +1894,20 @@ function printQR(){
 }
 
 // ── Google Sheets connection ──────────────────────────────────
-// No Apps Script URL is hardcoded in this HTML.
-// The URL is configured in the Connect Google Sheet dialog and stored locally.
-let sheetsUrl = '';
-try{ sheetsUrl = localStorage.getItem('gtg_sheets_url') || ''; }catch(e){ sheetsUrl = ''; }
+// Shared Google Apps Script backend used by the registration form, CRM sheets,
+// CSAT, and protected Gmail blast actions.
+const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwHxqchUOX0VuKOTuidH3coExLEZW1ixNdp1JpzpAhgMUWsxf8qP2jN8SZ33qNB_hKtww/exec';
+let sheetsUrl = DEFAULT_APPS_SCRIPT_URL;
+try{ sheetsUrl = localStorage.getItem('gtg_sheets_url') || DEFAULT_APPS_SCRIPT_URL; }catch(e){ sheetsUrl = DEFAULT_APPS_SCRIPT_URL; }
+
+const EMAIL_ACCOUNT = 'greektogo@gmail.com';
+let emailSettings = {endpoint:'',accessKey:''};
+let emailQuota = null;
+let emailBulkSending = false;
+try{
+  emailSettings.endpoint = localStorage.getItem('gtg_email_endpoint') || DEFAULT_APPS_SCRIPT_URL;
+  emailSettings.accessKey = localStorage.getItem('gtg_email_access_key') || '';
+}catch(e){ emailSettings = {endpoint:'',accessKey:''}; }
 
 function validSheetsUrl_(url){
   try{
@@ -1855,6 +1916,124 @@ function validSheetsUrl_(url){
   }catch(e){
     return false;
   }
+}
+
+function effectiveEmailEndpoint_(){
+  return (emailSettings.endpoint || sheetsUrl || '').replace(/\/?$/, '');
+}
+
+function persistEmailSettings_(){
+  try{
+    if(emailSettings.endpoint) localStorage.setItem('gtg_email_endpoint',emailSettings.endpoint);
+    else localStorage.removeItem('gtg_email_endpoint');
+    if(emailSettings.accessKey) localStorage.setItem('gtg_email_access_key',emailSettings.accessKey);
+    else localStorage.removeItem('gtg_email_access_key');
+  }catch(e){}
+}
+
+function updateEmailStatus_(state='idle',message=''){
+  const badge=$$('email-status-badge');
+  const modalStatus=$$('email-settings-status');
+  const quotaLabel=$$('email-quota-label');
+  const ready=state==='ready';
+  const failed=state==='failed';
+  const endpoint=effectiveEmailEndpoint_();
+  const hasSettings=Boolean(endpoint&&emailSettings.accessKey);
+  const text=message||(ready
+    ? `Gmail ready${emailQuota==null?'':` · ${emailQuota} left`}`
+    : failed?'Gmail connection failed':hasSettings?'Gmail saved · test needed':'Gmail not connected');
+  if(badge){
+    badge.textContent=text;
+    badge.classList.toggle('not-ready',!ready&&!failed);
+    badge.classList.toggle('failed',failed);
+  }
+  if(modalStatus){
+    modalStatus.textContent=ready?'✅ Connected':failed?'❌ '+text:(hasSettings?'Saved — click Save & Test':'Not connected');
+    modalStatus.style.color=ready?'var(--green)':failed?'var(--red)':'var(--muted)';
+  }
+  if(quotaLabel) quotaLabel.textContent=emailQuota==null?'Quota not checked':`${emailQuota} recipient${emailQuota===1?'':'s'} remaining today`;
+}
+
+function openEmailSettings(){
+  const endpoint=effectiveEmailEndpoint_();
+  $$('email-endpoint').value=endpoint;
+  $$('email-access-key').value=emailSettings.accessKey;
+  $$('email-access-key').type='password';
+  $$('email-key-toggle').textContent='Show';
+  updateEmailStatus_(emailQuota==null?'idle':'ready');
+  openModal('modal-email-settings');
+}
+
+function toggleEmailKey(){
+  const input=$$('email-access-key');
+  const button=$$('email-key-toggle');
+  if(!input||!button) return;
+  input.type=input.type==='password'?'text':'password';
+  button.textContent=input.type==='password'?'Show':'Hide';
+}
+
+async function _emailCall(action,payload={}){
+  const endpoint=effectiveEmailEndpoint_();
+  if(!validSheetsUrl_(endpoint)) throw new Error('Enter a valid Google Apps Script /exec URL.');
+  if(!emailSettings.accessKey) throw new Error('Enter the private Email Access Key.');
+  const response=await fetch(endpoint,{
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body:JSON.stringify({action,accessKey:emailSettings.accessKey,...payload}),
+    redirect:'follow'
+  });
+  if(!response.ok) throw new Error('Gmail service returned HTTP '+response.status+'.');
+  const data=await response.json();
+  if(!data||data.status==='error') throw new Error(data?.message||'Gmail service did not confirm the operation.');
+  if(Number.isFinite(Number(data.remainingQuota))) emailQuota=Number(data.remainingQuota);
+  return data;
+}
+
+async function saveAndTestEmailSettings(){
+  const endpoint=($$('email-endpoint')?.value||'').trim().replace(/\/?$/, '');
+  const accessKey=($$('email-access-key')?.value||'').trim();
+  if(!validSheetsUrl_(endpoint)){
+    showToast('Enter a valid Google Apps Script /exec URL.','err');
+    $$('email-endpoint')?.focus();
+    return;
+  }
+  if(!accessKey){
+    showToast('Enter the private Email Access Key.','err');
+    $$('email-access-key')?.focus();
+    return;
+  }
+  emailSettings={endpoint,accessKey};
+  persistEmailSettings_();
+  const button=$$('email-settings-save');
+  if(button){button.disabled=true;button.textContent='Testing…';}
+  updateEmailStatus_('idle','Testing Gmail…');
+  try{
+    const data=await _emailCall('emailStatus');
+    if(String(data.account||'').toLowerCase()!==EMAIL_ACCOUNT){
+      throw new Error('Apps Script is not configured for '+EMAIL_ACCOUNT+'.');
+    }
+    updateEmailStatus_('ready');
+    await refreshEmailHistory({silent:true});
+    showToast(`✅ Gmail ready — ${emailQuota} recipient${emailQuota===1?'':'s'} remaining today`,'ok');
+    closeModal('modal-email-settings');
+  }catch(e){
+    console.error('Gmail settings test failed:',e);
+    emailQuota=null;
+    updateEmailStatus_('failed',e.message);
+    showToast('Gmail connection failed — '+e.message,'err');
+  }finally{
+    if(button){button.disabled=false;button.textContent='Save & Test';}
+  }
+}
+
+function disconnectEmailSettings(){
+  emailSettings={endpoint:'',accessKey:''};
+  emailQuota=null;
+  persistEmailSettings_();
+  if($$('email-endpoint')) $$('email-endpoint').value='';
+  if($$('email-access-key')) $$('email-access-key').value='';
+  updateEmailStatus_('idle');
+  showToast('Gmail disconnected on this browser','ok');
 }
 
 function openSheetsModal(){
@@ -2360,12 +2539,34 @@ function queueBlast(){
 }
 
 function updateOutboxBadge(){
-  const q=outbox.filter(e=>e.status==="queued").length;
+  const q=outbox.filter(e=>e.status==="queued"||e.status==="failed").length;
   document.getElementById("bsn-outbox-count").textContent=q;
   document.getElementById("bsn-outbox-count").style.display=q>0?"inline":"none";
+  const sendAll=$$('email-send-all-btn');
+  if(sendAll&&!emailBulkSending) sendAll.disabled=q===0;
 }
 
 // ── OUTBOX ───────────────────────────────────────────────────
+function emailText_(value){
+  return String(value==null?'':value)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+function emailStatusMarkup_(email){
+  if(email.status==='sent') return '<span class="status-badge sent">✓ Sent</span>';
+  if(email.status==='sending') return '<span class="status-badge sending">Sending…</span>';
+  if(email.status==='failed') return '<span class="status-badge failed">Failed</span>';
+  return '<span class="status-badge queued">Queued</span>';
+}
+
+function emailActionLabel_(email){
+  if(email.status==='sent') return '✓ Sent';
+  if(email.status==='sending') return 'Sending…';
+  if(email.status==='failed') return '↻ Retry';
+  return '✉ Send';
+}
+
 function renderOutbox(){
   const el=document.getElementById("outbox-list");
   const list=[...outbox].reverse();
@@ -2379,17 +2580,15 @@ function renderOutbox(){
       <div class="ob-left">
         ${av(e.guestName,e.tier,34)}
         <div class="ob-info">
-          <div class="ob-name">${e.guestName} <span class="ob-email">&lt;${e.email}&gt;</span></div>
-          <div class="ob-subject">${e.subject}</div>
-          <div class="ob-meta">Queued ${e.queuedAt}</div>
+          <div class="ob-name">${emailText_(e.guestName)} <span class="ob-email">&lt;${emailText_(e.email)}&gt;</span></div>
+          <div class="ob-subject">${emailText_(e.subject)}</div>
+          <div class="ob-meta">${e.status==='sent'?'Sent '+emailText_(e.sentAt||''):e.status==='failed'?'<span style="color:var(--red);">'+emailText_(e.lastError||'Send failed')+'</span>':'Queued '+emailText_(e.queuedAt)}</div>
         </div>
       </div>
       <div class="ob-right">
-        ${e.status==="sent"
-          ?`<span class="status-badge sent">✓ Sent</span>`
-          :`<span class="status-badge queued">Queued</span>`}
-        <button class="ob-mark-btn" onclick="event.stopPropagation();markSingle('${e.id}')">${e.status==="sent"?"Undo":"✓ Mark Sent"}</button>
-        <button class="ob-del-btn"  onclick="event.stopPropagation();deleteEmail('${e.id}')">🗑</button>
+        ${emailStatusMarkup_(e)}
+        <button class="ob-mark-btn" ${e.status==='sent'||e.status==='sending'?'disabled':''} onclick="event.stopPropagation();sendSingleEmail('${e.id}')">${emailActionLabel_(e)}</button>
+        <button class="ob-del-btn" ${e.status==='sending'?'disabled':''} onclick="event.stopPropagation();deleteEmail('${e.id}')">🗑</button>
       </div>
     </div>`).join("");
 }
@@ -2403,9 +2602,9 @@ function openEmailReader(id){
   document.getElementById("reader-subject").textContent=e.subject;
   document.getElementById("reader-queued").textContent=e.queuedAt;
   document.getElementById("reader-body-wrap").innerHTML=e.html;
-  const markBtn=document.getElementById("reader-mark-btn");
-  markBtn.textContent=e.status==="sent"?"✓ Sent (Undo)":"✓ Mark as Sent";
-  markBtn.style.background=e.status==="sent"?"var(--green)":"var(--blue)";
+  updateReaderSendButton_(e);
+  const progress=$$('email-send-progress');
+  if(progress) progress.textContent=e.status==='failed'?(e.lastError||'Send failed'):'';
   document.getElementById("email-reader").classList.remove("hidden");
   document.getElementById("outbox-list").classList.add("hidden");
 }
@@ -2416,33 +2615,77 @@ function closeReader(){
   currentEmailId=null;
 }
 
-function markCurrentSent(){
-  if(!currentEmailId) return;
-  markSingle(currentEmailId);
-  const e=outbox.find(x=>String(x.id)===String(currentEmailId));
-  const markBtn=document.getElementById("reader-mark-btn");
-  if(e){
-    markBtn.textContent=e.status==="sent"?"✓ Sent (Undo)":"✓ Mark as Sent";
-    markBtn.style.background=e.status==="sent"?"var(--green)":"var(--blue)";
-  }
+function updateReaderSendButton_(email){
+  const button=$$('reader-mark-btn');
+  if(!button||!email) return;
+  button.textContent=emailActionLabel_(email);
+  button.disabled=email.status==='sent'||email.status==='sending';
+  button.style.background=email.status==='sent'?'var(--green)':email.status==='failed'?'var(--red)':'var(--blue)';
 }
 
-function markSingle(id){
+function sendCurrentEmail(){
+  if(!currentEmailId) return;
+  sendSingleEmail(currentEmailId);
+}
+
+function formatEmailTime_(value){
+  const parsed=new Date(value||Date.now());
+  return Number.isNaN(parsed.getTime())
+    ? new Date().toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'})
+    : parsed.toLocaleString('en-GB',{dateStyle:'short',timeStyle:'short'});
+}
+
+async function sendSingleEmail(id,options={}){
   const e=outbox.find(x=>String(x.id)===String(id));
-  if(!e) return;
-  if(e.status==="queued"){
-    e.status="sent";
-    e.sentAt=new Date().toLocaleString("en-GB",{dateStyle:"short",timeStyle:"short"});
-    sentLog.unshift({...e});
-    showToast(`✅ "${e.subject.slice(0,40)}" marked as sent`,"ok");
-  } else {
-    e.status="queued";
-    sentLog=sentLog.filter(s=>String(s.id)!==String(id));
-    showToast("Email moved back to queued","ok");
+  if(!e||e.status==='sent'||e.status==='sending') return e?.status==='sent';
+  if(!effectiveEmailEndpoint_()||!emailSettings.accessKey){
+    if(!options.silent){
+      showToast('Connect Gmail before sending.','err');
+      openEmailSettings();
+    }
+    return false;
   }
-  updateOutboxBadge();
+
+  if(!options.skipConfirm&&!confirm(`Send this email now from ${EMAIL_ACCOUNT} to ${e.email}?`)) return false;
+
+  e.status='sending';
+  e.lastError='';
   renderOutbox();
-  renderSentLog();
+  updateReaderSendButton_(e);
+  if(currentEmailId&&String(currentEmailId)===String(id)&&$$('email-send-progress')) $$('email-send-progress').textContent='Sending through Gmail…';
+
+  try{
+    const result=await _emailCall('sendEmail',{message:{
+      messageId:String(e.id),
+      to:e.email,
+      guestId:String(e.guestId||''),
+      guestName:e.guestName,
+      subject:e.subject,
+      body:e.body,
+      html:e.html
+    }});
+    if(!result.sent) throw new Error('Gmail did not confirm delivery to the sending service.');
+    e.status='sent';
+    e.sentAt=formatEmailTime_(result.sentAt);
+    e.serverSentAt=result.sentAt||'';
+    sentLog=[{...e},...sentLog.filter(s=>String(s.id)!==String(e.id))];
+    updateEmailStatus_('ready');
+    if(!options.silent) showToast(`✅ Email sent to ${e.email}`,'ok');
+    return true;
+  }catch(error){
+    console.error('Gmail send failed:',error);
+    e.status='failed';
+    e.lastError=error.message||String(error);
+    updateEmailStatus_(/access key|HTTP|JSON|connect/i.test(e.lastError)?'failed':'idle',e.lastError);
+    if(!options.silent) showToast('Email not sent — '+e.lastError,'err');
+    return false;
+  }finally{
+    updateOutboxBadge();
+    renderOutbox();
+    renderSentLog();
+    updateReaderSendButton_(e);
+    if(currentEmailId&&String(currentEmailId)===String(id)&&$$('email-send-progress')) $$('email-send-progress').textContent=e.status==='failed'?e.lastError:'';
+  }
 }
 
 function deleteCurrentEmail(){
@@ -2452,29 +2695,50 @@ function deleteCurrentEmail(){
 }
 
 function deleteEmail(id){
+  const target=outbox.find(e=>String(e.id)===String(id));
+  if(target?.status==='sending'){showToast('Wait for this email to finish sending.','err');return;}
   outbox=outbox.filter(e=>String(e.id)!==String(id));
-  sentLog=sentLog.filter(e=>String(e.id)!==String(id));
   updateOutboxBadge();
   renderOutbox();
   renderSentLog();
   showToast("Email deleted","ok");
 }
 
-function markAllSent(){
-  const queued=outbox.filter(e=>e.status==="queued");
-  if(!queued.length){showToast("No queued emails","err");return;}
-  queued.forEach(e=>{
-    e.status="sent";
-    e.sentAt=new Date().toLocaleString("en-GB",{dateStyle:"short",timeStyle:"short"});
-    sentLog.unshift({...e});
-  });
-  updateOutboxBadge();
-  renderOutbox();
-  renderSentLog();
-  showToast(`✅ ${queued.length} email${queued.length>1?"s":""} marked as sent!`,"ok");
+async function sendAllQueued(){
+  const queued=outbox.filter(e=>e.status==='queued'||e.status==='failed');
+  if(!queued.length){showToast('No queued emails','err');return;}
+  if(emailBulkSending) return;
+  if(!effectiveEmailEndpoint_()||!emailSettings.accessKey){
+    showToast('Connect Gmail before sending.','err');
+    openEmailSettings();
+    return;
+  }
+  if(!confirm(`Send ${queued.length} real email${queued.length===1?'':'s'} now from ${EMAIL_ACCOUNT}?`)) return;
+
+  emailBulkSending=true;
+  const button=$$('email-send-all-btn');
+  const progress=$$('email-bulk-progress');
+  if(button) button.disabled=true;
+  let sent=0;
+  let failed=0;
+
+  try{
+    for(let i=0;i<queued.length;i++){
+      if(progress) progress.textContent=`Sending ${i+1} of ${queued.length} to ${queued[i].email}…`;
+      const ok=await sendSingleEmail(queued[i].id,{skipConfirm:true,silent:true});
+      if(ok) sent++; else failed++;
+      if(!ok&&/quota has been reached/i.test(queued[i].lastError||'')) break;
+    }
+  }finally{
+    emailBulkSending=false;
+    if(button) button.disabled=false;
+    if(progress) progress.textContent=`Finished: ${sent} sent${failed?', '+failed+' failed':''}.`;
+    showToast(failed?`Finished — ${sent} sent, ${failed} failed`:`✅ ${sent} email${sent===1?'':'s'} sent through Gmail` ,failed?'err':'ok');
+  }
 }
 
 function clearOutbox(){
+  if(emailBulkSending||outbox.some(e=>e.status==='sending')){showToast('Wait for Gmail sending to finish.','err');return;}
   if(!outbox.length) return;
   if(!confirm("Clear all emails from outbox?")) return;
   outbox=[];
@@ -2487,7 +2751,7 @@ function clearOutbox(){
 function renderSentLog(){
   const el=document.getElementById("sent-log-list");
   if(!sentLog.length){
-    el.innerHTML=`<div class="sent-log-empty">No emails sent yet. Mark emails as sent from the Outbox.</div>`;
+    el.innerHTML=`<div class="sent-log-empty">No emails sent yet. Send emails from the Outbox or refresh the Gmail log.</div>`;
     document.getElementById("history-stats").textContent="";
     return;
   }
@@ -2496,9 +2760,9 @@ function renderSentLog(){
     <div class="sent-item">
       <div class="sent-icon">📧</div>
       <div class="sent-info">
-        <div class="sent-name">${s.guestName} <span style="font-weight:400;color:var(--muted);">&lt;${s.email||""}&gt;</span></div>
-        <div class="sent-subj">${s.subject}</div>
-        <div class="sent-meta">Sent ${s.sentAt||s.queuedAt} · ${s.from}</div>
+        <div class="sent-name">${emailText_(s.guestName||'Guest')} <span style="font-weight:400;color:var(--muted);">&lt;${emailText_(s.email||"")}&gt;</span></div>
+        <div class="sent-subj">${emailText_(s.subject||'')}</div>
+        <div class="sent-meta">Sent ${emailText_(s.sentAt||s.queuedAt||'')} · ${emailText_(s.from||'GreekToGo Taverna')}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
         <span class="ch-badge email">Email</span>
@@ -2507,11 +2771,35 @@ function renderSentLog(){
     </div>`).join("");
 }
 
-function clearSentLog(){
-  if(!confirm("Clear all sent history?")) return;
-  sentLog=[];
-  renderSentLog();
-  showToast("Sent history cleared","ok");
+async function refreshEmailHistory(options={}){
+  if(!effectiveEmailEndpoint_()||!emailSettings.accessKey){
+    if(!options.silent){showToast('Connect Gmail to load sent history.','err');openEmailSettings();}
+    return false;
+  }
+  try{
+    const data=await _emailCall('getEmailHistory');
+    sentLog=(Array.isArray(data.history)?data.history:[])
+      .filter(item=>String(item.status||'').toLowerCase()==='sent')
+      .map(item=>({
+        id:String(item.messageId||''),
+        guestId:String(item.guestId||''),
+        guestName:item.guestName||'Guest',
+        email:item.recipient||'',
+        subject:item.subject||'',
+        sentAt:formatEmailTime_(item.sentAt),
+        from:'GreekToGo Taverna',
+        status:'sent'
+      }));
+    updateEmailStatus_('ready');
+    renderSentLog();
+    if(!options.silent) showToast(`✅ Loaded ${sentLog.length} sent email${sentLog.length===1?'':'s'}`,'ok');
+    return true;
+  }catch(error){
+    console.error('Gmail history refresh failed:',error);
+    updateEmailStatus_('failed',error.message||String(error));
+    if(!options.silent) showToast('Could not load Gmail history — '+error.message,'err');
+    return false;
+  }
 }
 
 // ── TAB SWITCHER ─────────────────────────────────────────────
@@ -2535,6 +2823,7 @@ function renderBlast(){
   }
   renderSentLog();
   updateOutboxBadge();
+  updateEmailStatus_(emailQuota==null?'idle':'ready');
 }
 
 </script>
