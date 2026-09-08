@@ -1625,7 +1625,7 @@ function toggleMenuItem(btn){
   $$("ao-count").textContent=sel.length;$$("ao-total").textContent=total.toFixed(2);
 }
 async function addOrder(){
-  const gid=parseInt(v("ao-guest"));if(!gid){showToast("Select a guest","err");return;}
+  const gid=String(v("ao-guest")||"");if(!gid){showToast("Select a guest","err");return;}
   const chips=[...document.querySelectorAll(".menu-chip.selected")];if(!chips.length){showToast("Select menu items","err");return;}
   const total=chips.reduce((s,c)=>s+parseFloat(c.dataset.price),0);
   const id=Math.max(0,...orders.map(o=>o.id))+1,today=new Date().toISOString().slice(0,10);
