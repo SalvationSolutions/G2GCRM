@@ -849,7 +849,7 @@ table{border-collapse:collapse;width:100%;}
 
             <div class="bl-field">
               <label>From Name</label>
-              <input id="bl-from" value="Greek To Go Taverna" readonly/>
+              <input id="bl-from" value="Greek To Go Taverna" maxlength="80" placeholder="Greek To Go Taverna"/>
             </div>
 
             <div class="bl-field">
@@ -2326,7 +2326,7 @@ function blastSafeLink(value){
 // ── BUILD RENDERED EMAIL HTML ─────────────────────────────────
 function buildRenderedEmail(cust){
   cust=cust||{id:"preview",name:"Guest",email:"",favorite:"your favourite dish",city:"your city",visits:0};
-  const fromName = document.getElementById("bl-from").value||"GreekToGo Taverna";
+  const fromName = document.getElementById("bl-from").value||"Greek To Go Taverna";
   const subject  = personalize(document.getElementById("bl-subject").value||"", cust);
   const body     = personalize(document.getElementById("bl-body").value||"", cust);
   const ctaText  = document.getElementById("bl-cta-text").value||"";
@@ -2502,7 +2502,7 @@ function queueBlast(){
   if(!selectedRecs.size){showToast("Select at least one recipient","err");return;}
   const subj=document.getElementById("bl-subject").value.trim();
   const body=document.getElementById("bl-body").value.trim();
-  const from=document.getElementById("bl-from").value||"GreekToGo Taverna";
+  const from=document.getElementById("bl-from").value||"Greek To Go Taverna";
   if(!subj){showToast("Add a subject line first","err");return;}
   if(!body){showToast("Write a message body first","err");return;}
 
@@ -2696,6 +2696,7 @@ async function sendSingleEmail(id,options={}){
       to:e.email,
       guestId:String(e.guestId||''),
       guestName:e.guestName,
+      fromName:e.from||'Greek To Go Taverna',
       subject:e.subject,
       body:e.body,
       html:e.html
@@ -2824,7 +2825,7 @@ async function refreshEmailHistory(options={}){
         email:item.recipient||'',
         subject:item.subject||'',
         sentAt:formatEmailTime_(item.sentAt),
-        from:'GreekToGo Taverna',
+        from:'Greek To Go Taverna',
         status:'sent'
       }));
     updateEmailStatus_('ready');
