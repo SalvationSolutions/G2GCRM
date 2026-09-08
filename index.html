@@ -1092,7 +1092,7 @@ table{border-collapse:collapse;width:100%;}
     <div class="modal-head"><span class="modal-title">✉ Gmail Email Settings</span><button class="modal-close" onclick="closeModal('modal-email-settings')">×</button></div>
     <div class="modal-body">
       <div class="email-account-card">
-        <div><strong>greektogo@gmail.com</strong><span>Authorised Gmail sending account</span></div>
+        <div><strong>greektogoph@gmail.com</strong><span>Authorised Gmail sending account</span></div>
         <span id="email-quota-label">Quota not checked</span>
       </div>
       <div class="email-settings-note">
@@ -1900,7 +1900,7 @@ const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwHxqch
 let sheetsUrl = DEFAULT_APPS_SCRIPT_URL;
 try{ sheetsUrl = localStorage.getItem('gtg_sheets_url') || DEFAULT_APPS_SCRIPT_URL; }catch(e){ sheetsUrl = DEFAULT_APPS_SCRIPT_URL; }
 
-const EMAIL_ACCOUNT = 'greektogo@gmail.com';
+const EMAIL_ACCOUNT = 'greektogoph@gmail.com';
 let emailSettings = {endpoint:'',accessKey:''};
 let emailQuota = null;
 let emailBulkSending = false;
