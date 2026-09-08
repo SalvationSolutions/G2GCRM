@@ -372,6 +372,8 @@ table{border-collapse:collapse;width:100%;}
 .ob-subject{font-size:13px;color:var(--blue);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ob-meta{font-size:11px;color:var(--muted);margin-top:2px;}
 .ob-right{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+.ob-select{width:18px;height:18px;accent-color:var(--blue);cursor:pointer;flex:0 0 auto;}
+.outbox-select-all{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--char);cursor:pointer;padding:7px 10px;border:1px solid var(--border);border-radius:8px;background:#fff;}
 .ob-mark-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--blue);background:#fff;color:var(--blue);font-size:12px;font-weight:600;cursor:pointer;}
 .ob-mark-btn:hover{background:var(--blue-l);}
 .ob-mark-btn:disabled,.btn-mark-all:disabled,.btn-mark-sent:disabled{opacity:.55;cursor:not-allowed;}
@@ -847,7 +849,7 @@ table{border-collapse:collapse;width:100%;}
 
             <div class="bl-field">
               <label>From Name</label>
-              <input id="bl-from" value="GreekToGo Taverna" readonly/>
+              <input id="bl-from" value="Greek To Go Taverna" readonly/>
             </div>
 
             <div class="bl-field">
@@ -949,7 +951,8 @@ table{border-collapse:collapse;width:100%;}
             <div style="font-size:13px;color:var(--muted);margin-top:2px;">Review personalised emails before sending. Click any email to read it.</div>
           </div>
           <div style="display:flex;gap:8px;">
-            <button class="btn-mark-all" id="email-send-all-btn" onclick="sendAllQueued()">✉ Send All via Gmail</button>
+            <label class="outbox-select-all"><input type="checkbox" class="ob-select" id="outbox-select-all" onchange="toggleAllOutbox(this.checked)"/> <span id="outbox-select-label">Select all</span></label>
+            <button class="btn-mark-all" id="email-send-all-btn" onclick="sendAllQueued()">✉ Send Selected via Gmail</button>
             <button class="btn-clear-outbox" onclick="clearOutbox()">🗑 Clear</button>
           </div>
         </div>
@@ -2248,7 +2251,7 @@ function dbSwitchTab(tab){
 
 // ─── BLAST — BUILT-IN EMAIL SYSTEM ──────────────────────────
 let recSegFilter="All", selectedRecs=new Set(), blastInitialized=false;
-let outbox=[], currentEmailId=null;
+let outbox=[], currentEmailId=null, selectedOutboxIds=new Set();
 
 // ── TEMPLATES ────────────────────────────────────────────────
 const TEMPLATES={
@@ -2510,7 +2513,7 @@ function queueBlast(){
   const ts=new Date().toLocaleString("en-GB",{dateStyle:"short",timeStyle:"short"});
 
   recips.forEach(cust=>{
-    outbox.push({
+    const queuedEmail={
       id: Date.now()+Math.random(),
       guestId:   cust.id,
       guestName: cust.name,
@@ -2524,7 +2527,9 @@ function queueBlast(){
       queuedAt:  ts,
       status:    "queued",
       tier:      getTier(cust.visits),
-    });
+    };
+    outbox.push(queuedEmail);
+    selectedOutboxIds.add(String(queuedEmail.id));
   });
 
   updateOutboxBadge();
@@ -2543,7 +2548,11 @@ function updateOutboxBadge(){
   document.getElementById("bsn-outbox-count").textContent=q;
   document.getElementById("bsn-outbox-count").style.display=q>0?"inline":"none";
   const sendAll=$$('email-send-all-btn');
-  if(sendAll&&!emailBulkSending) sendAll.disabled=q===0;
+  const selected=outbox.filter(e=>(e.status==='queued'||e.status==='failed')&&selectedOutboxIds.has(String(e.id))).length;
+  if(sendAll){
+    sendAll.textContent=`✉ Send Selected${selected?` (${selected})`:''} via Gmail`;
+    if(!emailBulkSending) sendAll.disabled=selected===0;
+  }
 }
 
 // ── OUTBOX ───────────────────────────────────────────────────
@@ -2570,6 +2579,17 @@ function emailActionLabel_(email){
 function renderOutbox(){
   const el=document.getElementById("outbox-list");
   const list=[...outbox].reverse();
+  const selectable=outbox.filter(e=>e.status==='queued'||e.status==='failed');
+  const validIds=new Set(selectable.map(e=>String(e.id)));
+  selectedOutboxIds=new Set([...selectedOutboxIds].filter(id=>validIds.has(String(id))));
+  const selectAll=$$('outbox-select-all');
+  const selectedCount=selectable.filter(e=>selectedOutboxIds.has(String(e.id))).length;
+  if(selectAll){
+    selectAll.checked=selectable.length>0&&selectedCount===selectable.length;
+    selectAll.indeterminate=selectedCount>0&&selectedCount<selectable.length;
+    selectAll.disabled=selectable.length===0||emailBulkSending;
+  }
+  if($$('outbox-select-label')) $$('outbox-select-label').textContent=selectAll?.checked?'Unselect all':'Select all';
   if(!list.length){
     el.innerHTML=`<div class="sent-log-empty">No emails in outbox. Compose a blast and it will appear here for review.</div>`;
     document.getElementById("email-reader").classList.add("hidden");
@@ -2578,6 +2598,7 @@ function renderOutbox(){
   el.innerHTML=list.map(e=>`
     <div class="outbox-item${e.status==="sent"?" ob-sent":""}" id="ob-${e.id}" onclick="openEmailReader('${e.id}')">
       <div class="ob-left">
+        <input type="checkbox" class="ob-select" aria-label="Select email for ${emailText_(e.guestName)}" ${selectedOutboxIds.has(String(e.id))?'checked':''} ${e.status==='sent'||e.status==='sending'?'disabled':''} onclick="event.stopPropagation()" onchange="toggleOutboxSelection('${e.id}',this.checked)"/>
         ${av(e.guestName,e.tier,34)}
         <div class="ob-info">
           <div class="ob-name">${emailText_(e.guestName)} <span class="ob-email">&lt;${emailText_(e.email)}&gt;</span></div>
@@ -2591,6 +2612,21 @@ function renderOutbox(){
         <button class="ob-del-btn" ${e.status==='sending'?'disabled':''} onclick="event.stopPropagation();deleteEmail('${e.id}')">🗑</button>
       </div>
     </div>`).join("");
+  updateOutboxBadge();
+}
+
+function toggleOutboxSelection(id,checked){
+  if(checked) selectedOutboxIds.add(String(id));
+  else selectedOutboxIds.delete(String(id));
+  renderOutbox();
+}
+
+function toggleAllOutbox(checked){
+  selectedOutboxIds.clear();
+  if(checked){
+    outbox.filter(e=>e.status==='queued'||e.status==='failed').forEach(e=>selectedOutboxIds.add(String(e.id)));
+  }
+  renderOutbox();
 }
 
 function openEmailReader(id){
@@ -2705,15 +2741,15 @@ function deleteEmail(id){
 }
 
 async function sendAllQueued(){
-  const queued=outbox.filter(e=>e.status==='queued'||e.status==='failed');
-  if(!queued.length){showToast('No queued emails','err');return;}
+  const queued=outbox.filter(e=>(e.status==='queued'||e.status==='failed')&&selectedOutboxIds.has(String(e.id)));
+  if(!queued.length){showToast('Select at least one queued email','err');return;}
   if(emailBulkSending) return;
   if(!effectiveEmailEndpoint_()||!emailSettings.accessKey){
     showToast('Connect Gmail before sending.','err');
     openEmailSettings();
     return;
   }
-  if(!confirm(`Send ${queued.length} real email${queued.length===1?'':'s'} now from ${EMAIL_ACCOUNT}?`)) return;
+  if(!confirm(`Send ${queued.length} selected email${queued.length===1?'':'s'} now from ${EMAIL_ACCOUNT}?`)) return;
 
   emailBulkSending=true;
   const button=$$('email-send-all-btn');
@@ -2742,6 +2778,7 @@ function clearOutbox(){
   if(!outbox.length) return;
   if(!confirm("Clear all emails from outbox?")) return;
   outbox=[];
+  selectedOutboxIds.clear();
   updateOutboxBadge();
   renderOutbox();
   showToast("Outbox cleared","ok");
