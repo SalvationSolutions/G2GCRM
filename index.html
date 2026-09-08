@@ -86,7 +86,7 @@ table{border-collapse:collapse;width:100%;}
 
 /* ══ HEADER ════════════════════════════════════════════════ */
 .header{background:var(--blue);color:#fff;}
-.header-inner{max-width:1040px;margin:0 auto;padding:18px 24px 0;}
+.header-inner{max-width:1280px;margin:0 auto;padding:18px 24px 0;}
 .header-top{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
 .logo{display:flex;align-items:center;gap:10px;}
 .logo-icon{font-size:26px;}
@@ -104,7 +104,7 @@ table{border-collapse:collapse;width:100%;}
 .meander{display:block;width:100%;height:8px;}
 
 /* ══ MAIN / TABS ════════════════════════════════════════════ */
-.main{max-width:1040px;margin:0 auto;padding:24px;}
+.main{max-width:1280px;margin:0 auto;padding:24px;}
 .tab-panel{display:none;}.tab-panel.active{display:block;}
 .sec-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
 .sec-title{font-size:22px;font-weight:700;color:var(--blue);}
@@ -553,6 +553,108 @@ table{border-collapse:collapse;width:100%;}
   .bl-cta-grid{grid-template-columns:1fr;}
   .bl-live-head{align-items:flex-start;flex-direction:column;gap:2px;}
   #tab-blast .compose-card,#tab-blast .rec-panel{padding:16px;border-radius:13px;}
+}
+
+/* ══ RESPONSIVE CRM — PHONE / TABLET / DESKTOP ═════════════ */
+html,body{max-width:100%;overflow-x:hidden;}
+img,svg,canvas{max-width:100%;}
+.nav{-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+.nav::-webkit-scrollbar,.blast-subnav::-webkit-scrollbar,.db-subnav::-webkit-scrollbar{display:none;}
+
+@media(max-width:1024px){
+  .header-inner,.main{padding-left:18px;padding-right:18px;}
+  .main{padding-top:20px;padding-bottom:28px;}
+  .panel{padding:18px;}
+  .stat{min-width:calc(33.333% - 8px);}
+}
+
+@media(max-width:760px){
+  .header-inner{padding:14px 14px 0;}
+  .header-top{gap:9px;margin-bottom:10px;}
+  .header-logo{height:38px;}
+  .logo-name{font-size:17px;}
+  .logo-sub,.u-role{display:none;}
+  .user-chip{padding:4px 7px 4px 4px;}
+  .u-name{max-width:92px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;}
+  .logout-btn{padding:7px 9px;}
+  .nav{margin:0 -14px;padding:0 14px;gap:3px;}
+  .nav-btn{min-height:44px;padding:10px 13px;font-size:13px;}
+  .main{padding:16px 12px 28px;}
+  .sec-header{align-items:stretch;flex-direction:column;gap:12px;}
+  .sec-header>.flex{width:100%;flex-wrap:wrap;}
+  .sec-header>.flex .btn{flex:1 1 auto;justify-content:center;min-height:42px;}
+  .sec-title{font-size:20px;}
+  .grid-2{grid-template-columns:1fr;gap:12px;margin-bottom:12px;}
+  .panel{padding:15px;border-radius:11px;}
+  .stat-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;}
+  .stat{min-width:0;padding:13px 14px;}
+  .stat-value{font-size:20px;}
+  .filter-bar{align-items:stretch;}
+  .filter-bar input,.filter-bar select{min-width:0;width:100%;min-height:44px;font-size:16px;}
+  .filter-bar .btn{min-height:44px;justify-content:center;}
+  .db-subnav,.blast-subnav{overflow-x:auto;-webkit-overflow-scrolling:touch;white-space:nowrap;}
+  .db-snbtn,.bsnav-btn{min-height:44px;flex:0 0 auto;}
+  .card{padding:13px;}
+  .card-row{align-items:flex-start;flex-wrap:wrap;}
+  .card-row>.btn{margin-left:auto;min-height:40px;}
+  .loyalty-head{align-items:flex-start;gap:10px;flex-wrap:wrap;padding:13px 15px;}
+  .loyalty-body{padding:13px 15px;}
+  .review-card>div{min-width:0;}
+  .outbox-header{align-items:stretch;}
+  .outbox-header>div:last-child{width:100%;display:grid!important;grid-template-columns:1fr 1fr;}
+  .outbox-header .btn-clear-outbox{grid-column:1/-1;min-height:42px;}
+  .outbox-select-all,.btn-mark-all{justify-content:center;min-height:44px;}
+  .outbox-item{align-items:flex-start;padding:12px;gap:9px;}
+  .ob-left{align-items:flex-start;gap:9px;}
+  .ob-right{flex-wrap:wrap;justify-content:flex-end;max-width:150px;}
+  .ob-name,.ob-subject{white-space:normal;overflow-wrap:anywhere;}
+  .reader-header{flex-wrap:wrap;}
+  .reader-header .reader-back{width:100%;}
+  .reader-header .btn-mark-sent,.reader-header .btn-delete-email{flex:1;justify-content:center;min-height:42px;}
+  .reader-meta-row{align-items:flex-start;overflow-wrap:anywhere;}
+  .sent-log-head{align-items:flex-start;gap:10px;flex-direction:column;}
+  .sent-log-head>div{width:100%;justify-content:space-between;flex-wrap:wrap;}
+  .sent-item{padding:12px;}
+  .empty{padding:28px 12px;}
+}
+
+@media(max-width:560px){
+  .login-right{padding:28px 16px;align-items:flex-start;}
+  .login-box{max-width:none;}
+  .auth-title{font-size:22px;}
+  .lf input,.lf select,.field input,.field select,.field textarea,.bl-field input,.bl-field select,.bl-field textarea{font-size:16px;}
+  .modal-overlay{padding:0;align-items:flex-end;}
+  .modal,.modal.wide,.email-full-modal{width:100%;max-width:none;max-height:92vh;border-radius:18px 18px 0 0;}
+  .modal-head{padding:15px 16px 12px;}
+  .modal-body{padding:15px 16px 22px;}
+  .modal-close{min-width:40px;min-height:40px;}
+  .form-row,.lf-row{grid-template-columns:1fr;gap:0;}
+  .sec-header.blast-hero{gap:14px;}
+  .blast-hero-actions{justify-content:flex-start;}
+  .blast-settings-btn{min-height:42px;}
+  #tab-blast .blast-subnav{margin-left:-12px;margin-right:-12px;padding:0 12px;}
+  #tab-blast .compose-card,#tab-blast .rec-panel{padding:14px;}
+  #tab-blast .rec-list{max-height:360px;}
+  .email-secret-wrap{align-items:stretch;}
+  .email-secret-wrap button{min-width:68px;}
+  .outbox-header>div:last-child{grid-template-columns:1fr;}
+  .outbox-header .btn-clear-outbox{grid-column:auto;}
+  .outbox-item{display:block;}
+  .ob-right{max-width:none;margin-top:10px;padding-left:27px;justify-content:flex-start;}
+  .ob-mark-btn,.ob-del-btn{min-height:40px;}
+  .star-row{align-items:flex-start;flex-wrap:wrap;}
+  .star-row .cat-lbl{width:100%;min-width:0;}
+  #toast{left:12px;right:12px;bottom:12px;text-align:center;}
+}
+
+@media(max-width:380px){
+  .main{padding-left:9px;padding-right:9px;}
+  .header-inner{padding-left:10px;padding-right:10px;}
+  .nav{margin-left:-10px;margin-right:-10px;padding-left:10px;padding-right:10px;}
+  .logo-sub,.u-name{display:none;}
+  .stat-row{grid-template-columns:1fr;}
+  .panel,.card{border-radius:9px;}
+  .blast-hero .sec-title{font-size:21px;}
 }
 </style>
 </head>
