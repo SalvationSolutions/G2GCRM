@@ -555,91 +555,6 @@ table{border-collapse:collapse;width:100%;}
   #tab-blast .compose-card,#tab-blast .rec-panel{padding:16px;border-radius:13px;}
 }
 
-/* ══ REGISTRATION-SITE BRAND SYSTEM ════════════════════════ */
-:root{
-  --blue:#223B91;
-  --blue-l:#EDF2FF;
-  --blue-m:#182A70;
-  --gold:#D4A62A;
-  --gold-l:#FFF8DF;
-  --char:#182238;
-  --muted:#657089;
-  --border:#CFD8EA;
-  --surface:#F7F9FD;
-  --white:#FFFFFF;
-}
-body{
-  background-color:#1B3075;
-  background-image:
-    linear-gradient(rgba(27,48,117,.92),rgba(27,48,117,.92)),
-    var(--blast-brand-image);
-  background-repeat:no-repeat;
-  background-position:center top,center center;
-  background-size:cover,1050px auto;
-  background-attachment:fixed;
-  color:var(--char);
-}
-.header{
-  background:rgba(24,42,112,.97);
-  box-shadow:0 10px 30px rgba(8,18,61,.22);
-}
-.header-logo,.ll-logo-img{
-  border-radius:10px;
-  box-shadow:0 7px 17px rgba(8,18,61,.22);
-}
-.header-logo{height:50px;}
-.login-left{
-  background-color:#1B3075;
-  background-image:
-    linear-gradient(rgba(27,48,117,.90),rgba(27,48,117,.90)),
-    var(--blast-brand-image);
-  background-repeat:no-repeat;
-  background-position:center,center;
-  background-size:cover,720px auto;
-}
-.login-right{background:#F7F9FD;}
-.login-box{
-  padding:30px;
-  border-radius:20px;
-  background:#fff;
-  box-shadow:0 18px 55px rgba(0,0,0,.18);
-}
-.main{padding-top:28px;padding-bottom:46px;}
-.tab-panel.active{
-  padding:24px;
-  border-radius:20px;
-  background:rgba(255,255,255,.98);
-  box-shadow:0 18px 55px rgba(0,0,0,.22);
-}
-.panel,.stat,.card,.compose-card,.rec-panel,.loyalty-card,
-.reader-meta,.reader-body,.outbox-item,.sent-item,.qr-panel,.qr-pending-panel{
-  border-color:#CFD8EA;
-}
-.panel,.stat,.card,.loyalty-card{
-  background:#fff;
-  border-radius:16px;
-  box-shadow:0 7px 22px rgba(24,42,112,.07);
-}
-.sec-title,.panel-title,.auth-title{color:#223B91;}
-input:not([type="checkbox"]),select,textarea{
-  border-color:#CFD8EA;
-  border-radius:12px;
-  background:#fff;
-}
-input:not([type="checkbox"]):focus,select:focus,textarea:focus{
-  outline:none;
-  border-color:#223B91;
-  box-shadow:0 0 0 3px rgba(34,59,145,.12);
-}
-.btn.primary,.login-btn,.btn-blast-send,.btn-mark-sent,.btn-qr-dl{
-  background:#223B91;
-  box-shadow:0 7px 17px rgba(34,59,145,.24);
-}
-.btn.primary:hover,.login-btn:hover,.btn-mark-sent:hover,.btn-qr-dl:hover{
-  background:#182A70;
-}
-.meander{background:#fff;}
-
 /* ══ RESPONSIVE CRM — PHONE / TABLET / DESKTOP ═════════════ */
 html,body{max-width:100%;overflow-x:hidden;}
 img,svg,canvas{max-width:100%;}
@@ -656,7 +571,7 @@ img,svg,canvas{max-width:100%;}
 @media(max-width:760px){
   .header-inner{padding:14px 14px 0;}
   .header-top{gap:9px;margin-bottom:10px;}
-  .header-logo{height:42px;}
+  .header-logo{height:38px;}
   .logo-name{font-size:17px;}
   .logo-sub,.u-role{display:none;}
   .user-chip{padding:4px 7px 4px 4px;}
@@ -701,7 +616,6 @@ img,svg,canvas{max-width:100%;}
   .sent-log-head>div{width:100%;justify-content:space-between;flex-wrap:wrap;}
   .sent-item{padding:12px;}
   .empty{padding:28px 12px;}
-  .tab-panel.active{padding:16px;border-radius:16px;}
 }
 
 @media(max-width:560px){
@@ -731,9 +645,6 @@ img,svg,canvas{max-width:100%;}
   .star-row{align-items:flex-start;flex-wrap:wrap;}
   .star-row .cat-lbl{width:100%;min-width:0;}
   #toast{left:12px;right:12px;bottom:12px;text-align:center;}
-  body{background-size:cover,720px auto;}
-  .login-box{padding:22px 18px;border-radius:16px;}
-  .tab-panel.active{padding:13px;border-radius:14px;}
 }
 
 @media(max-width:380px){
