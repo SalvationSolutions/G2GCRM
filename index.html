@@ -1271,6 +1271,20 @@ html,body{width:100%;max-width:100%;overflow-x:hidden;}
               </div>
             </div>
 
+            <div class="bl-field" id="promo-code-generator">
+              <label>Campaign Promo Code</label>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <input id="bl-promo-code" maxlength="24" placeholder="Click Generate New Code"
+                  oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9-]/g,'');localStorage.setItem('g2g_campaign_promo_code',this.value);livePreview();"
+                  style="flex:1;min-width:190px;font-weight:800;letter-spacing:.06em;color:var(--blue);"/>
+                <button type="button" class="btn primary" onclick="generatePromoCode()" style="white-space:nowrap;">✨ Generate New Code</button>
+                <button type="button" class="btn" onclick="copyPromoCode()" style="white-space:nowrap;">📋 Copy</button>
+              </div>
+              <div style="font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5;">
+                This code replaces <b>{{discount_code}}</b> in Promotional Offer and Re-engagement emails. One generated code is used for the whole campaign.
+              </div>
+            </div>
+
             <div class="bl-field">
               <label>Message Body <span style="color:var(--terra)">*</span></label>
               <textarea id="bl-body" rows="8" placeholder="Write your message here…" oninput="livePreview()"></textarea>
@@ -2705,7 +2719,47 @@ function applyTemplate(){
   document.getElementById("bl-body").value     = t.body;
   document.getElementById("bl-cta-text").value = t.cta||"";
   document.getElementById("bl-cta-link").value = t.ctaLink||"";
+  if((key==="promo"||key==="reactivate") && !getCampaignPromoCode()) generatePromoCode(false);
   livePreview();
+}
+
+// ── PROMO CODE GENERATOR ────────────────────────────────────
+function getCampaignPromoCode(){
+  const el=document.getElementById("bl-promo-code");
+  return String((el&&el.value)||localStorage.getItem("g2g_campaign_promo_code")||"").trim().toUpperCase();
+}
+
+function generatePromoCode(showMessage=true){
+  const chars="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const now=new Date();
+  const month=now.toLocaleString("en-US",{month:"short"}).toUpperCase();
+  const year=String(now.getFullYear()).slice(-2);
+  let random="";
+  if(window.crypto&&window.crypto.getRandomValues){
+    const bytes=new Uint32Array(5);
+    window.crypto.getRandomValues(bytes);
+    random=Array.from(bytes,n=>chars[n%chars.length]).join("");
+  }else{
+    for(let i=0;i<5;i++) random+=chars[Math.floor(Math.random()*chars.length)];
+  }
+  const code=`G2G-${month}${year}-${random}`;
+  const el=document.getElementById("bl-promo-code");
+  if(el) el.value=code;
+  localStorage.setItem("g2g_campaign_promo_code",code);
+  livePreview();
+  if(showMessage) showToast(`✅ New promo code generated: ${code}`,"ok");
+  return code;
+}
+
+function copyPromoCode(){
+  const code=getCampaignPromoCode()||generatePromoCode(false);
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(code)
+      .then(()=>showToast(`📋 Promo code copied: ${code}`,"ok"))
+      .catch(()=>showToast(`Promo code: ${code}`,"ok"));
+  }else{
+    showToast(`Promo code: ${code}`,"ok");
+  }
 }
 
 function insertTag(tag){
@@ -2725,7 +2779,10 @@ function personalize(text, cust){
   const seed=String(cust.id||cust.email||cust.name||"GUEST");
   let hash=0;
   for(let i=0;i<seed.length;i++) hash=((hash<<5)-hash)+seed.charCodeAt(i)|0;
-  const code="GREEK"+(1000+(Math.abs(hash)%9000));
+  // Prefer the campaign promo code created by the Promo Code Generator.
+  // Fallback keeps the previous guest-specific code behaviour if no campaign code exists.
+  const fallbackCode="GREEK"+(1000+(Math.abs(hash)%9000));
+  const code=getCampaignPromoCode()||fallbackCode;
   return text
     .replace(/{{name}}/g,        cust.name||"")
     .replace(/{{first_name}}/g,  (cust.name||"Guest").split(" ")[0])
@@ -3296,6 +3353,13 @@ function renderBlast(){
   updateEmailStatus_(emailQuota==null?'idle':'ready');
 }
 
+
+// Restore the last generated campaign promo code when the CRM opens.
+document.addEventListener("DOMContentLoaded",function(){
+  const el=document.getElementById("bl-promo-code");
+  const saved=localStorage.getItem("g2g_campaign_promo_code")||"";
+  if(el&&saved) el.value=saved;
+});
 </script>
 </body>
 </html>
