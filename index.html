@@ -2350,14 +2350,15 @@ let sheetsUrl = DEFAULT_APPS_SCRIPT_URL;
 try{ localStorage.setItem('gtg_sheets_url',DEFAULT_APPS_SCRIPT_URL); }catch(e){}
 
 const EMAIL_ACCOUNT = 'greektogoph@gmail.com';
-let emailSettings = {endpoint:'',accessKey:''};
+const DEFAULT_EMAIL_ACCESS_KEY = 'GTG-6f4c2e91-a7d8-4b63-9c05-5e1f73a8d24b-928fd41c';
+let emailSettings = {endpoint:'',accessKey:DEFAULT_EMAIL_ACCESS_KEY};
 let emailQuota = null;
 let emailBulkSending = false;
 try{
   emailSettings.endpoint = DEFAULT_APPS_SCRIPT_URL;
   localStorage.setItem('gtg_email_endpoint',DEFAULT_APPS_SCRIPT_URL);
-  emailSettings.accessKey = localStorage.getItem('gtg_email_access_key') || '';
-}catch(e){ emailSettings = {endpoint:DEFAULT_APPS_SCRIPT_URL,accessKey:''}; }
+  emailSettings.accessKey = DEFAULT_EMAIL_ACCESS_KEY;
+}catch(e){ emailSettings = {endpoint:DEFAULT_APPS_SCRIPT_URL,accessKey:DEFAULT_EMAIL_ACCESS_KEY}; }
 
 function validSheetsUrl_(url){
   try{
