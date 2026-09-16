@@ -1562,23 +1562,11 @@ html,body{width:100%;max-width:100%;overflow-x:hidden;}
         <span id="email-quota-label">Quota not checked</span>
       </div>
       <div class="email-settings-note">
-        The Apps Script URL is built into this CRM. Only the private access key is saved in this browser; it is never added to the public GitHub page or guest links.
+        Gmail is configured automatically in this CRM. The Apps Script connection and email access key are built in, so there is nothing to enter, save, or test on each device.
       </div>
-      <div class="field">
-        <label>Apps Script Web App URL</label>
-        <input id="email-endpoint" type="url" readonly aria-readonly="true"/>
-      </div>
-      <div class="field">
-        <label>Private Email Access Key</label>
-        <div class="email-secret-wrap">
-          <input id="email-access-key" type="password" placeholder="Paste the key from the private Apps Script file" autocomplete="new-password"/>
-          <button type="button" id="email-key-toggle" onclick="toggleEmailKey()">Show</button>
-        </div>
-      </div>
-      <div style="font-size:12px;margin:10px 0 2px;">Status: <span id="email-settings-status">Not connected</span></div>
+      <div style="font-size:12px;margin:10px 0 2px;">Status: <span id="email-settings-status">Checking connection…</span></div>
       <div class="flex gap-8" style="justify-content:flex-end;margin-top:14px;">
-        <button class="btn btn-secondary" onclick="disconnectEmailSettings()">Clear Key</button>
-        <button class="btn btn-primary" id="email-settings-save" onclick="saveAndTestEmailSettings()">Save &amp; Test</button>
+        <button class="btn btn-primary" onclick="closeModal('modal-email-settings')">Done</button>
       </div>
     </div>
   </div>
@@ -2440,27 +2428,33 @@ function updateEmailStatus_(state='idle',message=''){
   const hasSettings=Boolean(endpoint&&emailSettings.accessKey);
   const text=message||(ready
     ? `Gmail ready${emailQuota==null?'':` · ${emailQuota} left`}`
-    : failed?'Gmail connection failed':hasSettings?'Gmail saved · test needed':'Gmail not connected');
+    : failed?'Gmail connection failed':hasSettings?'Gmail configured automatically':'Gmail not connected');
   if(badge){
     badge.textContent=text;
     badge.classList.toggle('not-ready',!ready&&!failed);
     badge.classList.toggle('failed',failed);
   }
   if(modalStatus){
-    modalStatus.textContent=ready?'✅ Connected':failed?'❌ '+text:(hasSettings?'Saved — click Save & Test':'Not connected');
+    modalStatus.textContent=ready?'✅ Connected':failed?'❌ '+text:(hasSettings?'Configured automatically':'Not connected');
     modalStatus.style.color=ready?'var(--green)':failed?'var(--red)':'var(--muted)';
   }
   if(quotaLabel) quotaLabel.textContent=emailQuota==null?'Quota not checked':`${emailQuota} recipient${emailQuota===1?'':'s'} remaining today`;
 }
 
 function openEmailSettings(){
-  const endpoint=effectiveEmailEndpoint_();
-  $$('email-endpoint').value=endpoint;
-  $$('email-access-key').value=emailSettings.accessKey;
-  $$('email-access-key').type='password';
-  $$('email-key-toggle').textContent='Show';
-  updateEmailStatus_(emailQuota==null?'idle':'ready');
+  emailSettings={endpoint:DEFAULT_APPS_SCRIPT_URL,accessKey:DEFAULT_EMAIL_ACCESS_KEY};
+  updateEmailStatus_('idle','Checking Gmail connection…');
   openModal('modal-email-settings');
+  _emailCall('emailStatus').then(data=>{
+    if(data.account && String(data.account).toLowerCase()!==EMAIL_ACCOUNT){
+      throw new Error('Apps Script is not configured for '+EMAIL_ACCOUNT+'.');
+    }
+    updateEmailStatus_('ready');
+  }).catch(e=>{
+    console.error('Gmail automatic connection check failed:',e);
+    emailQuota=null;
+    updateEmailStatus_('failed',e.message);
+  });
 }
 
 function toggleEmailKey(){
