@@ -787,7 +787,7 @@ body{background:#eef3f8;color:#10275d;}
   .crm-topbar{position:sticky;left:0;top:0;height:56px;padding:0 12px;gap:9px;}
   .topbar-menu{display:none;}
   .sheet-status{font-size:11px;margin-right:auto;padding:7px;}
-  .crm-topbar .u-role,.top-signout{display:none;}
+  .crm-topbar .u-role{display:none;}
   .main{margin-left:0;padding:14px 12px 24px;}
   .dashboard-hero{margin:-14px -12px 12px;padding:26px 18px;min-height:175px;}
   .dashboard-hero::before{inset:0;background-position:65% center;opacity:.34;}
@@ -931,6 +931,55 @@ html,body{width:100%;max-width:100%;overflow-x:hidden;}
 .crm-sidebar .nav-btn>span:last-child{font-size:16px;font-weight:650;}
 .crm-sidebar .nav-btn.active .nav-ico svg{stroke-width:2.25;}
 @media(max-width:900px){.crm-sidebar .nav-ico{width:28px!important;height:28px!important;min-width:28px}.crm-sidebar .nav-ico svg{width:24px;height:24px}.crm-sidebar .nav-btn{min-height:48px!important;gap:10px!important}.crm-sidebar .nav-btn>span:last-child{font-size:12px}}
+
+/* === MOBILE PORTRAIT SIGN OUT FIX === */
+@media (max-width:760px){
+  .crm-topbar{
+    display:flex!important;
+    align-items:center!important;
+    flex-wrap:nowrap!important;
+    overflow:visible!important;
+    z-index:100!important;
+  }
+  .sheet-status{
+    flex:1 1 auto!important;
+    min-width:0!important;
+    margin-right:0!important;
+    white-space:nowrap!important;
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+  }
+  .crm-topbar .user-chip{
+    flex:0 1 auto!important;
+    min-width:0!important;
+    padding-left:7px!important;
+    gap:6px!important;
+  }
+  .crm-topbar .u-av{width:30px!important;height:30px!important;min-width:30px!important;}
+  .crm-topbar .u-name{font-size:12px!important;max-width:72px!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;}
+  .crm-topbar .u-role{display:none!important;}
+  .top-signout{
+    display:inline-flex!important;
+    flex:0 0 auto!important;
+    align-items:center!important;
+    justify-content:center!important;
+    min-height:38px!important;
+    padding:8px 10px!important;
+    font-size:11px!important;
+    position:relative!important;
+    z-index:110!important;
+    pointer-events:auto!important;
+    touch-action:manipulation!important;
+    -webkit-tap-highlight-color:rgba(0,0,0,.08);
+  }
+}
+@media (max-width:430px){
+  .crm-topbar{padding:7px 8px!important;gap:6px!important;}
+  .sheet-status{font-size:10px!important;padding:6px 4px!important;}
+  .crm-topbar .u-name{display:none!important;}
+  .crm-topbar .user-chip{border-left:0!important;padding-left:2px!important;}
+  .top-signout{min-height:40px!important;padding:8px 9px!important;font-size:11px!important;}
+}
 </style>
 </head>
 <body>
@@ -1513,7 +1562,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden;}
         <span id="email-quota-label">Quota not checked</span>
       </div>
       <div class="email-settings-note">
-        The Apps Script URL and Email Access Key are permanently built into this CRM. Browser-saved settings cannot override them.
+        The Apps Script URL is built into this CRM. Only the private access key is saved in this browser; it is never added to the public GitHub page or guest links.
       </div>
       <div class="field">
         <label>Apps Script Web App URL</label>
@@ -1522,12 +1571,13 @@ html,body{width:100%;max-width:100%;overflow-x:hidden;}
       <div class="field">
         <label>Private Email Access Key</label>
         <div class="email-secret-wrap">
-          <input id="email-access-key" type="password" readonly aria-readonly="true" autocomplete="off"/>
+          <input id="email-access-key" type="password" placeholder="Paste the key from the private Apps Script file" autocomplete="new-password"/>
           <button type="button" id="email-key-toggle" onclick="toggleEmailKey()">Show</button>
         </div>
       </div>
       <div style="font-size:12px;margin:10px 0 2px;">Status: <span id="email-settings-status">Not connected</span></div>
       <div class="flex gap-8" style="justify-content:flex-end;margin-top:14px;">
+        <button class="btn btn-secondary" onclick="disconnectEmailSettings()">Clear Key</button>
         <button class="btn btn-primary" id="email-settings-save" onclick="saveAndTestEmailSettings()">Save &amp; Test</button>
       </div>
     </div>
@@ -2345,14 +2395,19 @@ function printQR(){
 // Shared Google Apps Script backend used by the registration form, CRM sheets,
 // CSAT, and protected Gmail blast actions.
 const DEFAULT_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxEdUXyZT83q3I2FHoToU4zG-BcJxkrydfXQh0crlSWkrfEd22a-pZSKkms4HKXcqkBvA/exec';
-const sheetsUrl = DEFAULT_APPS_SCRIPT_URL;
+let sheetsUrl = DEFAULT_APPS_SCRIPT_URL;
+try{ localStorage.setItem('gtg_sheets_url',DEFAULT_APPS_SCRIPT_URL); }catch(e){}
 
 const EMAIL_ACCOUNT = 'greektogoph@gmail.com';
 const DEFAULT_EMAIL_ACCESS_KEY = 'GTG-6f4c2e91-a7d8-4b63-9c05-5e1f73a8d24b-928fd41c';
-const emailSettings = {endpoint:DEFAULT_APPS_SCRIPT_URL,accessKey:DEFAULT_EMAIL_ACCESS_KEY};
+let emailSettings = {endpoint:'',accessKey:DEFAULT_EMAIL_ACCESS_KEY};
 let emailQuota = null;
 let emailBulkSending = false;
-// Backend URL and access key are permanently built in; browser storage cannot override them.
+try{
+  emailSettings.endpoint = DEFAULT_APPS_SCRIPT_URL;
+  localStorage.setItem('gtg_email_endpoint',DEFAULT_APPS_SCRIPT_URL);
+  emailSettings.accessKey = DEFAULT_EMAIL_ACCESS_KEY;
+}catch(e){ emailSettings = {endpoint:DEFAULT_APPS_SCRIPT_URL,accessKey:DEFAULT_EMAIL_ACCESS_KEY}; }
 
 function validSheetsUrl_(url){
   try{
@@ -2368,7 +2423,11 @@ function effectiveEmailEndpoint_(){
 }
 
 function persistEmailSettings_(){
-  // Intentionally disabled: permanent built-in settings are the source of truth.
+  try{
+    localStorage.setItem('gtg_email_endpoint',DEFAULT_APPS_SCRIPT_URL);
+    if(emailSettings.accessKey) localStorage.setItem('gtg_email_access_key',emailSettings.accessKey);
+    else localStorage.removeItem('gtg_email_access_key');
+  }catch(e){}
 }
 
 function updateEmailStatus_(state='idle',message=''){
@@ -2397,7 +2456,7 @@ function updateEmailStatus_(state='idle',message=''){
 function openEmailSettings(){
   const endpoint=effectiveEmailEndpoint_();
   $$('email-endpoint').value=endpoint;
-  $$('email-access-key').value=DEFAULT_EMAIL_ACCESS_KEY;
+  $$('email-access-key').value=emailSettings.accessKey;
   $$('email-access-key').type='password';
   $$('email-key-toggle').textContent='Show';
   updateEmailStatus_(emailQuota==null?'idle':'ready');
@@ -2431,7 +2490,7 @@ async function _emailCall(action,payload={}){
 
 async function saveAndTestEmailSettings(){
   const endpoint=DEFAULT_APPS_SCRIPT_URL;
-  const accessKey=DEFAULT_EMAIL_ACCESS_KEY;
+  const accessKey=($$('email-access-key')?.value||'').trim();
   if(!validSheetsUrl_(endpoint)){
     showToast('Enter a valid Google Apps Script /exec URL.','err');
     $$('email-endpoint')?.focus();
@@ -2442,7 +2501,8 @@ async function saveAndTestEmailSettings(){
     $$('email-access-key')?.focus();
     return;
   }
-  // Permanent built-in endpoint and key are used; no browser override.
+  emailSettings={endpoint,accessKey};
+  persistEmailSettings_();
   const button=$$('email-settings-save');
   if(button){button.disabled=true;button.textContent='Testing…';}
   updateEmailStatus_('idle','Testing Gmail…');
@@ -2466,11 +2526,13 @@ async function saveAndTestEmailSettings(){
 }
 
 function disconnectEmailSettings(){
+  emailSettings={endpoint:DEFAULT_APPS_SCRIPT_URL,accessKey:''};
   emailQuota=null;
+  persistEmailSettings_();
   if($$('email-endpoint')) $$('email-endpoint').value=DEFAULT_APPS_SCRIPT_URL;
-  if($$('email-access-key')) $$('email-access-key').value=DEFAULT_EMAIL_ACCESS_KEY;
+  if($$('email-access-key')) $$('email-access-key').value='';
   updateEmailStatus_('idle');
-  showToast('Built-in Gmail connection cannot be cleared on this device','ok');
+  showToast('Private Gmail access key cleared from this browser','ok');
 }
 
 function openSheetsModal(){
@@ -2484,22 +2546,38 @@ function updateSheetsStatus(){
   else{el.textContent='Not connected';el.style.color='var(--muted)';}
 }
 async function connectSheet(){
+  const input = $$('sheets-url');
+  const url = DEFAULT_APPS_SCRIPT_URL;
+  if(!validSheetsUrl_(url)){
+    showToast('Enter a valid Google Apps Script /exec URL.','err');
+    input?.focus();
+    return;
+  }
+  const oldUrl = sheetsUrl;
+  sheetsUrl = url.replace(/\/?$/, '');
+  try{ localStorage.setItem('gtg_sheets_url', DEFAULT_APPS_SCRIPT_URL); }catch(e){}
   updateSheetsStatus();
   try{
     const data = await _sheetCall('ping',{},'GET');
     if(!data || data.status === 'error') throw new Error(data?.message || 'Ping failed');
     showToast('✅ Google Sheets connected','ok');
   }catch(e){
+    sheetsUrl = oldUrl;
+    try{ if(oldUrl) localStorage.setItem('gtg_sheets_url', oldUrl); else localStorage.removeItem('gtg_sheets_url'); }catch(x){}
     updateSheetsStatus();
     showToast('❌ Connection failed — '+e.message,'err');
   }
 }
 function disconnectSheet(){
-  showToast('Built-in Google Sheets connection cannot be cleared on this device','ok');
+  sheetsUrl = '';
+  try{ localStorage.removeItem('gtg_sheets_url'); }catch(e){}
+  updateSheetsStatus();
+  showToast('Google Sheets disconnected on this browser','ok');
 }
 
 async function _sheetCall(action,payload={},method='POST'){
-  const url=DEFAULT_APPS_SCRIPT_URL;
+  if(!sheetsUrl) throw new Error('Google Sheets is not connected.');
+  const url=sheetsUrl;
   let res;
   if(method==='GET'){
     const qs=new URLSearchParams({action,ts:String(Date.now())});
