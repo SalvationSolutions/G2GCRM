@@ -2068,10 +2068,16 @@ async function saveEditGuest(){
   await syncGuestRecordToSheet(guest);
 }
 async function deleteGuest(id){
-  if(!confirm("Remove this guest?"))return;
-  customers=customers.filter(c=>c.id!==id);if(dbExpId===id)dbExpId=null;
-  renderDatabase();renderDashboard();showToast("Guest removed — syncing…","err");
-  await deleteGuestFromSheet(id);
+  if(!confirm("Remove this guest?")) return;
+  const guest=customers.find(c=>String(c.id)===String(id));
+  if(!guest){showToast("Guest not found","err");return;}
+  showToast("Removing guest from Google Sheets…","ok");
+  const synced=await deleteGuestFromSheet(guest);
+  if(!synced) return;
+  customers=customers.filter(c=>String(c.id)!==String(id));
+  if(String(dbExpId)===String(id)) dbExpId=null;
+  renderDatabase();renderDashboard();
+  showToast("Guest removed","ok");
 }
 
 // ─── ORDERS ──────────────────────────────────────────────────
@@ -2083,12 +2089,19 @@ function renderOrders(){
     return`<div class="card"><div class="card-row">${av(c?.name||"G",tier,38)}<div style="flex:1;"><div style="font-size:14px;font-weight:700;">${c?.name||"Guest"}</div><div style="font-size:12px;color:var(--muted);">${o.date} · Table ${o.tableNo}</div></div><div style="text-align:right;margin-right:10px;"><div style="font-size:16px;font-weight:700;color:var(--olive);">${dollar(o.total)}</div><div style="font-size:11px;background:var(--green-l);color:var(--green);padding:1px 7px;border-radius:8px;display:inline-block;">${o.status}</div></div><button class="btn btn-ghost btn-sm" onclick="openCSATModal(${o.id})">+ Review</button></div><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">${o.items.map(i=>`<span class="item-chip">${i}</span>`).join("")}</div></div>`;
   }).join("");
 }
-function clearAllOrders(){
+async function clearAllOrders(){
   if(!orders.length){showToast("No orders to clear","err");return;}
-  if(!confirm("Clear all orders? This cannot be undone.")) return;
-  orders=[];
-  renderOrders();renderDashboard();renderDatabase();
-  showToast("All orders cleared","err");
+  if(!confirm("Clear all orders from CRM and Google Sheets? This cannot be undone.")) return;
+  try{
+    showToast("Clearing Orders from Google Sheets…","ok");
+    await _sheetCall('syncOrders',{orders:[]});
+    orders=[];
+    renderOrders();renderDashboard();renderDatabase();
+    showToast("All orders cleared from CRM and Google Sheets","ok");
+  }catch(e){
+    console.error('Clear orders failed:',e);
+    showToast("Orders were NOT cleared — "+e.message,"err");
+  }
 }
 function buildOrderMenu(){
   const bycat={};MENU.forEach(m=>{if(!bycat[m.cat])bycat[m.cat]=[];bycat[m.cat].push(m);});
@@ -2129,12 +2142,19 @@ const csatFields=["overall","food","service","ambiance","value"];
 const csatLabels={overall:"Overall ★",food:"Food Quality",service:"Service",ambiance:"Ambiance",value:"Value"};
 const csatRatings={overall:5,food:5,service:5,ambiance:5,value:5};
 
-function clearAllCSAT(){
+async function clearAllCSAT(){
   if(!csatData.length){showToast("No reviews to clear","err");return;}
-  if(!confirm("Clear all CSAT reviews? This cannot be undone.")) return;
-  csatData=[];
-  renderCSAT();renderDashboard();renderDatabase();
-  showToast("All CSAT reviews cleared","err");
+  if(!confirm("Clear all CSAT reviews from CRM and Google Sheets? This cannot be undone.")) return;
+  try{
+    showToast("Clearing CSAT from Google Sheets…","ok");
+    await _sheetCall('syncCSAT',{csat:[]});
+    csatData=[];
+    renderCSAT();renderDashboard();renderDatabase();
+    showToast("All CSAT reviews cleared from CRM and Google Sheets","ok");
+  }catch(e){
+    console.error('Clear CSAT failed:',e);
+    showToast("CSAT was NOT cleared — "+e.message,"err");
+  }
 }
 function renderCSAT(){
   const avgF=k=>avg(csatData.map(r=>r[k]));
@@ -2413,8 +2433,7 @@ function effectiveEmailEndpoint_(){
 function persistEmailSettings_(){
   try{
     localStorage.setItem('gtg_email_endpoint',DEFAULT_APPS_SCRIPT_URL);
-    if(emailSettings.accessKey) localStorage.setItem('gtg_email_access_key',emailSettings.accessKey);
-    else localStorage.removeItem('gtg_email_access_key');
+    localStorage.removeItem('gtg_email_access_key');
   }catch(e){}
 }
 
@@ -2520,13 +2539,11 @@ async function saveAndTestEmailSettings(){
 }
 
 function disconnectEmailSettings(){
-  emailSettings={endpoint:DEFAULT_APPS_SCRIPT_URL,accessKey:''};
-  emailQuota=null;
-  persistEmailSettings_();
+  emailSettings={endpoint:DEFAULT_APPS_SCRIPT_URL,accessKey:DEFAULT_EMAIL_ACCESS_KEY};
   if($$('email-endpoint')) $$('email-endpoint').value=DEFAULT_APPS_SCRIPT_URL;
-  if($$('email-access-key')) $$('email-access-key').value='';
-  updateEmailStatus_('idle');
-  showToast('Private Gmail access key cleared from this browser','ok');
+  if($$('email-access-key')) $$('email-access-key').value=DEFAULT_EMAIL_ACCESS_KEY;
+  updateEmailStatus_(emailQuota==null?'idle':'ready');
+  showToast('Gmail is built in and cannot be disconnected from this production CRM.','ok');
 }
 
 function openSheetsModal(){
@@ -2563,10 +2580,9 @@ async function connectSheet(){
   }
 }
 function disconnectSheet(){
-  sheetsUrl = '';
-  try{ localStorage.removeItem('gtg_sheets_url'); }catch(e){}
+  sheetsUrl=DEFAULT_APPS_SCRIPT_URL;
   updateSheetsStatus();
-  showToast('Google Sheets disconnected on this browser','ok');
+  showToast('Google Sheets is built in and cannot be disconnected from this production CRM.','ok');
 }
 
 async function _sheetCall(action,payload={},method='POST'){
@@ -2586,8 +2602,11 @@ async function _sheetCall(action,payload={},method='POST'){
 }
 
 async function pushGuestsToSheet(){
-  try{showToast('Syncing guests to Google Sheets…','ok');const data=await _sheetCall('syncGuests',{guests:customers});showToast('✅ Guests synced: '+(data.count??customers.length),'ok');}
-  catch(e){console.error(e);showToast('Guest sync failed — '+e.message,'err');}
+  try{
+    showToast('Safely syncing guests to Google Sheets…','ok');
+    for(const guest of customers) await _sheetCall('upsertGuest',{guest});
+    showToast('✅ Guests safely synced: '+customers.length,'ok');
+  }catch(e){console.error(e);showToast('Guest sync failed — '+e.message,'err');}
 }
 async function pullGuestsFromSheet(){
   try{showToast('Loading guests from Google Sheets…','ok');const data=await _sheetCall('getGuests',{},'GET');
@@ -2597,8 +2616,11 @@ async function pullGuestsFromSheet(){
   }catch(e){console.error(e);showToast('Guest load failed — '+e.message,'err');}
 }
 async function pushOrdersToSheet(){
-  try{showToast('Syncing orders to Google Sheets…','ok');const data=await _sheetCall('syncOrders',{orders});showToast('✅ Orders synced: '+(data.count??orders.length),'ok');}
-  catch(e){console.error(e);showToast('Order sync failed — '+e.message,'err');}
+  try{
+    showToast('Safely syncing orders to Google Sheets…','ok');
+    for(const order of orders) await _sheetCall('upsertOrder',{order});
+    showToast('✅ Orders safely synced: '+orders.length,'ok');
+  }catch(e){console.error(e);showToast('Order sync failed — '+e.message,'err');}
 }
 async function pullOrdersFromSheet(){
   try{showToast('Loading orders from Google Sheets…','ok');const data=await _sheetCall('getOrders',{},'GET');
@@ -2608,8 +2630,11 @@ async function pullOrdersFromSheet(){
   }catch(e){console.error(e);showToast('Order load failed — '+e.message,'err');}
 }
 async function pushCSATToSheet(){
-  try{showToast('Syncing CSAT to Google Sheets…','ok');const data=await _sheetCall('syncCSAT',{csat:csatData});showToast('✅ CSAT synced: '+(data.count??csatData.length),'ok');}
-  catch(e){console.error(e);showToast('CSAT sync failed — '+e.message,'err');}
+  try{
+    showToast('Safely syncing CSAT to Google Sheets…','ok');
+    for(const review of csatData) await _sheetCall('upsertCSAT',{review});
+    showToast('✅ CSAT safely synced: '+csatData.length,'ok');
+  }catch(e){console.error(e);showToast('CSAT sync failed — '+e.message,'err');}
 }
 async function pullCSATFromSheet(){
   try{showToast('Loading CSAT from Google Sheets…','ok');const data=await _sheetCall('getCSAT',{},'GET');
@@ -2622,9 +2647,16 @@ async function syncGuestRecordToSheet(guest){
   try{ await _sheetCall('upsertGuest',{guest}); return true; }
   catch(e){ console.error('Guest autosync error:',e); showToast('Guest saved on screen, but Sheet sync failed — '+e.message,'err'); return false; }
 }
-async function deleteGuestFromSheet(id){
-  try{ await _sheetCall('deleteGuest',{id}); return true; }
-  catch(e){ console.error('Guest delete sync error:',e); showToast('Guest removed on screen, but Sheet sync failed — '+e.message,'err'); return false; }
+async function deleteGuestFromSheet(guest){
+  try{
+    if(!guest?.phone&&!guest?.email) throw new Error('Guest has no phone or email identifier.');
+    await _sheetCall('deleteGuest',{phone:guest.phone||'',email:guest.email||''});
+    return true;
+  }catch(e){
+    console.error('Guest delete sync error:',e);
+    showToast('Guest was NOT deleted — '+e.message,'err');
+    return false;
+  }
 }
 async function syncOrderRecordToSheet(order){
   try{ await _sheetCall('upsertOrder',{order}); return true; }
